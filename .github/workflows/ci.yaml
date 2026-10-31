@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Compatibility matrix: the minimum supported Flutter SDK and the latest
+  # stable SDK, each with the lowest and the highest dependency versions
+  # allowed by pubspec.yaml. See COMPATIBILITY.md.
+  test:
+    name: Flutter ${{ matrix.flutter }} / deps ${{ matrix.deps }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter: ["3.10.6", "stable"]
+        deps: [downgrade, upgrade]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter == 'stable' && '' || matrix.flutter }}
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Resolve dependencies (${{ matrix.deps }})
+        run: flutter pub ${{ matrix.deps }}
+
+      - name: Resolved versions of core dependencies
+        run: flutter pub deps --style=compact | grep -E "^- (dio|flutter_riverpod|riverpod|go_router|flutter_secure_storage) " || true
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Example app — analyze and test
+        working-directory: example
+        run: |
+          flutter pub ${{ matrix.deps }}
+          flutter analyze
+          flutter test
+
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test example/lib example/test
+
+  publish-dry-run:
+    name: pub.dev readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart pub publish --dry-run
