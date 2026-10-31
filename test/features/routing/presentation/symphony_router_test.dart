@@ -367,6 +367,111 @@ void main() {
     });
   });
 
+  group('defaultAccess (secure by default)', () {
+    const paths = SymphonyRoutePaths(guestOnlyPaths: <String>{'/register'});
+    const publicPaths = <String>{'/public'};
+
+    testWidgets('protects plain routes and returns to them after sign-in',
+        (tester) async {
+      final app = await pumpSymphonyRouter(
+        tester,
+        routes: appRoutes(),
+        paths: paths,
+        publicPaths: publicPaths,
+        defaultAccess: AccessRequirement.authenticated,
+        initialAccess: signedOut,
+        initialLocation: '/catalog?page=2',
+      );
+
+      expect(app.location, '/login?from=%2Fcatalog%3Fpage%3D2');
+      expect(findPage('login'), findsOneWidget);
+
+      await app.setAccess(signedIn());
+      expect(app.location, '/catalog?page=2');
+      expect(findPage('catalog'), findsOneWidget);
+
+      await app.setAccess(signedOut);
+      expect(app.location, '/login?from=%2Fcatalog%3Fpage%3D2');
+    });
+
+    testWidgets('leaves the guest-only and public pages open', (tester) async {
+      final app = await pumpSymphonyRouter(
+        tester,
+        routes: appRoutes(),
+        paths: paths,
+        publicPaths: publicPaths,
+        defaultAccess: AccessRequirement.authenticated,
+        initialAccess: signedOut,
+        initialLocation: '/public',
+      );
+      expect(findPage('public'), findsOneWidget);
+
+      await app.go('/register');
+      expect(app.location, '/register');
+      expect(findPage('register'), findsOneWidget);
+
+      await app.go('/maintenance');
+      expect(app.location, '/login?from=%2Fmaintenance');
+    });
+
+    testWidgets('resolves the splash straight to the sign-in page',
+        (tester) async {
+      final app = await pumpSymphonyRouter(
+        tester,
+        routes: appRoutes(),
+        paths: paths,
+        defaultAccess: AccessRequirement.authenticated,
+        initialLocation: '/catalog',
+      );
+      expect(app.location, '/splash?from=%2Fcatalog');
+
+      await app.setAccess(signedOut);
+      expect(app.location, '/login?from=%2Fcatalog');
+      expect(findPage('catalog'), findsNothing);
+    });
+
+    testWidgets('sends users lacking a required role to unauthorized',
+        (tester) async {
+      final app = await pumpSymphonyRouter(
+        tester,
+        routes: appRoutes(),
+        defaultAccess: const AccessRequirement(roles: <String>{'staff'}),
+        initialAccess: signedIn(),
+        initialLocation: '/catalog',
+      );
+      expect(app.location, '/unauthorized');
+      expect(find.byType(SymphonyUnauthorizedScreen), findsOneWidget);
+
+      await app.setAccess(signedIn(roles: <String>{'staff'}));
+      await app.go('/catalog');
+      expect(findPage('catalog'), findsOneWidget);
+
+      // Route guards still apply on top of the default requirement.
+      await app.go('/admin');
+      expect(app.location, '/unauthorized');
+    });
+
+    testWidgets('applies to the location returned by the app redirect',
+        (tester) async {
+      final app = await pumpSymphonyRouter(
+        tester,
+        routes: appRoutes(),
+        paths: paths,
+        publicPaths: publicPaths,
+        defaultAccess: AccessRequirement.authenticated,
+        initialAccess: signedOut,
+        initialLocation: '/public',
+        redirect: (context, state) =>
+            state.uri.queryParameters['legacy'] == '1' ? '/catalog' : null,
+      );
+
+      await app.go('/public?legacy=1');
+
+      expect(app.location, '/login?from=%2Fcatalog');
+      expect(findPage('catalog'), findsNothing);
+    });
+  });
+
   group('errors', () {
     testWidgets('show the error screen for unknown locations', (tester) async {
       final app = await pumpSymphonyRouter(

@@ -616,6 +616,163 @@ void main() {
     }
   });
 
+  group('defaultAccess (secure by default)', () {
+    const secured = SymphonyRedirectResolver(
+      paths: SymphonyRoutePaths(
+        guestOnlyPaths: <String>{'/register', '/forgot-password'},
+      ),
+      publicPaths: <String>{'/legal', '/reset-password'},
+      defaultAccess: AccessRequirement.authenticated,
+    );
+    const staffOnly = SymphonyRedirectResolver(
+      defaultAccess: AccessRequirement(roles: <String>{'staff'}),
+    );
+    const staff = AccessContext(
+      status: AuthStatus.authenticated,
+      roles: <String>{'staff'},
+    );
+
+    test('is off by default', () {
+      expect(resolver.defaultAccess, isNull);
+      expect(resolver.resolveDefaultAccess(signedOut, u('/orders')), isNull);
+      expect(resolver.resolveGlobal(signedOut, u('/orders')), isNull);
+    });
+
+    test('sends signed-out users to login, remembering the location', () {
+      expect(
+        secured.resolveGlobal(signedOut, u('/orders?page=2')),
+        '/login?from=%2Forders%3Fpage%3D2',
+      );
+      expect(secured.resolveGlobal(signedOut, u('/unknown')),
+          '/login?from=%2Funknown');
+      expect(secured.resolveGlobal(signedOut, u('/')), '/login');
+    });
+
+    test('lets users satisfying it through', () {
+      expect(secured.resolveGlobal(signedIn, u('/orders')), isNull);
+      expect(secured.resolveGlobal(admin, u('/')), isNull);
+      expect(staffOnly.resolveGlobal(staff, u('/orders')), isNull);
+    });
+
+    test('exempts the splash, guest-only and public paths', () {
+      for (final path in <String>[
+        '/splash',
+        '/login',
+        '/LOGIN/',
+        '/login/otp',
+        '/register',
+        '/register/step-2',
+        '/forgot-password',
+        '/legal',
+        '/legal/terms',
+        '/reset-password',
+      ]) {
+        expect(secured.isDefaultAccessExempt(path), isTrue, reason: path);
+        expect(
+          secured.resolveDefaultAccess(signedOut, u(path)),
+          isNull,
+          reason: path,
+        );
+      }
+      for (final path in <String>[
+        '/',
+        '/orders',
+        '/legalese',
+        '/unauthorized'
+      ]) {
+        expect(secured.isDefaultAccessExempt(path), isFalse, reason: path);
+      }
+      expect(secured.resolveGlobal(signedOut, u('/register')), isNull);
+      expect(secured.resolveGlobal(signedOut, u('/legal/terms')), isNull);
+    });
+
+    test('keeps holding unknown sessions on the splash', () {
+      expect(
+        secured.resolveGlobal(unknown, u('/orders')),
+        '/splash?from=%2Forders',
+      );
+      expect(secured.resolveGlobal(unknown, u('/splash')), isNull);
+      expect(secured.resolveGlobal(unknown, u('/legal')), isNull);
+    });
+
+    test('returns final locations', () {
+      // Leaving the splash: straight to the sign-in page when needed.
+      expect(
+        secured.resolveGlobal(signedOut, u('/splash?from=%2Forders')),
+        '/login?from=%2Forders',
+      );
+      expect(
+        secured.resolveGlobal(signedOut, u('/splash?from=%2Fregister')),
+        '/register',
+      );
+      expect(secured.resolveGlobal(signedOut, u('/splash')), '/login');
+      expect(
+        secured.resolveGlobal(signedIn, u('/splash?from=%2Forders')),
+        '/orders',
+      );
+      // Signed-in users lacking the requirement never see the target.
+      expect(
+        staffOnly.resolveGlobal(signedIn, u('/splash?from=%2Forders')),
+        '/unauthorized',
+      );
+      expect(
+        staffOnly.resolveGlobal(signedIn, u('/login?from=%2Forders')),
+        '/unauthorized',
+      );
+      expect(
+        staffOnly.resolveGlobal(staff, u('/login?from=%2Forders')),
+        '/orders',
+      );
+    });
+
+    test('sends signed-in users lacking it to the unauthorized route', () {
+      expect(staffOnly.resolveGlobal(signedIn, u('/orders')), '/unauthorized');
+      expect(staffOnly.resolveGlobal(signedIn, u('/unauthorized')), isNull);
+      expect(staffOnly.resolveGlobal(signedIn, u('/Unauthorized/')), isNull);
+      expect(
+        staffOnly.resolveGlobal(signedOut, u('/unauthorized')),
+        '/login?from=%2Funauthorized',
+        reason: 'the unauthorized page is reserved to signed-in users',
+      );
+    });
+
+    test('never exempts home, even when it is the unauthorized route', () {
+      const homeIsUnauthorized = SymphonyRedirectResolver(
+        paths: SymphonyRoutePaths(unauthorized: '/'),
+        defaultAccess: AccessRequirement(roles: <String>{'staff'}),
+      );
+      expect(homeIsUnauthorized.resolveGlobal(signedIn, u('/')), '/login');
+      expect(
+        homeIsUnauthorized.resolveGlobal(signedIn, u('/orders')),
+        '/',
+      );
+      const noUnauthorized = SymphonyRedirectResolver(
+        paths: SymphonyRoutePaths(unauthorized: null),
+        defaultAccess: AccessRequirement(roles: <String>{'staff'}),
+      );
+      expect(noUnauthorized.resolveGlobal(signedIn, u('/orders')), '/');
+      expect(
+        noUnauthorized.resolveGlobal(signedIn, u('/login')),
+        isNull,
+        reason: 'no page left: go_router then reports a redirect loop',
+      );
+    });
+
+    test('takes part in value semantics', () {
+      const a = SymphonyRedirectResolver(
+        defaultAccess: AccessRequirement.authenticated,
+      );
+      const b = SymphonyRedirectResolver(
+        defaultAccess: AccessRequirement(),
+      );
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
+      expect(a, isNot(const SymphonyRedirectResolver()));
+      expect(a, isNot(staffOnly));
+      expect(a.toString(), contains('defaultAccess'));
+    });
+  });
+
   group('value semantics', () {
     test('equality and hashCode', () {
       const a = SymphonyRedirectResolver(publicPaths: <String>{'/a', '/b'});

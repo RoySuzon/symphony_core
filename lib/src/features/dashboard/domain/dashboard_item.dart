@@ -17,7 +17,9 @@ enum DashboardNavigation {
   /// Imperative navigation with `GoRouter.push` / `GoRouter.pushNamed`.
   ///
   /// The destination is stacked on top of the dashboard, so popping it always
-  /// returns to the dashboard, whatever the route hierarchy is.
+  /// returns to the dashboard, whatever the route hierarchy is. With a router
+  /// built by `SymphonyRouter`, a pushed destination whose guard no longer
+  /// lets the user in (sign-out, revoked role or permission) is closed.
   push,
 }
 

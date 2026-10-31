@@ -24,6 +24,19 @@ import 'symphony_route_paths.dart';
 /// * Signed-in users on a guest-only route (the login route included) go to
 ///   the remembered location (or home).
 ///
+/// ### Default requirement ([defaultAccess], secure by default)
+/// When [defaultAccess] is set, [resolveGlobal] also enforces it on every
+/// location except the splash route, the guest-only routes (the login route
+/// included) and the [publicPaths] (see [isDefaultAccessExempt]), exactly
+/// like a guarded route would: signed-out users go to
+/// `login?from=<location>`, signed-in users who do not satisfy it go to
+/// [SymphonyRoutePaths.unauthorized] (else home). Plain `GoRoute`s are then
+/// protected without wrapping each of them in a `GuardedRoute`. The
+/// unauthorized route stays reachable for signed-in users unless it is also
+/// the home route. The locations returned by [resolveGlobal] already satisfy
+/// the requirement (they are final), because some go_router releases do not
+/// evaluate the global redirect again on the location it returns.
+///
 /// ### Route rules ([resolveGuard], [resolveGuest])
 /// * Requirement not met and the status unknown: `splash?from=<location>`.
 /// * Requirement not met and signed out: `login?from=<location>`.
@@ -44,20 +57,70 @@ class SymphonyRedirectResolver {
   /// [publicPaths] are reachable without waiting for the session restoration
   /// (for example `/terms` or `/reset-password`). Each entry also covers its
   /// descendants. Route guards still apply to them.
+  ///
+  /// [defaultAccess] is the requirement enforced on every location that is
+  /// not exempt (see [isDefaultAccessExempt]); `null` enforces nothing.
   const SymphonyRedirectResolver({
     this.paths = const SymphonyRoutePaths(),
     this.publicPaths = const <String>{},
+    this.defaultAccess,
   });
 
   /// Locations of the splash, login, home and unauthorized routes.
   final SymphonyRoutePaths paths;
 
   /// Paths never redirected to the splash route while the status is unknown.
+  ///
+  /// They are also exempt from [defaultAccess].
   final Set<String> publicPaths;
+
+  /// Requirement that [resolveGlobal] enforces on every location that is not
+  /// exempt (see [isDefaultAccessExempt]), so that plain `GoRoute`s are
+  /// protected without being wrapped in a `GuardedRoute`.
+  ///
+  /// `null` (the default) enforces nothing: only guarded routes are
+  /// protected. Route guards apply on top of it; they cannot relax it, so
+  /// list pages open to everybody in [publicPaths].
+  final AccessRequirement? defaultAccess;
 
   /// Whether [path] is one of [publicPaths] (or below one of them).
   bool isPublicPath(String path) => publicPaths
       .any((String entry) => SymphonyRoutePaths.matchesPath(path, entry));
+
+  /// Whether [path] is exempt from [defaultAccess]: the splash route, the
+  /// guest-only routes (the login route included) and the [publicPaths],
+  /// each with its descendants.
+  bool isDefaultAccessExempt(String path) {
+    final normalized = SymphonyRoutePaths.normalizePath(path);
+    return paths.isSplash(normalized) ||
+        paths.isGuestOnly(normalized) ||
+        isPublicPath(normalized);
+  }
+
+  /// Rule of [defaultAccess] for [location] (`GoRouterState.uri`).
+  ///
+  /// Returns `null` when there is no default requirement, when the location
+  /// is exempt (see [isDefaultAccessExempt]) or when [access] satisfies the
+  /// requirement. Otherwise returns where to send the user, like
+  /// [resolveGuard]: the splash route while the status is unknown,
+  /// `login?from=<location>` when signed out, the unauthorized route (else
+  /// home) when signed in. Signed-in users may always open the unauthorized
+  /// route itself, unless it is also the home route.
+  String? resolveDefaultAccess(AccessContext access, Uri location) {
+    final requirement = defaultAccess;
+    if (requirement == null || requirement.isSatisfiedBy(access)) return null;
+    final path = SymphonyRoutePaths.normalizePath(location.path);
+    if (isDefaultAccessExempt(path)) return null;
+    final unauthorized = paths.unauthorized;
+    if (access.isAuthenticated &&
+        unauthorized != null &&
+        _isSamePath(unauthorized, path) &&
+        !_isSamePath(paths.home, path)) {
+      // Denied users are sent there: it must stay reachable for them.
+      return null;
+    }
+    return resolveGuard(access, location, requirement: requirement);
+  }
 
   /// The in-app location of [uri]: its path, query and fragment, without
   /// scheme or authority.
@@ -123,8 +186,26 @@ class SymphonyRedirectResolver {
   /// Global rule evaluated before any route-level guard.
   ///
   /// [location] is the requested URI (`GoRouterState.uri`). See the class
-  /// documentation for the rules.
+  /// documentation for the rules. With a [defaultAccess], the returned
+  /// location satisfies it as well (it is final).
   String? resolveGlobal(AccessContext access, Uri location) {
+    final target = _resolveBuiltIn(access, location);
+    if (target == null) return resolveDefaultAccess(access, location);
+    if (defaultAccess == null) return target;
+    final targetUri = Uri.tryParse(target);
+    if (targetUri == null) return target;
+    final finalTarget = resolveDefaultAccess(access, targetUri);
+    if (finalTarget == null) return target;
+    // Only possible with a misconfiguration (no page left for denied users):
+    // staying is then the same as redirecting to the current location.
+    final finalUri = Uri.tryParse(finalTarget);
+    final isCurrent = finalUri != null &&
+        finalUri.query == location.query &&
+        _isSamePath(finalTarget, location.path);
+    return isCurrent ? null : finalTarget;
+  }
+
+  String? _resolveBuiltIn(AccessContext access, Uri location) {
     final path = SymphonyRoutePaths.normalizePath(location.path);
     if (access.isUnknown) {
       if (paths.isSplash(path) || isPublicPath(path)) return null;
@@ -236,12 +317,18 @@ class SymphonyRedirectResolver {
   bool operator ==(Object other) =>
       other is SymphonyRedirectResolver &&
       other.paths == paths &&
-      setEquals(other.publicPaths, publicPaths);
+      setEquals(other.publicPaths, publicPaths) &&
+      other.defaultAccess == defaultAccess;
 
   @override
-  int get hashCode => Object.hash(paths, Object.hashAllUnordered(publicPaths));
+  int get hashCode => Object.hash(
+        paths,
+        Object.hashAllUnordered(publicPaths),
+        defaultAccess,
+      );
 
   @override
   String toString() =>
-      'SymphonyRedirectResolver(paths: $paths, publicPaths: $publicPaths)';
+      'SymphonyRedirectResolver(paths: $paths, publicPaths: $publicPaths, '
+      'defaultAccess: $defaultAccess)';
 }

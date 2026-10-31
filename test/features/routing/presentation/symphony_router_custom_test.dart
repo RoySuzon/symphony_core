@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +26,7 @@ List<RouteBase> customRoutes() => <RouteBase>[
       GoRoute(path: '/auth/sign-in', builder: testPage('sign-in')),
       GoRoute(path: '/auth/register', builder: testPage('register')),
       GoRoute(path: '/forbidden', builder: testPage('forbidden')),
+      GoRoute(path: '/catalog', builder: testPage('catalog')),
       GuardedRoute(path: '/dashboard', builder: testPage('dashboard')),
       GuardedRoute(
         path: '/admin',
@@ -97,6 +100,72 @@ void main() {
 
       expect(locationOf(router), '/dashboard');
       expect(findPage('dashboard'), findsOneWidget);
+
+      await unmount(tester);
+      router.dispose();
+    });
+
+    testWidgets('applies the default requirement (secure by default)',
+        (tester) async {
+      final access = ValueNotifier<AccessContext>(AccessContext.unknown);
+      addTearDown(access.dispose);
+      final router = SymphonyRouter.custom(
+        readAccess: () => access.value,
+        refreshListenable: access,
+        routes: customRoutes(),
+        paths: customPaths,
+        defaultAccess: AccessRequirement.authenticated,
+        initialLocation: '/catalog',
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(locationOf(router), '/boot?next=%2Fcatalog');
+
+      access.value = signedOut;
+      await tester.pumpAndSettle();
+      expect(locationOf(router), '/auth/sign-in?next=%2Fcatalog');
+
+      router.go('/auth/register');
+      await tester.pumpAndSettle();
+      expect(findPage('register'), findsOneWidget);
+
+      access.value = signedIn();
+      router.go('/catalog');
+      await tester.pumpAndSettle();
+      expect(findPage('catalog'), findsOneWidget);
+
+      await unmount(tester);
+      router.dispose();
+    });
+
+    testWidgets('closes pushed pages the user may no longer see',
+        (tester) async {
+      final access = ValueNotifier<AccessContext>(
+        signedIn(roles: <String>{'admin'}),
+      );
+      addTearDown(access.dispose);
+      final router = SymphonyRouter.custom(
+        readAccess: () => access.value,
+        refreshListenable: access,
+        routes: customRoutes(),
+        paths: customPaths,
+        initialLocation: '/catalog',
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      unawaited(router.push<Object?>('/admin/users'));
+      await tester.pumpAndSettle();
+      expect(findPage('admin-users'), findsOneWidget);
+
+      access.value = signedIn();
+      await tester.pumpAndSettle();
+
+      expect(locationOf(router), '/forbidden');
+      expect(
+        find.text('page:admin-users', skipOffstage: false),
+        findsNothing,
+      );
 
       await unmount(tester);
       router.dispose();
@@ -215,6 +284,44 @@ void main() {
       container.read(testAccessProvider.notifier).set(signedIn());
       await tester.pumpAndSettle();
       expect(locationOf(router), '/forbidden');
+    });
+
+    testWidgets('applies the default requirement', (tester) async {
+      final routerProvider = Provider<GoRouter>((ref) {
+        final router = GoRouter(
+          routes: customRoutes(),
+          initialLocation: '/catalog',
+          redirect: SymphonyRouter.buildRedirect(
+            readAccess: () => ref.read(accessContextProvider),
+            paths: customPaths,
+            defaultAccess: AccessRequirement.authenticated,
+          ),
+          refreshListenable: SymphonyRouter.accessRefreshListenable(ref),
+        );
+        ref.onDispose(router.dispose);
+        return router;
+      });
+      await tester.pumpWidget(
+        routingTestScope(
+          initialAccess: signedOut,
+          child: Consumer(
+            builder: (context, ref, child) =>
+                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(MaterialApp)),
+        listen: false,
+      );
+      final router = container.read(routerProvider);
+      expect(locationOf(router), '/auth/sign-in?next=%2Fcatalog');
+
+      container.read(testAccessProvider.notifier).set(signedIn());
+      await tester.pumpAndSettle();
+      expect(locationOf(router), '/catalog');
+      expect(findPage('catalog'), findsOneWidget);
     });
   });
 

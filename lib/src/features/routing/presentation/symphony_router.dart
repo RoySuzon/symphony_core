@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/access/access_context.dart';
+import '../../../core/access/access_requirement.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../domain/redirect_logic.dart';
 import '../domain/symphony_route_paths.dart';
+import 'guarded_route.dart';
 import 'symphony_route_scope.dart';
 import 'widgets/symphony_route_error_screen.dart';
 
@@ -65,6 +67,16 @@ import 'widgets/symphony_route_error_screen.dart';
 /// once and refreshed — never rebuilt — when the access changes. Do not
 /// `ref.watch` other providers in the router provider either, or the
 /// navigation stack would be reset when they change.
+///
+/// Secure by default: pass `defaultAccess: AccessRequirement.authenticated`
+/// (or a role/permission requirement) to require it on every location except
+/// the splash route, the guest-only routes and the `publicPaths`, so plain
+/// `GoRoute`s are protected as well.
+///
+/// When the access changes, the pages opened with `GoRouter.push` are checked
+/// again too (go_router 13 and later only re-evaluate the redirects of the
+/// location below them): a pushed page the user may no longer see is closed
+/// and the user is sent where its guard says (sign-in, unauthorized...).
 abstract final class SymphonyRouter {
   /// Creates a [GoRouter] driven by `accessContextProvider`.
   ///
@@ -90,6 +102,22 @@ abstract final class SymphonyRouter {
   ///   status (splash) resolves without extra wiring. The restoration is
   ///   idempotent, so a splash page restoring the session as well is
   ///   harmless. Errors are reported through [FlutterError.reportError].
+  /// * [defaultAccess] makes the router secure by default. When set, every
+  ///   location except the splash route, the guest-only routes (the login
+  ///   route included) and the [publicPaths] requires it, so plain
+  ///   `GoRoute`s are protected without wrapping each of them in a
+  ///   `GuardedRoute`: signed-out users go to `login?from=<location>`,
+  ///   signed-in users who do not satisfy it go to
+  ///   [SymphonyRoutePaths.unauthorized] (else home), which stays reachable
+  ///   for them. Route guards add their own requirements on top of it; list
+  ///   the pages open to everybody in [publicPaths], and the guest pages
+  ///   other than the login route (registration, password recovery...) in
+  ///   [SymphonyRoutePaths.guestOnlyPaths] — a `GuestRoute` alone does not
+  ///   exempt its page, the global redirect only knows locations. With a
+  ///   role or permission requirement keep [SymphonyRoutePaths.unauthorized]
+  ///   set: without it denied users have no page left and go_router reports
+  ///   a redirect loop. `null` (the default) only protects guarded routes.
+  ///   See [SymphonyRedirectResolver.defaultAccess].
   /// * [initialLocation], [navigatorKey], [observers],
   ///   [debugLogDiagnostics], [redirectLimit] and [restorationScopeId] are
   ///   forwarded to [GoRouter].
@@ -108,6 +136,7 @@ abstract final class SymphonyRouter {
     bool restoreSessionOnStart = true,
     Listenable? refreshListenable,
     String? restorationScopeId,
+    AccessRequirement? defaultAccess,
   }) {
     final accessChanges = _listenAccess(ref);
     final router = custom(
@@ -126,6 +155,7 @@ abstract final class SymphonyRouter {
       debugLogDiagnostics: debugLogDiagnostics,
       redirectLimit: redirectLimit,
       restorationScopeId: restorationScopeId,
+      defaultAccess: defaultAccess,
     );
     var disposed = false;
     ref.onDispose(() {
@@ -161,7 +191,8 @@ abstract final class SymphonyRouter {
   /// `ProviderScope` is needed.
   ///
   /// The caller owns the returned router and must `dispose` it. Other
-  /// parameters behave like in [create].
+  /// parameters (including the secure-by-default [defaultAccess]) behave
+  /// like in [create].
   static GoRouter custom({
     required AccessContext Function() readAccess,
     required Listenable refreshListenable,
@@ -176,6 +207,7 @@ abstract final class SymphonyRouter {
     bool debugLogDiagnostics = false,
     int redirectLimit = 5,
     String? restorationScopeId,
+    AccessRequirement? defaultAccess,
   }) {
     return GoRouter(
       routes: routes,
@@ -185,6 +217,7 @@ abstract final class SymphonyRouter {
         paths: paths,
         publicPaths: publicPaths,
         redirect: redirect,
+        defaultAccess: defaultAccess,
       ),
       refreshListenable: refreshListenable,
       errorBuilder:
@@ -211,28 +244,59 @@ abstract final class SymphonyRouter {
   /// ```
   ///
   /// The returned redirect applies the rules of
-  /// [SymphonyRedirectResolver.resolveGlobal], then the application
-  /// [redirect]. It also provides [readAccess] and [paths] to the
-  /// `GuardedRoute`/`GuestRoute` redirects of the same router.
+  /// [SymphonyRedirectResolver.resolveGlobal] (including the optional
+  /// secure-by-default [defaultAccess], see [create]), re-checks the pages
+  /// pushed on top of the displayed location when the router refreshes, then
+  /// applies the application [redirect]. With a [defaultAccess], the
+  /// location returned by [redirect] must satisfy it as well. It also
+  /// provides [readAccess] and [paths] to the `GuardedRoute`/`GuestRoute`
+  /// redirects of the same router.
   static GoRouterRedirect buildRedirect({
     required AccessContext Function() readAccess,
     SymphonyRoutePaths paths = const SymphonyRoutePaths(),
     Set<String> publicPaths = const <String>{},
     GoRouterRedirect? redirect,
+    AccessRequirement? defaultAccess,
   }) {
     assert(_debugCheckConfiguration(paths, publicPaths));
     final resolver = SymphonyRedirectResolver(
       paths: paths,
       publicPaths: publicPaths,
+      defaultAccess: defaultAccess,
     );
     final scope =
         SymphonyRouteScope(readAccess: readAccess, resolver: resolver);
+    final pushedPages = _PushedPagesGuard(resolver);
     return (BuildContext context, GoRouterState state) {
       SymphonyRouteScope.bind(context, scope);
-      final target = resolver.resolveGlobal(readAccess(), state.uri);
+      final access = readAccess();
+      final target = resolver.resolveGlobal(access, state.uri) ??
+          pushedPages.check(context, state.uri, access);
       if (target != null) return target;
-      return redirect?.call(context, state);
+      final appTarget = redirect?.call(context, state);
+      if (defaultAccess == null) return appTarget;
+      return _finalAppTarget(appTarget, resolver, readAccess);
     };
+  }
+
+  /// Applies the global rules to the location returned by the application
+  /// redirect, so that it satisfies the default requirement even on the
+  /// go_router releases that do not evaluate the global redirect again on
+  /// the location it returns.
+  static FutureOr<String?> _finalAppTarget(
+    FutureOr<String?> appTarget,
+    SymphonyRedirectResolver resolver,
+    AccessContext Function() readAccess,
+  ) {
+    String? finalTarget(String? location) {
+      if (location == null) return null;
+      final uri = Uri.tryParse(location);
+      if (uri == null) return location;
+      return resolver.resolveGlobal(readAccess(), uri) ?? location;
+    }
+
+    if (appTarget is Future<String?>) return appTarget.then(finalTarget);
+    return finalTarget(appTarget);
   }
 
   /// A [Listenable] notifying whenever `accessContextProvider` changes, to
@@ -324,4 +388,133 @@ abstract final class SymphonyRouter {
 /// Notifies the router that the access snapshot changed.
 class _AccessChangeNotifier extends ChangeNotifier {
   void notifyAccessChanged() => notifyListeners();
+}
+
+/// Re-checks the pages pushed on top of the displayed location when the
+/// router refreshes (for example after a sign-out or a role change).
+///
+/// On a refresh go_router 13 and later only evaluate the redirects of the
+/// base location: pages opened with `GoRouter.push` would stay displayed
+/// after the user lost access to them. go_router 10 evaluates their route
+/// redirects, but against the base location. This guard runs in the global
+/// redirect and applies the global rules and the `GuardedRoute`/`GuestRoute`
+/// guards to every pushed location, top first. The first one that redirects
+/// replaces the whole stack.
+///
+/// It only uses the go_router API common to 10.0 and 18.x: the redirect
+/// context is the `Router` element, whose delegate exposes the displayed
+/// match list.
+class _PushedPagesGuard {
+  _PushedPagesGuard(this.resolver);
+
+  final SymphonyRedirectResolver resolver;
+
+  /// Whether a navigation replacing the stack is already scheduled.
+  bool _replacing = false;
+
+  /// Where to send the user because a pushed page of the displayed stack is
+  /// no longer allowed, or `null`. Only acts when [location] is the
+  /// displayed base location, which is the case on refreshes.
+  String? check(
+    BuildContext routerContext,
+    Uri location,
+    AccessContext access,
+  ) {
+    final Widget widget = routerContext.widget;
+    if (widget is! Router<Object?>) return null;
+    final RouterDelegate<Object?> delegate = widget.routerDelegate;
+    if (delegate is! GoRouterDelegate) return null;
+    final RouteMatchList configuration = delegate.currentConfiguration;
+    final displayed = _canonical(location);
+    if (_canonical(configuration.uri) != displayed) return null;
+    for (final pushed in _pushedMatchLists(configuration)) {
+      final target =
+          resolver.resolveGlobal(access, pushed.uri) ?? _guard(pushed, access);
+      if (target == null) continue;
+      final targetUri = Uri.tryParse(target);
+      if (targetUri == null || _canonical(targetUri) != displayed) {
+        return target;
+      }
+      // The destination is the displayed location itself: a refresh
+      // resolving to the current location keeps the stack (and the pushed
+      // pages), so navigate to it explicitly to replace the stack.
+      _replaceStack(routerContext, widget, target);
+      return null;
+    }
+    return null;
+  }
+
+  /// The redirect of the first `GuardedRoute`/`GuestRoute` of [pushed] that
+  /// does not let [access] through, parent routes first.
+  String? _guard(RouteMatchList pushed, AccessContext access) {
+    for (final RouteBase route in pushed.routes) {
+      final String? target;
+      if (route is GuardedRoute) {
+        target = resolver.resolveGuard(
+          access,
+          pushed.uri,
+          requirement: route.access,
+          deniedRedirect: route.deniedRedirect,
+        );
+      } else if (route is GuestRoute) {
+        target = resolver.resolveGuest(
+          access,
+          pushed.uri,
+          authenticatedRedirect: route.authenticatedRedirect,
+        );
+      } else {
+        continue;
+      }
+      if (target != null) return target;
+    }
+    return null;
+  }
+
+  void _replaceStack(
+    BuildContext routerContext,
+    Router<Object?> router,
+    String location,
+  ) {
+    final provider = router.routeInformationProvider;
+    if (_replacing || provider is! GoRouteInformationProvider) return;
+    _replacing = true;
+    scheduleMicrotask(() {
+      _replacing = false;
+      if (!routerContext.mounted) return;
+      final Widget current = routerContext.widget;
+      if (current is Router<Object?> &&
+          identical(current.routeInformationProvider, provider)) {
+        provider.go(location);
+      }
+    });
+  }
+
+  /// The match lists of the pages pushed on top of the base location of
+  /// [configuration], top first. Pushed pages are the last matches, possibly
+  /// nested in a shell route match (go_router 13 and later), so they are
+  /// peeled off the top with `last`/`remove`, like pops do.
+  static List<RouteMatchList> _pushedMatchLists(RouteMatchList configuration) {
+    final pushed = <RouteMatchList>[];
+    var remaining = configuration;
+    try {
+      while (remaining.isNotEmpty) {
+        final RouteMatch top = remaining.last;
+        if (top is! ImperativeRouteMatch) break;
+        pushed.add(top.matches);
+        final next = remaining.remove(top);
+        if (identical(next, remaining)) break;
+        remaining = next;
+      }
+    } on StateError {
+      // A shell match without sub-routes: nothing more is pushed on it.
+    }
+    return pushed;
+  }
+
+  /// [uri] as go_router compares locations: leading slash, no trailing
+  /// slash.
+  static String _canonical(Uri uri) {
+    final path = SymphonyRoutePaths.normalizePath(uri.path);
+    return (path == uri.path ? uri : uri.replace(path: path)).toString();
+  }
 }

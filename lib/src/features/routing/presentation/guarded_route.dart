@@ -50,6 +50,12 @@ import 'symphony_route_scope.dart';
 /// `refreshListenable: SymphonyRouter.accessRefreshListenable(ref)` so the
 /// guards also re-run when the access changes.
 ///
+/// When the access changes, go_router 13 and later only re-run the redirects
+/// of the location below the pages opened with `GoRouter.push`. The global
+/// redirect of `SymphonyRouter` therefore re-checks the guards of the pushed
+/// pages as well and closes those the user may no longer see; inside any
+/// other GoRouter such pages stay displayed until they are popped.
+///
 /// go_router only evaluates redirects of `GoRoute`s on its oldest supported
 /// versions, so guard the routes inside a `ShellRoute` (or wrap the shell
 /// with `AccessGate`) rather than the shell itself.

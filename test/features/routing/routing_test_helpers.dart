@@ -141,7 +141,7 @@ class RouterHarness {
 }
 
 /// Pumps an app whose router is `SymphonyRouter.create(ref, ...)` with the
-/// given options, below a `ProviderScope` using [routingTestOverrides].
+/// given options, below the `ProviderScope` of [routingTestScope].
 Future<RouterHarness> pumpSymphonyRouter(
   WidgetTester tester, {
   required List<RouteBase> routes,
@@ -152,6 +152,7 @@ Future<RouterHarness> pumpSymphonyRouter(
   GoRouterRedirect? redirect,
   Listenable? refreshListenable,
   bool restoreSessionOnStart = true,
+  AccessRequirement? defaultAccess,
 }) async {
   final routerProvider = Provider<GoRouter>(
     (ref) => SymphonyRouter.create(
@@ -163,6 +164,7 @@ Future<RouterHarness> pumpSymphonyRouter(
       redirect: redirect,
       refreshListenable: refreshListenable,
       restoreSessionOnStart: restoreSessionOnStart,
+      defaultAccess: defaultAccess,
     ),
   );
   await tester.pumpWidget(

@@ -20,9 +20,9 @@ import '../domain/dashboard_item.dart';
 ///
 /// Returns `false` without doing anything when the item has no destination.
 /// When it has one that cannot be opened (no GoRouter and no usable
-/// `Navigator` route), the problem is reported with
-/// [FlutterError.reportError] — the app keeps running — and `false` is
-/// returned. Apps with another routing solution handle navigation
+/// `Navigator` route, for example a location that no named route handles),
+/// the problem is reported with [FlutterError.reportError] — the app keeps
+/// running, nothing is thrown — and `false` is returned. Apps with another routing solution handle navigation
 /// themselves through the dashboard's `onItemSelected` callback.
 ///
 /// Errors raised by the router itself (for example an unknown route name)
@@ -68,31 +68,56 @@ bool navigateToDashboardItem(BuildContext context, DashboardItem item) {
 
   final navigator = Navigator.maybeOf(context);
   if (navigator != null && location != null) {
-    unawaited(navigator.pushNamed<Object?>(location, arguments: item.extra));
+    final Future<Object?> pushed;
+    try {
+      pushed = navigator.pushNamed<Object?>(location, arguments: item.extra);
+    } on Object catch (error, stackTrace) {
+      // The Navigator throws (before changing anything) when neither its
+      // onGenerateRoute nor its onUnknownRoute provides a route.
+      _reportUnopenable(
+        item,
+        'No GoRouter was found above the dashboard and the Navigator could '
+        'not open "$location" as a named route: $error',
+        stackTrace,
+      );
+      return false;
+    }
+    unawaited(pushed);
     return true;
   }
 
+  _reportUnopenable(
+    item,
+    navigator == null
+        ? 'No GoRouter and no Navigator were found above the dashboard.'
+        : 'No GoRouter was found above the dashboard and the item has '
+            'no route location (a routeName requires GoRouter).',
+    null,
+  );
+  return false;
+}
+
+void _reportUnopenable(
+  DashboardItem item,
+  String reason,
+  StackTrace? stackTrace,
+) {
   FlutterError.reportError(
     FlutterErrorDetails(
       exception: FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary(
           'Cannot open the destination of the dashboard item "${item.id}".',
         ),
-        ErrorDescription(
-          navigator == null
-              ? 'No GoRouter and no Navigator were found above the dashboard.'
-              : 'No GoRouter was found above the dashboard and the item has '
-                  'no route location (a routeName requires GoRouter).',
-        ),
+        ErrorDescription(reason),
         ErrorHint(
           'Use MaterialApp.router with a GoRouter, give the item a route '
           'registered as a Navigator named route, or handle the navigation '
           'with the onItemSelected callback of the dashboard.',
         ),
       ]),
+      stack: stackTrace,
       library: 'symphony_core',
       context: ErrorDescription('while opening a dashboard item'),
     ),
   );
-  return false;
 }

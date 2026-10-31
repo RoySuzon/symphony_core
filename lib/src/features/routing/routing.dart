@@ -3,7 +3,8 @@
 ///
 /// * [SymphonyRouter] builds a `GoRouter` wired to the authentication state
 ///   (splash while the session is restored, sign-in redirects returning to
-///   the requested page, guest-only pages, error page).
+///   the requested page, guest-only pages, error page), optionally secure by
+///   default (`defaultAccess` protects every page that is not public).
 /// * [GuardedRoute] protects a route and its nested routes with an
 ///   `AccessRequirement` (authentication, roles, permissions, predicate).
 /// * [GuestRoute] reserves a route to signed-out users (login, register...).
