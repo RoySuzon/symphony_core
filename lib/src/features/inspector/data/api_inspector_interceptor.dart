@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../networking/data/interceptors/interceptor_support.dart';
 import '../../networking/domain/api_request_options.dart';
 import '../domain/api_call_form_data.dart';
 import '../domain/api_call_record.dart';
@@ -31,11 +32,17 @@ import 'api_inspector.dart';
 /// stays pending in the inspector. When the same request is sent again (a
 /// retry or a token refresh) while its previous attempt is still pending,
 /// that attempt is closed with [retriedCallMessage].
+///
+/// Headers named in [sensitiveHeaders] are always masked (with the mask of
+/// the inspector's redactor), even when the inspector's `LogRedactor` does
+/// not consider their names sensitive; `ApiClient` passes the header that
+/// carries the access token (`SymphonyConfig.authHeaderName`).
 class ApiInspectorInterceptor extends Interceptor {
   /// Creates an interceptor feeding [inspector].
   ApiInspectorInterceptor(
     this.inspector, {
     this.retriedCallMessage = defaultRetriedCallMessage,
+    this.sensitiveHeaders = const <String>{},
   });
 
   /// Key of `RequestOptions.extra` holding the inspector call id.
@@ -52,6 +59,10 @@ class ApiInspectorInterceptor extends Interceptor {
   /// Error recorded on an attempt superseded by a new attempt of the same
   /// request (see the class documentation).
   final String retriedCallMessage;
+
+  /// Names of request headers (case-insensitive) whose values are always
+  /// masked before they reach [inspector].
+  final Set<String> sensitiveHeaders;
 
   // Fallback when `RequestOptions.extra` is unmodifiable.
   final Expando<int> _callIds = Expando<int>('symphony.inspectorId');
@@ -114,8 +125,8 @@ class ApiInspectorInterceptor extends Interceptor {
           id,
           statusCode: response.statusCode,
           statusMessage: response.statusMessage,
-          requestHeaders: options.headers,
-          headers: response.headers.map,
+          requestHeaders: _requestHeaders(options),
+          headers: _masked(response.headers.map),
           body:
               inspector.captureResponseBodies ? _responseBody(response) : null,
           uri: options.uri,
@@ -139,8 +150,8 @@ class ApiInspectorInterceptor extends Interceptor {
           error: describeError(err),
           statusCode: response?.statusCode,
           statusMessage: response?.statusMessage,
-          requestHeaders: options.headers,
-          headers: response?.headers.map,
+          requestHeaders: _requestHeaders(options),
+          headers: response == null ? null : _masked(response.headers.map),
           body: response != null && inspector.captureResponseBodies
               ? _responseBody(response)
               : null,
@@ -161,7 +172,7 @@ class ApiInspectorInterceptor extends Interceptor {
         inspector.failCall(
           previous,
           error: retriedCallMessage,
-          requestHeaders: options.headers,
+          requestHeaders: _requestHeaders(options),
         );
       }
       _forget(options);
@@ -173,11 +184,17 @@ class ApiInspectorInterceptor extends Interceptor {
     final id = inspector.startCall(
       method: options.method,
       uri: options.uri,
-      headers: options.headers,
+      headers: _requestHeaders(options),
       body: inspector.captureRequestBodies ? _requestBody(options) : null,
     );
     if (id != null) _remember(options, id);
   }
+
+  Map<String, dynamic> _requestHeaders(RequestOptions options) =>
+      _masked(options.headers);
+
+  Map<String, dynamic> _masked(Map<String, dynamic> headers) =>
+      maskHeaders(headers, sensitiveHeaders, inspector.redactor.mask);
 
   int? _idOf(RequestOptions options) => callIdOf(options) ?? _callIds[options];
 

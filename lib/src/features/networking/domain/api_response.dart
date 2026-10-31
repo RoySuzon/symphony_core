@@ -53,6 +53,29 @@ class ApiResponse<T> {
         requestUri: requestUri,
       );
 
+  /// Prints the status and the request URI without its user info, its
+  /// fragment and its query values (`?token=***`), which may carry
+  /// credentials.
   @override
-  String toString() => 'ApiResponse<$T>(status: $statusCode, uri: $requestUri)';
+  String toString() =>
+      'ApiResponse<$T>(status: $statusCode, uri: ${_describe(requestUri)})';
+
+  static String? _describe(Uri? uri) {
+    if (uri == null) return null;
+    final base = Uri(
+      scheme: uri.scheme.isEmpty ? null : uri.scheme,
+      host: uri.hasAuthority ? uri.host : null,
+      port: uri.hasPort ? uri.port : null,
+      path: uri.path,
+    ).toString();
+    if (!uri.hasQuery) return base;
+    try {
+      final names = uri.queryParametersAll.keys
+          .map((name) => '${Uri.encodeQueryComponent(name)}=***');
+      return '$base?${names.join('&')}';
+    } on Object {
+      // Undecodable query (invalid percent-encoding): hide it entirely.
+      return '$base?***';
+    }
+  }
 }

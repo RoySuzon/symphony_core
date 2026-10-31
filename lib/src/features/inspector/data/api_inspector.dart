@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/logging/log_redactor.dart';
+import '../../networking/data/interceptors/interceptor_support.dart';
 import '../domain/api_call_form_data.dart';
 import '../domain/api_call_record.dart';
 
@@ -125,7 +126,7 @@ class ApiInspector extends ChangeNotifier {
     final id = _nextId++;
     final trimmedMethod = method.trim();
     final formData = captureRequestBodies && body is ApiCallFormData
-        ? body.redact(redactor)
+        ? _storedFormData(body)
         : null;
     _calls.insert(
       0,
@@ -283,6 +284,27 @@ class ApiInspector extends ChangeNotifier {
 
   Uri _redactUri(Uri uri) => _text.redactUri(uri);
 
+  /// [body] redacted, with every field value truncated to [maxBodyLength] so
+  /// that a record never holds an unbounded multipart field.
+  ApiCallFormData _storedFormData(ApiCallFormData body) {
+    final redacted = body.redact(redactor);
+    return ApiCallFormData(
+      fields: List<MapEntry<String, String>>.unmodifiable(
+        <MapEntry<String, String>>[
+          for (final field in redacted.fields)
+            MapEntry<String, String>(field.key, _truncate(field.value)),
+        ],
+      ),
+      files: redacted.files,
+    );
+  }
+
+  String _truncate(String text) {
+    final max = maxBodyLength;
+    if (max < 0 || text.length <= max) return text;
+    return '${text.substring(0, max)}… [truncated ${text.length - max} chars]';
+  }
+
   String? _renderBody(Object? body) {
     final String text;
     try {
@@ -312,19 +334,11 @@ class ApiInspector extends ChangeNotifier {
       }
       return _text.redact(body, maxLength: maxBodyLength);
     }
-    if (body is Map || body is List || body is num || body is bool) {
-      return redactor.stringify(body, maxLength: maxBodyLength);
-    }
-    // Objects exposing `toJson()` are rendered like Dio's JSON transformer
-    // would send them; anything else is reduced to its type name so that a
+    // Maps, lists and objects exposing `toJson()` (also when nested) are
+    // rendered like Dio's JSON transformer would send them, so the redactor
+    // sees every field; anything else is reduced to its type name so that a
     // custom `toString()` can never leak a secret.
-    final Object? json;
-    try {
-      json = jsonDecode(jsonEncode(body));
-    } on Object {
-      return '[${body.runtimeType}]';
-    }
-    return redactor.stringify(json, maxLength: maxBodyLength);
+    return redactor.stringify(toLoggableJson(body), maxLength: maxBodyLength);
   }
 
   static Object? _decodeJson(String body) {

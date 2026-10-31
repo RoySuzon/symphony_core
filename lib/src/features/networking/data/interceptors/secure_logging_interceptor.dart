@@ -12,8 +12,11 @@ import 'interceptor_support.dart';
 /// Writes HTTP traffic to a [SymphonyLogger] without leaking secrets.
 ///
 /// Every value passes through [redactor] first: sensitive headers
-/// (`Authorization`, cookies, API keys...), query parameters and JSON /
-/// form fields (passwords, tokens...) are masked. Multipart bodies are
+/// (`Authorization`, cookies, API keys... plus every name in
+/// [sensitiveHeaders]), query parameters and JSON / form fields (passwords,
+/// tokens...) are masked. Bodies made of objects (request models, possibly
+/// nested in maps and lists) are logged through their `toJson()`, like Dio
+/// sends them, and never through `toString()`. Multipart bodies are
 /// summarised by field and file names only, binary bodies by their size, and
 /// long bodies are truncated to [maxBodyLength] characters. Underlying error
 /// objects are logged by type only, because their messages may contain
@@ -43,11 +46,13 @@ class SecureLoggingInterceptor extends Interceptor {
     this.requestLevel = LogLevel.debug,
     this.responseLevel = LogLevel.debug,
     this.errorLevel = LogLevel.warning,
+    this.sensitiveHeaders = const <String>{},
   });
 
   /// Creates a logging interceptor configured from [config]
   /// (`sensitiveKeys`, `logRequestBodies`, `logResponseBodies` and
-  /// `maxLoggedBodyLength`).
+  /// `maxLoggedBodyLength`). The header carrying the access token
+  /// (`authHeaderName`) is always masked, whatever its name.
   factory SecureLoggingInterceptor.fromConfig(
     SymphonyConfig config, {
     required SymphonyLogger logger,
@@ -60,6 +65,7 @@ class SecureLoggingInterceptor extends Interceptor {
         logResponseBodies: config.logResponseBodies,
         maxBodyLength: config.maxLoggedBodyLength,
         tag: tag,
+        sensitiveHeaders: <String>{config.authHeaderName},
       );
 
   /// Destination logger.
@@ -91,6 +97,11 @@ class SecureLoggingInterceptor extends Interceptor {
 
   /// Level of failed request entries.
   final LogLevel errorLevel;
+
+  /// Names of headers (case-insensitive) whose values are always masked, in
+  /// addition to those [redactor] considers sensitive — typically a custom
+  /// header carrying credentials, such as `SymphonyConfig.authHeaderName`.
+  final Set<String> sensitiveHeaders;
 
   static const String _startedAtKey = 'symphony.internal.logStartedAt';
   static final RegExp _urlEncodedPattern =
@@ -241,7 +252,9 @@ class SecureLoggingInterceptor extends Interceptor {
   void _writeHeaders(StringBuffer buffer, Map<String, dynamic> headers) {
     if (headers.isEmpty) return;
     buffer.write('\nheaders:');
-    redactor.redactHeaders(headers).forEach((name, value) {
+    redactor
+        .redactHeaders(maskHeaders(headers, sensitiveHeaders, redactor.mask))
+        .forEach((name, value) {
       buffer.write('\n  $name: $value');
     });
   }
@@ -268,8 +281,11 @@ class SecureLoggingInterceptor extends Interceptor {
       if (isForm && !trimmed.startsWith('{') && !trimmed.startsWith('[')) {
         return _describeUrlEncoded(trimmed);
       }
+      return redactor.stringify(data, maxLength: maxBodyLength);
     }
-    return redactor.stringify(data, maxLength: maxBodyLength);
+    // Maps, lists and models: redact their JSON form (what Dio sends), so
+    // that nested models are masked too and `toString()` is never logged.
+    return redactor.stringify(toLoggableJson(data), maxLength: maxBodyLength);
   }
 
   String _describeUrlEncoded(String body) {

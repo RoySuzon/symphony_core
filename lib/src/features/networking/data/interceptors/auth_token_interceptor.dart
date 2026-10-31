@@ -34,13 +34,19 @@ import 'interceptor_support.dart';
 ///   response is returned to the caller;
 /// * when the refresh yields no token, or the replayed request is rejected
 ///   again, `AuthTokenDelegate.onSessionExpired` is awaited (once for
-///   concurrent failures) and the error is propagated.
+///   concurrent failures) and the error is propagated;
+/// * a session that was signed out since the request was sent (no current
+///   token), or that is being expired, is never refreshed: the error is
+///   propagated (the request is only replayed when a different token, i.e. a
+///   new sign-in, is available).
 ///
 /// Requests issued from inside `refreshAccessToken` or `onSessionExpired`
-/// (for example a refresh or logout call) never trigger a refresh themselves
-/// and never wait for the refresh in progress, which rules out refresh loops
-/// and deadlocks even if such a call is not marked unauthenticated. Requests
-/// whose body is a `Stream` cannot be replayed and are never refreshed.
+/// (for example a refresh or logout call) while it runs never trigger a
+/// refresh themselves and never wait for the refresh in progress, which
+/// rules out refresh loops and deadlocks even if such a call is not marked
+/// unauthenticated. Work they schedule for later (timers, listeners...) is
+/// treated normally once the refresh or expiry is over. Requests whose body
+/// is a `Stream` cannot be replayed and are never refreshed.
 ///
 /// Errors thrown by the delegate are logged without their message (which may
 /// contain credentials) and treated as "no token".
@@ -87,7 +93,11 @@ class AuthTokenInterceptor extends Interceptor {
     return prefix.isEmpty ? token : '$prefix $token';
   }
 
-  bool get _inGuardedZone => Zone.current[_guardZoneKey] == true;
+  /// Whether the current zone belongs to a refresh or expiry still running.
+  bool get _inGuardedZone {
+    final guard = Zone.current[_guardZoneKey];
+    return guard is _FlowGuard && guard.active;
+  }
 
   @override
   Future<void> onRequest(
@@ -260,6 +270,9 @@ class AuthTokenInterceptor extends Interceptor {
   ) async {
     final pending = _refreshing;
     if (pending != null) return (await pending, true);
+    if (_expiring != null) {
+      return (await _tokenAfterExpiry(delegate, sentHeader), false);
+    }
 
     final generation = _generation;
     if (sentGeneration is int && sentGeneration < generation) {
@@ -270,16 +283,36 @@ class AuthTokenInterceptor extends Interceptor {
     final current = await _readToken(delegate);
     final started = _refreshing;
     if (started != null) return (await started, true);
+    if (_expiring != null) {
+      return (await _tokenAfterExpiry(delegate, sentHeader), false);
+    }
     if (_generation != generation) {
       // A refresh completed while the current token was being read.
       return (await _readToken(delegate), false);
     }
-    if (current != null && authorizationValue(current) != sentHeader) {
+    // Signed out since the request was sent: there is no session to refresh
+    // (refreshing could even resurrect it).
+    if (current == null) return (null, false);
+    if (authorizationValue(current) != sentHeader) {
       // The token changed since the request was sent (refreshed elsewhere or
       // a new sign-in): replay without refreshing again.
       return (current, false);
     }
     return (await _refreshOnce(delegate), true);
+  }
+
+  /// Waits for the session expiry in progress, then returns the token to
+  /// replay with: a token different from [sentHeader] (a new sign-in), or
+  /// `null`. The rejected session is never refreshed a second time.
+  Future<String?> _tokenAfterExpiry(
+    AuthTokenDelegate delegate,
+    String sentHeader,
+  ) async {
+    final expiring = _expiring;
+    if (expiring != null) await expiring;
+    final token = await _readToken(delegate);
+    if (token == null || authorizationValue(token) == sentHeader) return null;
+    return token;
   }
 
   Future<String?> _refreshOnce(AuthTokenDelegate delegate) {
@@ -344,11 +377,21 @@ class AuthTokenInterceptor extends Interceptor {
   }
 
   /// Runs [body] in a zone marking the requests it issues as part of the
-  /// refresh / expiry flow.
-  Future<T> _guarded<T>(Future<T> Function() body) => runZoned(
+  /// refresh / expiry flow. The mark is lifted when [body] completes, so
+  /// work it schedules for later (timers, listeners, streams...) is not
+  /// exempted from refreshing forever.
+  Future<T> _guarded<T>(Future<T> Function() body) async {
+    final guard = _FlowGuard();
+    try {
+      final result = await runZoned(
         body,
-        zoneValues: <Object?, Object?>{_guardZoneKey: true},
+        zoneValues: <Object?, Object?>{_guardZoneKey: guard},
       );
+      return result;
+    } finally {
+      guard.active = false;
+    }
+  }
 
   Future<String?> _readToken(AuthTokenDelegate delegate) async {
     try {
@@ -392,6 +435,12 @@ class AuthTokenInterceptor extends Interceptor {
       data: replayableBody(options.data),
     );
   }
+}
+
+/// Zone value marking a refresh / expiry flow of [AuthTokenInterceptor];
+/// [active] until that flow completes.
+class _FlowGuard {
+  bool active = true;
 }
 
 /// Outcome of [AuthTokenInterceptor._recover].

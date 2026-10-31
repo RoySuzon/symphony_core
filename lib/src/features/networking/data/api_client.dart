@@ -136,7 +136,11 @@ class ApiClient {
     _dio.interceptors.addAll(<Interceptor>[
       const _RequestTimeoutsInterceptor(),
       if (config.enableInspector && inspector != null)
-        ApiInspectorInterceptor(inspector),
+        ApiInspectorInterceptor(
+          inspector,
+          // The token header is masked whatever its name.
+          sensitiveHeaders: <String>{config.authHeaderName},
+        ),
       if (config.enableLogging)
         SecureLoggingInterceptor.fromConfig(config, logger: _logger),
       ..._customInterceptors,
