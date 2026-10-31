@@ -18,8 +18,8 @@ flutter run            # any platform: Android, iOS, web, Windows, macOS, Linux
 flutter test           # widget, integration and backend tests
 ```
 
-Supported toolchains are the package's: Flutter 3.10 → latest stable,
-Riverpod 2.4 → 3.x, go_router 10 → 18.
+Supported toolchains are the package's: Flutter 3.29 (Dart 3.7) → latest
+stable, Riverpod 3.x (`flutter_riverpod >=3.0.1`), go_router 10 → 18.
 
 ## Demo accounts
 
@@ -114,17 +114,17 @@ Key integration points:
   reference for writing a feature with `ApiClient`, decoders, `Result` and
   providers.
 
-### Riverpod 2 / 3 notes
+### Riverpod 3 notes
 
 * The data providers return `Result<T>` instead of throwing. Riverpod 3
   automatically retries providers that throw (and reports them as loading
-  meanwhile), which would delay error screens by many seconds; a `Result`
-  behaves identically on Riverpod 2.4 and 3.x.
+  meanwhile), which would delay error screens by many seconds.
   [`AsyncResultView`](lib/core/widgets/async_result_view.dart) renders them.
-* Override lists are passed as literals (`overrides: [...]`): Riverpod 3 no
-  longer exports the `Override` type from `flutter_riverpod.dart`.
-* Only APIs common to Riverpod 2.4 and 3.x are used (`Provider`,
-  `FutureProvider(.family)`, `StreamProvider`, `NotifierProvider`).
+* Override lists are passed as literals (`overrides: [...]`): Riverpod 3
+  exports the `Override` type from `package:flutter_riverpod/misc.dart`, not
+  from `flutter_riverpod.dart`.
+* The providers are plain `Provider`, `FutureProvider(.family)`,
+  `StreamProvider` and `NotifierProvider` (no code generation).
 
 ## Tests
 

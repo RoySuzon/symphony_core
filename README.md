@@ -15,8 +15,8 @@ The package builds on [Riverpod](https://pub.dev/packages/flutter_riverpod)
 (dependency injection and state), [Dio](https://pub.dev/packages/dio) (HTTP),
 [go_router](https://pub.dev/packages/go_router) (navigation) and
 [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage).
-A single codebase targets Flutter 3.10 and later, Riverpod 2 and 3, and
-go_router 10 to 18; both ends of these ranges are verified (see
+A single codebase targets Flutter 3.29 (Dart 3.7) and later, Riverpod 3,
+and go_router 10 to 18; both ends of these ranges are verified (see
 [Compatibility](#compatibility)).
 
 ## Contents
@@ -80,7 +80,7 @@ them too (use ranges inside the ones supported by the package):
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ">=2.4.0 <4.0.0"
+  flutter_riverpod: ">=3.0.1 <4.0.0"
   go_router: ">=10.0.0 <19.0.0"
   symphony_core:
     path: ../symphony_core
@@ -2161,12 +2161,10 @@ otherwise `navigateToDashboardItem`, which uses GoRouter (`routeName` →
 `SymphonyDashboardSubmenuPage` (usable as a deep-linked route).
 
 `SymphonyDashboardController` drives inline submenus (`path`, `open`,
-`goBack`, `goToRoot`, `canGoBack`). The package cannot intercept the system
-back button on every supported Flutter version; on Flutter 3.24+ wire it
-with `PopScope`:
+`goBack`, `goToRoot`, `canGoBack`). The package does not intercept the system
+back button itself; wire it with `PopScope`:
 
 ```dart
-// Requires Flutter 3.24+ (PopScope.onPopInvokedWithResult).
 class DashboardWithBack extends StatefulWidget {
   const DashboardWithBack({super.key});
 
@@ -2722,16 +2720,13 @@ Tips:
   adapters with mocktail (`class MockAuthAdapter extends Mock implements AuthAdapter {}`).
 - Do not write the `Override` type in tests (it is not exported by
   `flutter_riverpod.dart` on Riverpod 3); let list types be inferred.
-- Riverpod 3 wraps errors thrown by providers in `ProviderException`, while
-  Riverpod 2 rethrows them unchanged. Match on the message, for example
+- Riverpod 3 wraps errors thrown by providers in `ProviderException`. Match
+  on the message, for example
   `throwsA(predicate((e) => '$e'.contains('symphonyConfigProvider is not configured')))`,
   rather than on `isA<StateError>()`.
-- Riverpod 2.4 applies dependent provider updates in a microtask: after an
-  authentication change in a widget test, `pump()` or `pumpAndSettle()`
-  before asserting on routes and menus.
 - Avoid `matchesSemantics` / `containsSemantics` if your tests must run on
-  Flutter 3.10 and 3.44 alike (deprecated in recent Flutter, replacements
-  missing in 3.10).
+  Flutter 3.29 and 3.44 alike (deprecated in recent Flutter, replacements
+  missing in 3.29).
 
 ## Security notes
 
@@ -2803,23 +2798,28 @@ lifecycle, the auth state machine and the redirect flow are described in
 
 | | Supported range |
 |---|---|
-| Flutter / Dart | `>=3.10.0` / `>=3.0.0 <4.0.0` |
+| Flutter / Dart | `>=3.29.0` / `>=3.7.0 <4.0.0` |
 | dio | `>=5.4.0 <6.0.0` |
-| flutter_riverpod | `>=2.4.0 <4.0.0` (Riverpod 2 and 3) |
+| flutter_riverpod | `>=3.0.1 <4.0.0` (Riverpod 3 only; apps on Riverpod 2 see [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md#apps-still-on-riverpod-2)) |
 | go_router | `>=10.0.0 <19.0.0` |
 | flutter_secure_storage | `>=9.0.0 <12.0.0` |
 
-Verified on 2026-10-31 (analyzer clean, 1112 unit and widget tests passing)
-on Flutter 3.10.6 and 3.44.8, each with the lowest and the highest dependency
-versions they resolve. Versions in between, Riverpod 3.0–3.3, go_router 14–17
-and builds on devices were not individually verified. Details, platform notes
+Verified on 2026-10-31 (analyzer clean, 1195 package and 37 example tests
+passing) on Flutter 3.29.3 and 3.44.8, each with the lowest and the highest
+dependency versions they resolve (one example test hits an upstream Riverpod
+3.3 debug assertion, fixed in Riverpod 3.4; see COMPATIBILITY.md). Versions in
+between, go_router 14–16 and
+builds on devices were not individually verified. The package imports
+Riverpod's `Override` and `ProviderListenable` from the public
+`package:flutter_riverpod/misc.dart`, so it no longer depends on Riverpod's
+internal `src/` files. Details, platform notes
 and version-specific behaviour: [COMPATIBILITY.md](COMPATIBILITY.md).
 
 ## Troubleshooting
 
 | Symptom | Cause and fix |
 |---|---|
-| `symphonyConfigProvider is not configured` | `SymphonyCore.initialize` did not run before `runApp`, or `symphonyOverrides` is not in the root `ProviderScope`. On Riverpod 3 the message is wrapped in a `ProviderException`. |
+| `symphonyConfigProvider is not configured` | `SymphonyCore.initialize` did not run before `runApp`, or `symphonyOverrides` is not in the root `ProviderScope`. The message is wrapped in a `ProviderException`. |
 | `authAdapterProvider is not configured` | Pass `authAdapter:` or `authAdapterBuilder:`, or do not use auth widgets/providers. |
 | `'Override' isn't a type` | Riverpod 3 exports `Override` from `package:flutter_riverpod/misc.dart` only. Let the type be inferred. |
 | No inspector button | `enableInspector` is `false`, or `SymphonyInspectorOverlay` is not placed in `MaterialApp.builder`. |

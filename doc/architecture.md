@@ -31,8 +31,8 @@ interact at runtime. For usage, see the [README](../README.md).
   `PlatformException`.
 - **One public library.** `package:symphony_core/symphony_core.dart` exports
   the module barrels; `lib/src/` is private.
-- **One codebase for a wide version range** (Flutter 3.10 → 3.44, Riverpod
-  2 → 3, go_router 10 → 18); see [Compatibility layer](#compatibility-layer).
+- **One codebase for a wide version range** (Flutter 3.29 → 3.44, Riverpod
+  3.x, go_router 10 → 18); see [Compatibility layer](#compatibility-layer).
 
 ## Layers and rules
 
@@ -133,10 +133,10 @@ flutter_secure_storage in storage; go_router in routing and dashboard
   in the root container of a hierarchy, and overrides only take effect in the
   root (not in nested scopes). This is why every override goes through
   `initialize(overrides:)` or the root `ProviderScope`.
-- Duplicate overrides: on Riverpod 3 `symphonyOverrides` drops a built-in
-  override when the app overrides the same provider (it reads
-  `Override.origin`); on Riverpod 2 both are kept and the app's, applied
-  last, wins.
+- Duplicate overrides: `symphonyOverrides` drops a built-in override when
+  the app overrides the same provider (it reads `Override.origin`), so the
+  app's override applies and Riverpod's duplicate-override assertion is
+  never hit.
 
 Services are created lazily and disposed with the container: `ApiClient` is
 closed (`ref.onDispose(client.close)`), the `ApiInspector` and the local
@@ -194,7 +194,7 @@ The `ApiClient → token delegate → repository → adapter → ApiClient` loop
 is not a provider cycle: `apiClientProvider` resolves the delegate on each
 request through its container (`ref.container.read`), and the delegate
 resolves the repository and controller inside its callbacks. Using
-`ref.read` there would make Riverpod (2.x and 3.x) report a circular
+`ref.read` there would make Riverpod report a circular
 dependency in debug builds.
 
 ## Start-up sequence
@@ -398,24 +398,28 @@ flowchart TD
 
 ## Compatibility layer
 
-The package targets Flutter 3.10 → 3.44, Riverpod 2.4 → 3.x and go_router
-10 → 18 with one codebase:
+The package targets Flutter 3.29 (Dart 3.7) → 3.44, Riverpod 3.x
+(flutter_riverpod 3.0.1 and later) and go_router 10 → 18 with one codebase:
 
 - **API subset.** Only APIs present at both ends are used: `Provider`,
   `NotifierProvider`, `FutureProvider`, `StreamProvider`, `ref.watch` /
   `read` / `listen` / `onDispose`, `ProviderContainer`,
   `UncontrolledProviderScope`; `GoRouter`, `GoRoute`, `ShellRoute`,
   `StatefulShellRoute`, `GoRouterState.uri`; Material 3 widgets that exist in
-  3.10 and are not deprecated in 3.44; Dart 3.0 language features.
-- **Type bridge.** Riverpod 3 moved `Override` and `ProviderListenable` out
-  of `flutter_riverpod.dart`; the internal `lib/src/core/di/riverpod_compat.dart`
-  imports them from `flutter_riverpod/src/internals.dart`, the only path
-  present in 2.4 and 3.x (checked on 2.4.0, 2.6.1, 3.0.3, 3.4.2 and 3.4.3).
+  3.29 and are not deprecated in 3.44; Dart 3.7 language features (wildcard
+  `_` parameters, but no dot shorthands).
+- **Riverpod types.** Riverpod 3 exports `Override` and `ProviderListenable`
+  from `package:flutter_riverpod/misc.dart`, not from `flutter_riverpod.dart`;
+  the internal `lib/src/core/di/riverpod_compat.dart` re-exports them from
+  that public library (no import of Riverpod's `src/` internals).
 - **Runtime probing.** `symphonyOverrides` reads `Override.origin`
-  dynamically (it only exists on Riverpod 3) to remove duplicates.
+  dynamically to remove duplicates: `Override` only declares `origin` from
+  Riverpod 3.3 on (earlier 3.x releases declare it on the concrete override
+  classes).
 - **No version-specific framework hooks.** Where a feature would need an API
-  that is missing at one end (for example `PopScope` on Flutter 3.10), the
-  package leaves the hook to the app and documents it.
+  that is missing at one end, the package leaves the hook to the app and
+  documents it (for example the system back button, wired by the app with
+  `PopScope`).
 
 The verified matrix and the version-specific behaviours are listed in
 [COMPATIBILITY.md](../COMPATIBILITY.md).

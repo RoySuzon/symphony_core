@@ -11,9 +11,11 @@ app shippable; stop at any step.
 
 Before you start:
 
-- Flutter `>=3.10`, Dart `>=3.0`, and, if the app already uses them,
-  flutter_riverpod `>=2.4 <4`, go_router `>=10 <19`, dio `>=5.4 <6`,
+- Flutter `>=3.29`, Dart `>=3.7`, and, if the app already uses them,
+  flutter_riverpod `>=3.0.1 <4`, go_router `>=10 <19`, dio `>=5.4 <6`,
   flutter_secure_storage `>=9 <12` (see [COMPATIBILITY.md](COMPATIBILITY.md)).
+  Apps still on Riverpod 2 upgrade Riverpod first: see
+  [Apps still on Riverpod 2](#apps-still-on-riverpod-2).
 - The package uses Riverpod internally. Apps on Provider, Bloc or another
   state management solution can still adopt it: see
   [Provider, Bloc and other state management](#provider-bloc-and-other-state-management).
@@ -476,17 +478,19 @@ GoRouter buildRouter(AuthStateBridge auth) {
 - Read any other service with `SymphonyCore.instance.read(provider)` and
   observe changes with `core.container.listen(...)`.
 
-### Upgrading your app from Riverpod 2 to Riverpod 3
+### Apps still on Riverpod 2
 
-symphony_core supports both majors with the same API, so you can upgrade
-Riverpod independently. Riverpod 3 changes that commonly affect apps (see
-the Riverpod 3.0 migration guide on [riverpod.dev](https://riverpod.dev)):
+symphony_core requires Riverpod 3 (`flutter_riverpod >=3.0.1 <4.0.0`, which
+itself needs Dart 3.7 / Flutter 3.29); Riverpod 2 is not supported. Upgrade
+the app to Riverpod 3 first, following Riverpod's
+[3.0 migration guide](https://riverpod.dev/docs/3.0_migration), then add
+symphony_core. Riverpod 3 changes that commonly affect apps:
 
 | Change in Riverpod 3 | What to do |
 |---|---|
 | `StateProvider`, `StateNotifierProvider` and `ChangeNotifierProvider` moved to `package:flutter_riverpod/legacy.dart`. | Import `legacy.dart` or migrate to `Notifier`. |
 | `Override`, `ProviderListenable` and other types are exported by `package:flutter_riverpod/misc.dart`, not by `flutter_riverpod.dart`. | Let types be inferred, or import `misc.dart`. |
-| `Ref` is no longer generic; typed refs such as `ProviderRef<T>` are gone. | Type parameters as `Ref`. Functions taking a raw `Ref` (like `SymphonyRouter.create`) work on both. |
+| `Ref` is no longer generic; typed refs such as `ProviderRef<T>` are gone. | Type parameters as `Ref`. Functions taking a `Ref` (like `SymphonyRouter.create`) take the non-generic `Ref`. |
 | Errors thrown by providers are rethrown wrapped in `ProviderException`. | Match errors by message in tests; catch `Failure`s inside your providers if you need typed handling. |
 | Failing providers are retried automatically (exceptions, not errors). | Expect retries for providers that throw `Failure`s; configure with the provider's `retry:` parameter. |
 | `AsyncValue.valueOrNull` was removed; `value` returns `null` when there is no data. | Replace `valueOrNull` with `value`. |
@@ -503,8 +507,8 @@ List<Override> testOverrides() => [
     ];
 ```
 
-symphony_core-specific differences between the two majors (duplicate
-overrides, error wrapping, retries) are listed in
+Riverpod 3 behaviour that symphony_core apps should know about (duplicate
+overrides, error wrapping, retries) is listed in
 [COMPATIBILITY.md](COMPATIBILITY.md#version-specific-behaviour).
 
 ### go_router major upgrades

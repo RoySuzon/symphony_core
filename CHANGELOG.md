@@ -171,28 +171,27 @@ First release.
 
 ### Compatibility
 
-- Supported ranges: Dart `>=3.0.0 <4.0.0`, Flutter `>=3.10.0`, dio
-  `>=5.4.0 <6.0.0`, flutter_riverpod `>=2.4.0 <4.0.0`, go_router
-  `>=10.0.0 <19.0.0`, flutter_secure_storage `>=9.0.0 <12.0.0`.
-- Verified (analyzer clean, 1112 unit and widget tests passing) on Flutter
-  3.10.6 / Dart 3.0.6 and Flutter 3.44.8 / Dart 3.12.2, each with the lowest
-  and the highest dependency versions they resolve. Not individually
-  verified: Flutter versions in between, Riverpod 3.0–3.3, go_router 14–17,
-  native platform builds. See [COMPATIBILITY.md](COMPATIBILITY.md).
-- CI runs the matrix (Flutter 3.10.6 and stable × `pub downgrade` /
+- Supported ranges: Dart `>=3.7.0 <4.0.0`, Flutter `>=3.29.0`, dio
+  `>=5.4.0 <6.0.0`, flutter_riverpod `>=3.0.1 <4.0.0` (Riverpod 3 only;
+  Riverpod 2 is not supported), go_router `>=10.0.0 <19.0.0`,
+  flutter_secure_storage `>=9.0.0 <12.0.0`.
+- Verified (analyzer clean, 1195 package and 37 example tests passing) on
+  Flutter 3.29.3 / Dart 3.7.2 and Flutter 3.44.8 / Dart 3.12.2, each with the
+  lowest and the highest dependency versions they resolve (on Flutter 3.29.3
+  with flutter_riverpod 3.3.2 one example test hits an upstream Riverpod debug
+  assertion fixed in 3.4). Not individually verified: Flutter versions in
+  between, go_router 14–16, native platform builds. See [COMPATIBILITY.md](COMPATIBILITY.md).
+- CI runs the matrix (Flutter 3.29.3 and stable × `pub downgrade` /
   `pub upgrade`), a formatting check and `dart pub publish --dry-run`.
 
 ### Known limitations
 
-- The system back button is not intercepted (no `PopScope` on Flutter
-  3.10): inline dashboard submenus and `SymphonyDialogs.showLoading` do not
-  react to it. Apps on Flutter 3.24+ can wire `SymphonyDashboardController`
-  with `PopScope`.
+- The system back button is not intercepted by the package: inline
+  dashboard submenus do not react to it (wire `SymphonyDashboardController`
+  with `PopScope`) and `SymphonyDialogs.showLoading` can be dismissed by it.
 - go_router 10 does not evaluate `ShellRoute` redirects: guard the routes
   inside shells. Some go_router 17.0.x releases evaluate the top-level
   redirect only once per navigation.
-- On Riverpod 2, `symphonyOverrides` cannot drop a built-in override that the
-  app overrides again; the app's override wins. Prefer the named parameters.
 - `ApiClient.download()` and `UploadFile.fromPath` are not supported on the
   web (use `downloadBytes()` and `UploadFile.fromBytes`). On dio 5.4,
   multipart files without a content type are sent as
