@@ -55,14 +55,11 @@ void main() {
     });
 
     test('prefers expires_in over expires_at and uses the given clock', () {
-      final tokens = mapping.readTokens(
-        <String, Object?>{
-          'token': 'a1',
-          'expires_in': 90.5,
-          'expires_at': '2030-01-01T00:00:00Z',
-        },
-        now: now,
-      );
+      final tokens = mapping.readTokens(<String, Object?>{
+        'token': 'a1',
+        'expires_in': 90.5,
+        'expires_at': '2030-01-01T00:00:00Z',
+      }, now: now);
 
       expect(
         tokens?.expiresAt,
@@ -158,13 +155,10 @@ void main() {
   });
 
   test('readSession combines tokens and the embedded user', () {
-    final session = mapping.readSession(
-      <String, Object?>{
-        'tokens': <String, Object?>{'access': 'a1', 'refresh': 'r1'},
-        'account': <String, Object?>{'id': 'u'},
-      },
-      now: now,
-    );
+    final session = mapping.readSession(<String, Object?>{
+      'tokens': <String, Object?>{'access': 'a1', 'refresh': 'r1'},
+      'account': <String, Object?>{'id': 'u'},
+    }, now: now);
 
     expect(session?.tokens.accessToken, 'a1');
     expect(session?.tokens.refreshToken, 'r1');

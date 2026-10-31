@@ -194,7 +194,7 @@ class AuthFailure extends Failure {
 class CancelledFailure extends Failure {
   /// Creates a cancelled failure.
   const CancelledFailure([super.message = 'The request was cancelled.'])
-      : super();
+    : super();
 }
 
 /// A response could not be parsed into the expected model.
@@ -222,9 +222,8 @@ class StorageFailure extends Failure {
 /// The requested feature is not supported by the configured adapter.
 class UnsupportedFailure extends Failure {
   /// Creates an unsupported failure.
-  const UnsupportedFailure([
-    super.message = 'This feature is not supported.',
-  ]) : super();
+  const UnsupportedFailure([super.message = 'This feature is not supported.'])
+    : super();
 }
 
 /// Any error that does not fit another category.

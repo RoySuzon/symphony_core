@@ -18,8 +18,9 @@ class _ConfigLabel extends ConsumerWidget {
 void main() {
   tearDown(SymphonyCore.reset);
 
-  testWidgets('wrap exposes the providers of the instance to widgets',
-      (tester) async {
+  testWidgets('wrap exposes the providers of the instance to widgets', (
+    tester,
+  ) async {
     final core = SymphonyCore.create(config: testConfig);
 
     await tester.pumpWidget(core.wrap(const _ConfigLabel()));
@@ -48,8 +49,9 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('an explicit core takes precedence over the global instance',
-      (tester) async {
+  testWidgets('an explicit core takes precedence over the global instance', (
+    tester,
+  ) async {
     await SymphonyCore.initialize(
       config: testConfig.copyWith(appName: 'Global App'),
     );
@@ -57,16 +59,18 @@ void main() {
       config: testConfig.copyWith(appName: 'Local App'),
     );
 
-    await tester
-        .pumpWidget(SymphonyScope(core: local, child: const _ConfigLabel()));
+    await tester.pumpWidget(
+      SymphonyScope(core: local, child: const _ConfigLabel()),
+    );
 
     expect(find.text('Local App'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await local.dispose();
   });
 
-  testWidgets('reports a helpful error without an initialized instance',
-      (tester) async {
+  testWidgets('reports a helpful error without an initialized instance', (
+    tester,
+  ) async {
     await tester.pumpWidget(const SymphonyScope(child: _ConfigLabel()));
 
     final error = tester.takeException();

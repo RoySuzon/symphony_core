@@ -86,15 +86,17 @@ void main() {
       expect(find.text('Requested location'), findsNothing);
     });
 
-    testWidgets('hides the home button without router or callback',
-        (tester) async {
+    testWidgets('hides the home button without router or callback', (
+      tester,
+    ) async {
       await pumpScreen(tester, const SymphonyRouteErrorScreen());
 
       expect(find.text('Go to home'), findsNothing);
     });
 
-    testWidgets('opens homeLocation through the enclosing router',
-        (tester) async {
+    testWidgets('opens homeLocation through the enclosing router', (
+      tester,
+    ) async {
       final router = await pumpInRouter(
         tester,
         const SymphonyRouteErrorScreen(homeLocation: '/start'),
@@ -144,15 +146,17 @@ void main() {
       expect(tapped, 1);
     });
 
-    testWidgets('hides the home button without router or callback',
-        (tester) async {
+    testWidgets('hides the home button without router or callback', (
+      tester,
+    ) async {
       await pumpScreen(tester, const SymphonyUnauthorizedScreen());
 
       expect(find.text('Go to home'), findsNothing);
     });
 
-    testWidgets('opens homeLocation through the enclosing router',
-        (tester) async {
+    testWidgets('opens homeLocation through the enclosing router', (
+      tester,
+    ) async {
       final router = await pumpInRouter(
         tester,
         const SymphonyUnauthorizedScreen(),

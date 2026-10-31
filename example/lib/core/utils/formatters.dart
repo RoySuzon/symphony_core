@@ -91,15 +91,17 @@ abstract final class Formatters {
 
   /// Initials of [name] (at most two letters).
   static String initials(String? name) {
-    final parts = (name ?? '')
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((part) => part.isNotEmpty)
-        .toList();
+    final parts =
+        (name ?? '')
+            .trim()
+            .split(RegExp(r'\s+'))
+            .where((part) => part.isNotEmpty)
+            .toList();
     if (parts.isEmpty) return '?';
-    final letters = parts.length == 1
-        ? parts.first.substring(0, 1)
-        : '${parts.first[0]}${parts.last[0]}';
+    final letters =
+        parts.length == 1
+            ? parts.first.substring(0, 1)
+            : '${parts.first[0]}${parts.last[0]}';
     return letters.toUpperCase();
   }
 }

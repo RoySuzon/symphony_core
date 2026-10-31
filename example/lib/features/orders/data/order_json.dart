@@ -9,8 +9,8 @@ import '../domain/entities/order.dart';
 abstract final class OrderJson {
   /// `GET /orders` → `{"result": {"items": [...]}}`.
   static List<OrderSummary> decodeList(Object? body) => <OrderSummary>[
-        for (final item in ApiEnvelope.list(body, 'items')) summary(item),
-      ];
+    for (final item in ApiEnvelope.list(body, 'items')) summary(item),
+  ];
 
   /// `GET /orders/{id}` → `{"result": {"order": {...}}}`.
   static OrderDetail decodeDetail(Object? body) {
@@ -37,7 +37,8 @@ abstract final class OrderJson {
 
   /// An order of a list (or the summary part of a detail payload).
   static OrderSummary summary(Object? value) {
-    final json = JsonReader.asMap(value) ??
+    final json =
+        JsonReader.asMap(value) ??
         (throw const FormatException('An order must be an object.'));
     final customer = ApiEnvelope.requireMap(json, 'customer');
     final status = OrderStatus.fromName(JsonReader.asString(json['status']));
@@ -58,17 +59,20 @@ abstract final class OrderJson {
 
   /// `{"amount": 12990, "currency": "USD"}`.
   static Money money(Object? value) {
-    final json = JsonReader.asMap(value) ??
+    final json =
+        JsonReader.asMap(value) ??
         (throw const FormatException('An amount must be an object.'));
     return Money(
-      amountInCents: JsonReader.asInt(json['amount']) ??
+      amountInCents:
+          JsonReader.asInt(json['amount']) ??
           (throw const FormatException('Missing amount.')),
       currency: JsonReader.asString(json['currency']) ?? 'USD',
     );
   }
 
   static OrderLine _line(Object? value) {
-    final json = JsonReader.asMap(value) ??
+    final json =
+        JsonReader.asMap(value) ??
         (throw const FormatException('An order line must be an object.'));
     return OrderLine(
       sku: ApiEnvelope.requireString(json, 'sku'),
@@ -79,7 +83,8 @@ abstract final class OrderJson {
   }
 
   static OrderEvent _event(Object? value) {
-    final json = JsonReader.asMap(value) ??
+    final json =
+        JsonReader.asMap(value) ??
         (throw const FormatException('An event must be an object.'));
     return OrderEvent(
       label: ApiEnvelope.requireString(json, 'status'),

@@ -34,7 +34,9 @@ abstract final class ApiEnvelope {
 
   /// A required object field of [json].
   static Map<String, Object?> requireMap(
-          Map<String, Object?> json, String key) =>
+    Map<String, Object?> json,
+    String key,
+  ) =>
       JsonReader.asMap(json[key]) ??
       (throw FormatException('Missing object "$key".'));
 }

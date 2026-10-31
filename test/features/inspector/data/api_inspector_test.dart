@@ -19,9 +19,9 @@ class _Serializable {
   final String name;
 
   Map<String, Object?> toJson() => <String, Object?>{
-        'token': token,
-        'name': name,
-      };
+    'token': token,
+    'name': name,
+  };
 
   @override
   String toString() => '_Serializable($token)';
@@ -113,11 +113,12 @@ void main() {
     test('completion can replace request headers and URI', () {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'GET',
-        uri: uri,
-        headers: const <String, dynamic>{'accept': 'application/json'},
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'GET',
+            uri: uri,
+            headers: const <String, dynamic>{'accept': 'application/json'},
+          )!;
       inspector.completeCall(
         id,
         statusCode: 200,
@@ -130,7 +131,9 @@ void main() {
       final call = inspector.byId(id)!;
       expect(call.requestHeaders['Authorization'], '***');
       expect(
-          call.uri.toString(), 'https://api.example.com/v1/items?api_key=***');
+        call.uri.toString(),
+        'https://api.example.com/v1/items?api_key=***',
+      );
     });
   });
 
@@ -219,7 +222,9 @@ void main() {
 
       expect(inspector.startCall(method: 'GET', uri: uri), isNull);
       expect(
-          () => inspector.completeCall(id, statusCode: 200), returnsNormally);
+        () => inspector.completeCall(id, statusCode: 200),
+        returnsNormally,
+      );
       expect(() => inspector.failCall(id, error: 'x'), returnsNormally);
       expect(() => inspector.clear(), returnsNormally);
       expect(() => inspector.enabled = false, returnsNormally);
@@ -232,18 +237,19 @@ void main() {
     test('masks sensitive headers, query parameters and user info', () {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'GET',
-        uri: Uri.parse(
-          'https://ada:pa55@api.example.com/me?access_token=abc&page=2',
-        ),
-        headers: const <String, dynamic>{
-          'Authorization': 'Bearer abc',
-          'X-Api-Key': 'k-1',
-          'Cookie': 'sid=1',
-          'Accept': 'application/json',
-        },
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'GET',
+            uri: Uri.parse(
+              'https://ada:pa55@api.example.com/me?access_token=abc&page=2',
+            ),
+            headers: const <String, dynamic>{
+              'Authorization': 'Bearer abc',
+              'X-Api-Key': 'k-1',
+              'Cookie': 'sid=1',
+              'Accept': 'application/json',
+            },
+          )!;
       final call = inspector.byId(id)!;
       expect(
         call.uri.toString(),
@@ -260,15 +266,16 @@ void main() {
     test('masks sensitive JSON fields in map and string bodies', () {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: const <String, Object?>{
-          'email': 'ada@example.com',
-          'password': 'hunter2',
-          'profile': <String, Object?>{'refresh_token': 'r-1', 'age': 36},
-        },
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'POST',
+            uri: uri,
+            body: const <String, Object?>{
+              'email': 'ada@example.com',
+              'password': 'hunter2',
+              'profile': <String, Object?>{'refresh_token': 'r-1', 'age': 36},
+            },
+          )!;
       inspector.completeCall(
         id,
         statusCode: 200,
@@ -286,14 +293,16 @@ void main() {
     test('masks credentials, URLs and key=value pairs in free text', () {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: 'user=ada&password=hunter2&remember=true',
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'POST',
+            uri: uri,
+            body: 'user=ada&password=hunter2&remember=true',
+          )!;
       inspector.failCall(
         id,
-        error: 'HttpException: closed, uri = '
+        error:
+            'HttpException: closed, uri = '
             'https://api.example.com/x?token=abc123 '
             'header Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload '
             "{'secret': 's3cr3t', 'code': 42}",
@@ -327,11 +336,7 @@ void main() {
     test('truncates long bodies', () {
       final inspector = ApiInspector(maxBodyLength: 10);
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: 'a' * 25,
-      )!;
+      final id = inspector.startCall(method: 'POST', uri: uri, body: 'a' * 25)!;
       expect(
         inspector.byId(id)!.requestBody,
         '${'a' * 10}… [truncated 15 chars]',
@@ -344,11 +349,12 @@ void main() {
         captureResponseBodies: false,
       );
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: const <String, Object?>{'a': 1},
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'POST',
+            uri: uri,
+            body: const <String, Object?>{'a': 1},
+          )!;
       inspector.completeCall(id, statusCode: 200, body: 'ok');
       final call = inspector.byId(id)!;
       expect(call.requestBody, isNull);
@@ -363,11 +369,12 @@ void main() {
         ),
       );
       addTearDown(inspector.dispose);
-      final id = inspector.startCall(
-        method: 'POST',
-        uri: Uri.parse('https://api.example.com/pay?pin=1234'),
-        body: const <String, Object?>{'pin': '1234', 'amount': 10},
-      )!;
+      final id =
+          inspector.startCall(
+            method: 'POST',
+            uri: Uri.parse('https://api.example.com/pay?pin=1234'),
+            body: const <String, Object?>{'pin': '1234', 'amount': 10},
+          )!;
       final call = inspector.byId(id)!;
       expect(call.uri.queryParameters['pin'], '[hidden]');
       expect(call.uri.toString(), isNot(contains('1234')));
@@ -381,29 +388,32 @@ void main() {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
 
-      final binary = inspector.startCall(
-        method: 'PUT',
-        uri: uri,
-        body: Uint8List.fromList(<int>[1, 2, 3, 4]),
-      )!;
-      final stream = inspector.startCall(
-        method: 'PUT',
-        uri: uri,
-        body: Stream<List<int>>.value(const <int>[1, 2]),
-      )!;
-      final form = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: const ApiCallFormData(
-          fields: <MapEntry<String, String>>[
-            MapEntry<String, String>('name', 'Ada'),
-            MapEntry<String, String>('password', 'hunter2'),
-          ],
-          files: <ApiCallFormFile>[
-            ApiCallFormFile(field: 'avatar', filename: 'a.png', length: 3),
-          ],
-        ),
-      )!;
+      final binary =
+          inspector.startCall(
+            method: 'PUT',
+            uri: uri,
+            body: Uint8List.fromList(<int>[1, 2, 3, 4]),
+          )!;
+      final stream =
+          inspector.startCall(
+            method: 'PUT',
+            uri: uri,
+            body: Stream<List<int>>.value(const <int>[1, 2]),
+          )!;
+      final form =
+          inspector.startCall(
+            method: 'POST',
+            uri: uri,
+            body: const ApiCallFormData(
+              fields: <MapEntry<String, String>>[
+                MapEntry<String, String>('name', 'Ada'),
+                MapEntry<String, String>('password', 'hunter2'),
+              ],
+              files: <ApiCallFormFile>[
+                ApiCallFormFile(field: 'avatar', filename: 'a.png', length: 3),
+              ],
+            ),
+          )!;
 
       expect(inspector.byId(binary)!.requestBody, '[binary 4 bytes]');
       expect(inspector.byId(stream)!.requestBody, '[stream]');
@@ -413,24 +423,25 @@ void main() {
       expect(multipart.requestBody, isNot(contains('hunter2')));
       expect(
         multipart.requestFormData!.fields.last,
-        isA<MapEntry<String, String>>()
-            .having((field) => field.value, 'value', '***'),
+        isA<MapEntry<String, String>>().having(
+          (field) => field.value,
+          'value',
+          '***',
+        ),
       );
     });
 
     test('renders objects through toJson and hides opaque objects', () {
       final inspector = ApiInspector();
       addTearDown(inspector.dispose);
-      final serializable = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: const _Serializable('t-1', 'Ada'),
-      )!;
-      final opaque = inspector.startCall(
-        method: 'POST',
-        uri: uri,
-        body: _Opaque(),
-      )!;
+      final serializable =
+          inspector.startCall(
+            method: 'POST',
+            uri: uri,
+            body: const _Serializable('t-1', 'Ada'),
+          )!;
+      final opaque =
+          inspector.startCall(method: 'POST', uri: uri, body: _Opaque())!;
       final rendered = inspector.byId(serializable)!.requestBody!;
       expect(rendered, contains('"token": "***"'));
       expect(rendered, contains('"name": "Ada"'));

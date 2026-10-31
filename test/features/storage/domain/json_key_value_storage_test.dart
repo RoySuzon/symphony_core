@@ -104,9 +104,9 @@ void main() {
   test('backend failures are propagated', () async {
     final failing = MockKeyValueStorage();
     const failure = StorageFailure('boom', code: StorageFailureCodes.read);
-    when(() => failing.read(any())).thenAnswer(
-      (_) => Future<String?>.error(failure),
-    );
+    when(
+      () => failing.read(any()),
+    ).thenAnswer((_) => Future<String?>.error(failure));
 
     await expectLater(failing.readJson('key'), throwsA(same(failure)));
     await expectLater(failing.readJsonList('key'), throwsA(same(failure)));

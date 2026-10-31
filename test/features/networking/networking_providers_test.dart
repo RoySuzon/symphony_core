@@ -39,8 +39,8 @@ void main() {
     adapter = FakeHttpClientAdapter();
   });
 
-  // The `Override` type is exported from different libraries by Riverpod 2
-  // and 3, so override lists are always built here with inferred types.
+  // Override lists are built here with inferred types, so the `Override`
+  // type (exported by `package:flutter_riverpod/misc.dart`) is never named.
   ProviderContainer createContainer({
     SymphonyConfig? config,
     bool clientBackedDelegate = false,
@@ -74,7 +74,9 @@ void main() {
 
     expect(container.read(authTokenDelegateProvider), isNull);
     expect(
-        container.read(apiErrorMapperProvider), isA<DefaultApiErrorMapper>());
+      container.read(apiErrorMapperProvider),
+      isA<DefaultApiErrorMapper>(),
+    );
     expect(container.read(apiInterceptorsProvider), isEmpty);
     expect(container.read(apiHeaderProvidersProvider), isEmpty);
     final client = container.read(apiClientProvider);
@@ -82,50 +84,57 @@ void main() {
     expect(client.dio.httpClientAdapter, same(adapter));
   });
 
-  test('resolves the token delegate lazily, so it may depend on the client',
-      () async {
-    final container = createContainer(clientBackedDelegate: true);
+  test(
+    'resolves the token delegate lazily, so it may depend on the client',
+    () async {
+      final container = createContainer(clientBackedDelegate: true);
 
-    final client = container.read(apiClientProvider);
-    await client.get<void>('/me');
+      final client = container.read(apiClientProvider);
+      await client.get<void>('/me');
 
-    expect(adapter.headerOf(0, 'Authorization'), 'Bearer from-session');
-    final delegate =
-        container.read(authTokenDelegateProvider)! as _ClientBackedDelegate;
-    expect(delegate.client, same(client));
-  });
+      expect(adapter.headerOf(0, 'Authorization'), 'Bearer from-session');
+      final delegate =
+          container.read(authTokenDelegateProvider)! as _ClientBackedDelegate;
+      expect(delegate.client, same(client));
+    },
+  );
 
-  test('uses the overridden mapper, interceptors and header providers',
-      () async {
-    adapter.responder = (options, _) => options.path == '/fail'
-        ? jsonBody(<String, Object?>{}, statusCode: 500)
-        : jsonBody(<String, Object?>{});
-    final container = createContainer(
-      errorMapper: const _ConstantMapper(),
-      interceptors: <Interceptor>[_MarkerInterceptor()],
-      headerProviders: <HeaderProvider>[
-        () => <String, String>{'Accept-Language': 'fr'},
-      ],
-    );
-    final client = container.read(apiClientProvider);
+  test(
+    'uses the overridden mapper, interceptors and header providers',
+    () async {
+      adapter.responder =
+          (options, _) =>
+              options.path == '/fail'
+                  ? jsonBody(<String, Object?>{}, statusCode: 500)
+                  : jsonBody(<String, Object?>{});
+      final container = createContainer(
+        errorMapper: const _ConstantMapper(),
+        interceptors: <Interceptor>[_MarkerInterceptor()],
+        headerProviders: <HeaderProvider>[
+          () => <String, String>{'Accept-Language': 'fr'},
+        ],
+      );
+      final client = container.read(apiClientProvider);
 
-    await client.get<void>('/ok');
-    Failure? failure;
-    try {
-      await client.get<void>('/fail');
-    } on Failure catch (error) {
-      failure = error;
-    }
+      await client.get<void>('/ok');
+      Failure? failure;
+      try {
+        await client.get<void>('/fail');
+      } on Failure catch (error) {
+        failure = error;
+      }
 
-    expect(adapter.headerOf(0, 'X-Marker'), 'on');
-    expect(adapter.headerOf(0, 'Accept-Language'), 'fr');
-    expect(failure?.message, 'mapped by override');
-  });
+      expect(adapter.headerOf(0, 'X-Marker'), 'on');
+      expect(adapter.headerOf(0, 'Accept-Language'), 'fr');
+      expect(failure?.message, 'mapped by override');
+    },
+  );
 
   test('installs the inspector only when it is enabled', () {
     final disabled = createContainer().read(apiClientProvider);
-    final enabled = createContainer(config: testConfig(enableInspector: true))
-        .read(apiClientProvider);
+    final enabled = createContainer(
+      config: testConfig(enableInspector: true),
+    ).read(apiClientProvider);
 
     expect(
       disabled.dio.interceptors.whereType<ApiInspectorInterceptor>(),

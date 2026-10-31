@@ -5,8 +5,9 @@ void main() {
   const delay = Duration(milliseconds: 300);
 
   group('Debouncer', () {
-    testWidgets('runs only the last action once the delay elapsed',
-        (tester) async {
+    testWidgets('runs only the last action once the delay elapsed', (
+      tester,
+    ) async {
       final debouncer = Debouncer(delay);
       final calls = <String>[];
 
@@ -93,8 +94,7 @@ void main() {
   });
 
   group('Throttler', () {
-    testWidgets(
-        'runs the first call immediately and drops calls during the '
+    testWidgets('runs the first call immediately and drops calls during the '
         'cooldown', (tester) async {
       final throttler = Throttler(delay);
       final calls = <int>[];
@@ -118,8 +118,9 @@ void main() {
       throttler.dispose();
     });
 
-    testWidgets('trailing runs the latest dropped call after the cooldown',
-        (tester) async {
+    testWidgets('trailing runs the latest dropped call after the cooldown', (
+      tester,
+    ) async {
       final throttler = Throttler(delay, trailing: true);
       final calls = <int>[];
 
@@ -156,8 +157,9 @@ void main() {
       throttler.dispose();
     });
 
-    testWidgets('cancel ends the cooldown and drops the trailing call',
-        (tester) async {
+    testWidgets('cancel ends the cooldown and drops the trailing call', (
+      tester,
+    ) async {
       final throttler = Throttler(delay, trailing: true);
       final calls = <int>[];
 
@@ -174,8 +176,9 @@ void main() {
       throttler.dispose();
     });
 
-    testWidgets('dispose ignores later calls and pending trailing calls',
-        (tester) async {
+    testWidgets('dispose ignores later calls and pending trailing calls', (
+      tester,
+    ) async {
       final throttler = Throttler(delay, trailing: true);
       final calls = <int>[];
 

@@ -28,10 +28,10 @@ void main() {
   }
 
   ProviderContainer createContainer() => track(
-        ProviderContainer(
-          overrides: [flutterSecureStorageProvider.overrideWithValue(plugin)],
-        ),
-      );
+    ProviderContainer(
+      overrides: [flutterSecureStorageProvider.overrideWithValue(plugin)],
+    ),
+  );
 
   test('flutterSecureStorageProvider defaults to FlutterSecureStorage', () {
     final container = track(ProviderContainer());
@@ -66,27 +66,30 @@ void main() {
 
       expect(backend, <String, String>{'symphony.api_key': 'secret'});
       expect(await storage.read('api_key'), 'secret');
-      verify(() => plugin.write(key: 'symphony.api_key', value: 'secret'))
-          .called(1);
+      verify(
+        () => plugin.write(key: 'symphony.api_key', value: 'secret'),
+      ).called(1);
     });
 
-    test('clear() keeps the secure storage entries of the host application',
-        () async {
-      final backend = backWithMap(plugin, <String, String>{
-        'host.pin': '1234',
-        'other_sdk.token': 'sdk-secret',
-      });
-      final storage = createContainer().read(secureStorageProvider);
-      await storage.write('api_key', 'secret');
+    test(
+      'clear() keeps the secure storage entries of the host application',
+      () async {
+        final backend = backWithMap(plugin, <String, String>{
+          'host.pin': '1234',
+          'other_sdk.token': 'sdk-secret',
+        });
+        final storage = createContainer().read(secureStorageProvider);
+        await storage.write('api_key', 'secret');
 
-      await storage.clear();
+        await storage.clear();
 
-      expect(backend, <String, String>{
-        'host.pin': '1234',
-        'other_sdk.token': 'sdk-secret',
-      });
-      verifyNever(() => plugin.deleteAll());
-    });
+        expect(backend, <String, String>{
+          'host.pin': '1234',
+          'other_sdk.token': 'sdk-secret',
+        });
+        verifyNever(() => plugin.deleteAll());
+      },
+    );
 
     test('readAll() only exposes the entries written through it', () async {
       backWithMap(plugin, <String, String>{'host.pin': '1234'});
@@ -151,10 +154,7 @@ void main() {
       await expectLater(
         createContainer().read(sessionStorageProvider).readTokens(),
         throwsA(
-          isStorageFailure(
-            code: StorageFailureCodes.read,
-            cause: same(error),
-          ),
+          isStorageFailure(code: StorageFailureCodes.read, cause: same(error)),
         ),
       );
     });
@@ -172,9 +172,9 @@ void main() {
       await todos.put('1', milk);
       var done = false;
       final subscription = todos.watchAll().listen(
-            (_) {},
-            onDone: () => done = true,
-          );
+        (_) {},
+        onDone: () => done = true,
+      );
       addTearDown(() => subscription.cancel());
       await settle();
       expect(database.isOpen, isTrue);
@@ -209,9 +209,9 @@ void main() {
       expect(database, isA<KeyValueLocalDatabase>());
       expect(await memory.containsKey('symphony.db.todos'), isTrue);
       expect(
-        await KeyValueLocalDatabase(memory)
-            .store<Todo>('todos', todoCodec)
-            .getAll(),
+        await KeyValueLocalDatabase(
+          memory,
+        ).store<Todo>('todos', todoCodec).getAll(),
         <Todo>[milk],
       );
     });

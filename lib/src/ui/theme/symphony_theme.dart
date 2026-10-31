@@ -26,20 +26,20 @@ abstract final class SymphonyTheme {
   /// A light Material 3 theme built from [config].
   static ThemeData light([
     SymphonyThemeConfig config = const SymphonyThemeConfig(),
-  ]) =>
-      _build(config, Brightness.light);
+  ]) => _build(config, Brightness.light);
 
   /// A dark Material 3 theme built from [config].
   static ThemeData dark([
     SymphonyThemeConfig config = const SymphonyThemeConfig(),
-  ]) =>
-      _build(config, Brightness.dark);
+  ]) => _build(config, Brightness.dark);
 
   static ThemeData _build(SymphonyThemeConfig config, Brightness brightness) {
-    final explicitScheme = brightness == Brightness.dark
-        ? config.darkColorScheme
-        : config.lightColorScheme;
-    final scheme = explicitScheme ??
+    final explicitScheme =
+        brightness == Brightness.dark
+            ? config.darkColorScheme
+            : config.lightColorScheme;
+    final scheme =
+        explicitScheme ??
         ColorScheme.fromSeed(
           seedColor: config.seedColor,
           brightness: brightness,

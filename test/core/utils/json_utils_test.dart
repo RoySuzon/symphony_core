@@ -172,20 +172,11 @@ void main() {
     const seconds = 1700000000;
 
     test('parses ISO-8601 strings', () {
-      expect(
-        JsonReader.asDateTime('2023-11-14T22:13:20Z'),
-        instant,
-      );
+      expect(JsonReader.asDateTime('2023-11-14T22:13:20Z'), instant);
       expect(JsonReader.asDateTime('2023-11-14T22:13:20Z')!.isUtc, isTrue);
-      expect(
-        JsonReader.asDateTime('2024-05-01'),
-        DateTime(2024, 5),
-      );
+      expect(JsonReader.asDateTime('2024-05-01'), DateTime(2024, 5));
       expect(JsonReader.asDateTime('20240501'), DateTime(2024, 5));
-      expect(
-        JsonReader.asDateTime('2023-11-14T23:13:20+01:00'),
-        instant,
-      );
+      expect(JsonReader.asDateTime('2023-11-14T23:13:20+01:00'), instant);
     });
 
     test('accepts DateTime instances', () {
@@ -205,7 +196,9 @@ void main() {
         instant.add(const Duration(milliseconds: 500)).toLocal(),
       );
       expect(
-          JsonReader.asDateTime(-86400), DateTime.utc(1969, 12, 31).toLocal());
+        JsonReader.asDateTime(-86400),
+        DateTime.utc(1969, 12, 31).toLocal(),
+      );
     });
 
     test('isUtc returns UTC values', () {
@@ -214,10 +207,7 @@ void main() {
         '2023-11-14T23:13:20+01:00',
         isUtc: true,
       );
-      final fromLocal = JsonReader.asDateTime(
-        DateTime(2024),
-        isUtc: true,
-      );
+      final fromLocal = JsonReader.asDateTime(DateTime(2024), isUtc: true);
 
       expect(fromEpoch, instant);
       expect(fromEpoch!.isUtc, isTrue);
@@ -275,8 +265,14 @@ void main() {
 
     test('asListOf converts elements and drops failures', () {
       expect(
-        JsonReader.asListOf<int>(
-            <Object?>[1, '2', 3.0, 'x', null, 4.5], JsonReader.asInt),
+        JsonReader.asListOf<int>(<Object?>[
+          1,
+          '2',
+          3.0,
+          'x',
+          null,
+          4.5,
+        ], JsonReader.asInt),
         <int>[1, 2, 3],
       );
       expect(

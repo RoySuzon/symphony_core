@@ -140,7 +140,8 @@ class AuthController extends Notifier<AuthState> {
     if (_disposed || state is AuthUnauthenticated) return;
     _emit(
       AuthState.unauthenticated(
-          failure: failure ?? const UnauthorizedFailure()),
+        failure: failure ?? const UnauthorizedFailure(),
+      ),
     );
   }
 
@@ -166,15 +167,14 @@ class AuthController extends Notifier<AuthState> {
     final version = _version;
     final result = await _run(() => _repository.restoreSession());
     if (_disposed || version != _version) return;
-    _emit(
-      switch (result) {
-        ResultSuccess<AuthSession?>(value: final session?) =>
-          AuthState.authenticated(session),
-        ResultSuccess<AuthSession?>() => const AuthState.unauthenticated(),
-        ResultFailure<AuthSession?>(:final failure) =>
-          AuthState.unauthenticated(failure: failure),
-      },
-    );
+    _emit(switch (result) {
+      ResultSuccess<AuthSession?>(value: final session?) =>
+        AuthState.authenticated(session),
+      ResultSuccess<AuthSession?>() => const AuthState.unauthenticated(),
+      ResultFailure<AuthSession?>(:final failure) => AuthState.unauthenticated(
+        failure: failure,
+      ),
+    });
   }
 
   Future<void> _syncRepository(AuthSession session) async {

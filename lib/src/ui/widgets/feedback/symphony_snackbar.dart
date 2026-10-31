@@ -69,9 +69,9 @@ abstract final class SymphonySnackbar {
     final theme = Theme.of(context);
     final palette = _paletteFor(type, theme);
     final radius = SymphonyRadius.of(context);
-    final textStyle =
-        (theme.snackBarTheme.contentTextStyle ?? theme.textTheme.bodyMedium)
-            ?.copyWith(color: palette.foreground);
+    final textStyle = (theme.snackBarTheme.contentTextStyle ??
+            theme.textTheme.bodyMedium)
+        ?.copyWith(color: palette.foreground);
 
     // Hides the current snack bar and drops the queued ones: with
     // hideCurrentSnackBar alone, a message shown while the previous one is
@@ -91,17 +91,19 @@ abstract final class SymphonySnackbar {
         backgroundColor: palette.background,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: radius.smallBorderRadius),
-        duration: duration ??
+        duration:
+            duration ??
             (type == SymphonySnackbarType.error
                 ? _errorDuration
                 : _defaultDuration),
-        action: actionLabel == null
-            ? null
-            : SnackBarAction(
-                label: actionLabel,
-                textColor: palette.foreground,
-                onPressed: onAction ?? _noop,
-              ),
+        action:
+            actionLabel == null
+                ? null
+                : SnackBarAction(
+                  label: actionLabel,
+                  textColor: palette.foreground,
+                  onPressed: onAction ?? _noop,
+                ),
         showCloseIcon: showCloseIcon ?? actionLabel != null,
         closeIconColor: palette.foreground,
       ),
@@ -115,15 +117,14 @@ abstract final class SymphonySnackbar {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration,
-  }) =>
-      show(
-        context,
-        message,
-        type: SymphonySnackbarType.success,
-        actionLabel: actionLabel,
-        onAction: onAction,
-        duration: duration,
-      );
+  }) => show(
+    context,
+    message,
+    type: SymphonySnackbarType.success,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+  );
 
   /// Shows a [SymphonySnackbarType.error] snack bar.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> error(
@@ -132,15 +133,14 @@ abstract final class SymphonySnackbar {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration,
-  }) =>
-      show(
-        context,
-        message,
-        type: SymphonySnackbarType.error,
-        actionLabel: actionLabel,
-        onAction: onAction,
-        duration: duration,
-      );
+  }) => show(
+    context,
+    message,
+    type: SymphonySnackbarType.error,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+  );
 
   /// Shows a [SymphonySnackbarType.warning] snack bar.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> warning(
@@ -149,15 +149,14 @@ abstract final class SymphonySnackbar {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration,
-  }) =>
-      show(
-        context,
-        message,
-        type: SymphonySnackbarType.warning,
-        actionLabel: actionLabel,
-        onAction: onAction,
-        duration: duration,
-      );
+  }) => show(
+    context,
+    message,
+    type: SymphonySnackbarType.warning,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+  );
 
   /// Shows a [SymphonySnackbarType.info] snack bar.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> info(
@@ -166,14 +165,13 @@ abstract final class SymphonySnackbar {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration,
-  }) =>
-      show(
-        context,
-        message,
-        actionLabel: actionLabel,
-        onAction: onAction,
-        duration: duration,
-      );
+  }) => show(
+    context,
+    message,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+  );
 
   /// Shows the user facing message of [failure] as an error snack bar.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showFailure(
@@ -182,47 +180,47 @@ abstract final class SymphonySnackbar {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration,
-  }) =>
-      error(
-        context,
-        failure.message,
-        actionLabel: actionLabel,
-        onAction: onAction,
-        duration: duration,
-      );
+  }) => error(
+    context,
+    failure.message,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    duration: duration,
+  );
 
   /// The icon displayed for [type].
   static IconData iconFor(SymphonySnackbarType type) => switch (type) {
-        SymphonySnackbarType.info => Icons.info_outline,
-        SymphonySnackbarType.success => Icons.check_circle_outline,
-        SymphonySnackbarType.warning => Icons.warning_amber_rounded,
-        SymphonySnackbarType.error => Icons.error_outline,
-      };
+    SymphonySnackbarType.info => Icons.info_outline,
+    SymphonySnackbarType.success => Icons.check_circle_outline,
+    SymphonySnackbarType.warning => Icons.warning_amber_rounded,
+    SymphonySnackbarType.error => Icons.error_outline,
+  };
 
   static ({Color background, Color foreground}) _paletteFor(
     SymphonySnackbarType type,
     ThemeData theme,
   ) {
-    final colors = theme.extension<SymphonyColors>() ??
+    final colors =
+        theme.extension<SymphonyColors>() ??
         SymphonyColors.fallback(theme.brightness);
     final scheme = theme.colorScheme;
     return switch (type) {
       SymphonySnackbarType.info => (
-          background: colors.info,
-          foreground: colors.onInfo,
-        ),
+        background: colors.info,
+        foreground: colors.onInfo,
+      ),
       SymphonySnackbarType.success => (
-          background: colors.success,
-          foreground: colors.onSuccess,
-        ),
+        background: colors.success,
+        foreground: colors.onSuccess,
+      ),
       SymphonySnackbarType.warning => (
-          background: colors.warning,
-          foreground: colors.onWarning,
-        ),
+        background: colors.warning,
+        foreground: colors.onWarning,
+      ),
       SymphonySnackbarType.error => (
-          background: scheme.error,
-          foreground: scheme.onError,
-        ),
+        background: scheme.error,
+        foreground: scheme.onError,
+      ),
     };
   }
 

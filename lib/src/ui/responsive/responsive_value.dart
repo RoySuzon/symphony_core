@@ -24,10 +24,10 @@ class ResponsiveValue<T> {
 
   /// A value that is the same for every size class.
   const ResponsiveValue.all(T value)
-      : compact = value,
-        medium = null,
-        expanded = null,
-        large = null;
+    : compact = value,
+      medium = null,
+      expanded = null,
+      large = null;
 
   /// Value for [ScreenSizeClass.compact] (and the final fallback).
   final T compact;
@@ -43,18 +43,19 @@ class ResponsiveValue<T> {
 
   /// The value for [sizeClass], applying the fallback rules.
   T resolveFor(ScreenSizeClass sizeClass) => switch (sizeClass) {
-        ScreenSizeClass.compact => compact,
-        ScreenSizeClass.medium => medium ?? compact,
-        ScreenSizeClass.expanded => expanded ?? medium ?? compact,
-        ScreenSizeClass.large => large ?? expanded ?? medium ?? compact,
-      };
+    ScreenSizeClass.compact => compact,
+    ScreenSizeClass.medium => medium ?? compact,
+    ScreenSizeClass.expanded => expanded ?? medium ?? compact,
+    ScreenSizeClass.large => large ?? expanded ?? medium ?? compact,
+  };
 
   /// The value for the size class of the screen (`MediaQuery` width), using
   /// [breakpoints] or [SymphonyBreakpoints.of] the context.
   T resolve(BuildContext context, {SymphonyBreakpoints? breakpoints}) {
-    final sizeClass = breakpoints == null
-        ? context.screenSizeClass
-        : breakpoints.classify(MediaQuery.sizeOf(context).width);
+    final sizeClass =
+        breakpoints == null
+            ? context.screenSizeClass
+            : breakpoints.classify(MediaQuery.sizeOf(context).width);
     return resolveFor(sizeClass);
   }
 
@@ -70,6 +71,7 @@ class ResponsiveValue<T> {
   int get hashCode => Object.hash(compact, medium, expanded, large);
 
   @override
-  String toString() => 'ResponsiveValue<$T>(compact: $compact, '
+  String toString() =>
+      'ResponsiveValue<$T>(compact: $compact, '
       'medium: $medium, expanded: $expanded, large: $large)';
 }

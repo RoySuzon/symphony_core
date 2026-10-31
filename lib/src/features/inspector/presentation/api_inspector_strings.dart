@@ -43,8 +43,9 @@ class ApiInspectorStrings {
     this.noMatchesMessage = 'Try another search or status filter.',
     this.clearFilters = 'Clear filters',
     this.unavailableTitle = 'API inspector unavailable',
-    this.unavailableMessage = 'Pass an ApiInspector to this screen or place '
-        'it below a ProviderScope configured by SymphonyCore.',
+    this.unavailableMessage =
+        'Pass an ApiInspector to this screen or place '
+            'it below a ProviderScope configured by SymphonyCore.',
     this.closeTooltip = 'Close',
     this.openInspectorLabel = 'Open API inspector',
     this.overviewTab = 'Overview',

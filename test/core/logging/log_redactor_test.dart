@@ -262,14 +262,11 @@ void main() {
       final redacted = redactor.redact(body);
 
       expect(redacted, isA<String>());
-      expect(
-        jsonDecode(redacted! as String),
-        <String, Object?>{'email': 'ada@example.com', 'password': '***'},
-      );
-      expect(
-        redactor.redact('  [{"token": "t"}]'),
-        '[{"token":"***"}]',
-      );
+      expect(jsonDecode(redacted! as String), <String, Object?>{
+        'email': 'ada@example.com',
+        'password': '***',
+      });
+      expect(redactor.redact('  [{"token": "t"}]'), '[{"token":"***"}]');
     });
 
     test('returns other values unchanged', () {
@@ -317,8 +314,10 @@ class _LoginModel {
   _LoginModel(this.email, this.password);
   final String email;
   final String password;
-  Map<String, Object?> toJson() =>
-      <String, Object?>{'email': email, 'password': password};
+  Map<String, Object?> toJson() => <String, Object?>{
+    'email': email,
+    'password': password,
+  };
 }
 
 void _toJsonRedactionTests() {

@@ -57,16 +57,15 @@ class SecureLoggingInterceptor extends Interceptor {
     SymphonyConfig config, {
     required SymphonyLogger logger,
     String tag = 'HTTP',
-  }) =>
-      SecureLoggingInterceptor(
-        logger: logger,
-        redactor: config.redactor,
-        logRequestBodies: config.logRequestBodies,
-        logResponseBodies: config.logResponseBodies,
-        maxBodyLength: config.maxLoggedBodyLength,
-        tag: tag,
-        sensitiveHeaders: <String>{config.authHeaderName},
-      );
+  }) => SecureLoggingInterceptor(
+    logger: logger,
+    redactor: config.redactor,
+    logRequestBodies: config.logRequestBodies,
+    logResponseBodies: config.logResponseBodies,
+    maxBodyLength: config.maxLoggedBodyLength,
+    tag: tag,
+    sensitiveHeaders: <String>{config.authHeaderName},
+  );
 
   /// Destination logger.
   final SymphonyLogger logger;
@@ -104,14 +103,12 @@ class SecureLoggingInterceptor extends Interceptor {
   final Set<String> sensitiveHeaders;
 
   static const String _startedAtKey = 'symphony.internal.logStartedAt';
-  static final RegExp _urlEncodedPattern =
-      RegExp(r'^[\w.~%+\-\[\]]+=[^&\s]*(&[\w.~%+\-\[\]]+=[^&\s]*)*$');
+  static final RegExp _urlEncodedPattern = RegExp(
+    r'^[\w.~%+\-\[\]]+=[^&\s]*(&[\w.~%+\-\[\]]+=[^&\s]*)*$',
+  );
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (_loggingAllowed(options)) {
       try {
         options.extra[_startedAtKey] = DateTime.now().microsecondsSinceEpoch;
@@ -148,10 +145,10 @@ class SecureLoggingInterceptor extends Interceptor {
   }
 
   bool _loggingAllowed(RequestOptions options) => readBoolExtra(
-        options.extra,
-        SymphonyRequestExtras.log,
-        defaultValue: true,
-      );
+    options.extra,
+    SymphonyRequestExtras.log,
+    defaultValue: true,
+  );
 
   void _write(LogLevel level, String Function() message) {
     try {
@@ -255,8 +252,8 @@ class SecureLoggingInterceptor extends Interceptor {
     redactor
         .redactHeaders(maskHeaders(headers, sensitiveHeaders, redactor.mask))
         .forEach((name, value) {
-      buffer.write('\n  $name: $value');
-    });
+          buffer.write('\n  $name: $value');
+        });
   }
 
   void _writeBody(StringBuffer buffer, Object? data, String? contentType) {
@@ -276,8 +273,8 @@ class SecureLoggingInterceptor extends Interceptor {
       final trimmed = data.trim();
       final isForm =
           (contentType?.toLowerCase().contains('x-www-form-urlencoded') ??
-                  false) ||
-              _urlEncodedPattern.hasMatch(trimmed);
+              false) ||
+          _urlEncodedPattern.hasMatch(trimmed);
       if (isForm && !trimmed.startsWith('{') && !trimmed.startsWith('[')) {
         return _describeUrlEncoded(trimmed);
       }
@@ -302,12 +299,14 @@ class SecureLoggingInterceptor extends Interceptor {
 
   static String _describeFormData(FormData data) {
     final fields = data.fields.map((field) => field.key).join(', ');
-    final files = data.files.map((entry) {
-      final file = entry.value;
-      final type = file.contentType;
-      return '${entry.key}: ${file.filename ?? '(unnamed)'} '
-          '(${file.length} bytes${type == null ? '' : ', $type'})';
-    }).join(', ');
+    final files = data.files
+        .map((entry) {
+          final file = entry.value;
+          final type = file.contentType;
+          return '${entry.key}: ${file.filename ?? '(unnamed)'} '
+              '(${file.length} bytes${type == null ? '' : ', $type'})';
+        })
+        .join(', ');
     return 'FormData(fields: [$fields], files: [$files])';
   }
 

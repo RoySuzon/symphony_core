@@ -44,8 +44,11 @@ void main() {
       };
 
       for (final entry in expectations.entries) {
-        expect(breakpoints.classify(entry.key), entry.value,
-            reason: '${entry.key}');
+        expect(
+          breakpoints.classify(entry.key),
+          entry.value,
+          reason: '${entry.key}',
+        );
       }
     });
 
@@ -144,17 +147,17 @@ void main() {
     testWidgets('rebuilds dependents when the scope changes', (tester) async {
       final classes = <ScreenSizeClass>[];
       Widget build(SymphonyBreakpoints breakpoints) => MediaQuery(
-            data: const MediaQueryData(size: Size(700, 800)),
-            child: SymphonyBreakpointsScope(
-              breakpoints: breakpoints,
-              child: Builder(
-                builder: (context) {
-                  classes.add(context.screenSizeClass);
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-          );
+        data: const MediaQueryData(size: Size(700, 800)),
+        child: SymphonyBreakpointsScope(
+          breakpoints: breakpoints,
+          child: Builder(
+            builder: (context) {
+              classes.add(context.screenSizeClass);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
 
       await tester.pumpWidget(build(SymphonyBreakpoints.standard));
       await tester.pumpWidget(build(const SymphonyBreakpoints(medium: 720)));
@@ -167,8 +170,9 @@ void main() {
   });
 
   group('ResponsiveBuilder', () {
-    testWidgets('classifies the available width, not the screen',
-        (tester) async {
+    testWidgets('classifies the available width, not the screen', (
+      tester,
+    ) async {
       final widths = <double, ScreenSizeClass>{
         320: ScreenSizeClass.compact,
         700: ScreenSizeClass.medium,
@@ -215,8 +219,9 @@ void main() {
       expect(received, ScreenSizeClass.compact);
     });
 
-    testWidgets('falls back to the screen width when unbounded',
-        (tester) async {
+    testWidgets('falls back to the screen width when unbounded', (
+      tester,
+    ) async {
       ScreenSizeClass? received;
       await tester.pumpWidget(
         MediaQuery(
@@ -245,8 +250,7 @@ void main() {
       WidgetTester tester,
       double width,
       ResponsiveLayout layout,
-    ) =>
-        tester.pumpWidget(withWidth(width, layout));
+    ) => tester.pumpWidget(withWidth(width, layout));
 
     testWidgets('selects the layout of each size class', (tester) async {
       const layout = ResponsiveLayout(

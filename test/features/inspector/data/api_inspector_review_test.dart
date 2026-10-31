@@ -9,9 +9,9 @@ class _Credentials {
   final String password;
 
   Map<String, Object?> toJson() => <String, Object?>{
-        'user': user,
-        'password': password,
-      };
+    'user': user,
+    'password': password,
+  };
 }
 
 void main() {
@@ -21,14 +21,17 @@ void main() {
     final inspector = ApiInspector();
     addTearDown(inspector.dispose);
 
-    final id = inspector.startCall(
-      method: 'POST',
-      uri: uri,
-      body: <String, Object?>{
-        'login': const _Credentials('jane', 'nested-map-secret'),
-        'others': <Object?>[const _Credentials('john', 'nested-list-secret')],
-      },
-    )!;
+    final id =
+        inspector.startCall(
+          method: 'POST',
+          uri: uri,
+          body: <String, Object?>{
+            'login': const _Credentials('jane', 'nested-map-secret'),
+            'others': <Object?>[
+              const _Credentials('john', 'nested-list-secret'),
+            ],
+          },
+        )!;
     inspector.completeCall(
       id,
       statusCode: 200,

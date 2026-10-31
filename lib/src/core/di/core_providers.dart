@@ -10,26 +10,24 @@ import '../logging/symphony_logger.dart';
 /// It has no default value: it is provided by `SymphonyCore.initialize` or by
 /// adding `symphonyOverrides(config: ...)` to a `ProviderScope`.
 final symphonyConfigProvider = Provider<SymphonyConfig>(
-  (ref) => throw StateError(
-    'symphonyConfigProvider is not configured. Call '
-    'SymphonyCore.initialize(config: ...) before runApp, or add '
-    'symphonyOverrides(config: ...) to your ProviderScope overrides.',
-  ),
+  (ref) =>
+      throw StateError(
+        'symphonyConfigProvider is not configured. Call '
+        'SymphonyCore.initialize(config: ...) before runApp, or add '
+        'symphonyOverrides(config: ...) to your ProviderScope overrides.',
+      ),
   name: 'symphonyConfigProvider',
 );
 
 /// Shared [SymphonyLogger] configured from [symphonyConfigProvider].
-final symphonyLoggerProvider = Provider<SymphonyLogger>(
-  (ref) {
-    final config = ref.watch(symphonyConfigProvider);
-    return SymphonyLogger(
-      enabled: config.enableLogging,
-      minLevel: config.logLevel,
-      tag: 'Symphony',
-    );
-  },
-  name: 'symphonyLoggerProvider',
-);
+final symphonyLoggerProvider = Provider<SymphonyLogger>((ref) {
+  final config = ref.watch(symphonyConfigProvider);
+  return SymphonyLogger(
+    enabled: config.enableLogging,
+    minLevel: config.logLevel,
+    tag: 'Symphony',
+  );
+}, name: 'symphonyLoggerProvider');
 
 /// Shared [LogRedactor] configured from [symphonyConfigProvider].
 final logRedactorProvider = Provider<LogRedactor>(

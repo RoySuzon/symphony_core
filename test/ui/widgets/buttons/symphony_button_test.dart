@@ -19,8 +19,9 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('maps every variant to the matching Material button',
-        (tester) async {
+    testWidgets('maps every variant to the matching Material button', (
+      tester,
+    ) async {
       final scheme = SymphonyTheme.light().colorScheme;
       final expectations = <SymphonyButtonVariant, (Type, Color)>{
         SymphonyButtonVariant.primary: (FilledButton, scheme.primary),
@@ -71,7 +72,9 @@ void main() {
       final scheme = SymphonyTheme.light().colorScheme;
       final text = tester.widget<RichText>(
         find.descendant(
-            of: find.text('Delete'), matching: find.byType(RichText)),
+          of: find.text('Delete'),
+          matching: find.byType(RichText),
+        ),
       );
       final icon = tester.widget<RichText>(
         find.descendant(
@@ -89,12 +92,13 @@ void main() {
         await tester.pumpWidget(
           _app(SymphonyButton(label: 'Go', size: size, onPressed: () {})),
         );
-        final surface = find
-            .descendant(
-              of: find.byType(SymphonyButton),
-              matching: find.byType(Material),
-            )
-            .first;
+        final surface =
+            find
+                .descendant(
+                  of: find.byType(SymphonyButton),
+                  matching: find.byType(Material),
+                )
+                .first;
 
         expect(tester.getSize(surface).height, size.minHeight, reason: '$size');
       }
@@ -103,8 +107,9 @@ void main() {
       expect(SymphonyButtonSize.large.minHeight, 52);
     });
 
-    testWidgets('renders leading and trailing icons sized to the button',
-        (tester) async {
+    testWidgets('renders leading and trailing icons sized to the button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _app(
           SymphonyButton(
@@ -140,18 +145,17 @@ void main() {
       expect(button.onPressed, isNull);
     });
 
-    testWidgets(
-        'shows a spinner, keeps its width and ignores taps while '
+    testWidgets('shows a spinner, keeps its width and ignores taps while '
         'loading', (tester) async {
       var taps = 0;
       Widget build({required bool loading}) => _app(
-            SymphonyButton(
-              label: 'Sign in',
-              icon: Icons.login,
-              isLoading: loading,
-              onPressed: () => taps++,
-            ),
-          );
+        SymphonyButton(
+          label: 'Sign in',
+          icon: Icons.login,
+          isLoading: loading,
+          onPressed: () => taps++,
+        ),
+      );
 
       await tester.pumpWidget(build(loading: false));
       final idleSize = tester.getSize(find.byType(SymphonyButton));
@@ -182,8 +186,9 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('announces the loading state to screen readers',
-        (tester) async {
+    testWidgets('announces the loading state to screen readers', (
+      tester,
+    ) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
         _app(
@@ -208,8 +213,9 @@ void main() {
       semantics.dispose();
     });
 
-    testWidgets('exposes the label to screen readers when idle',
-        (tester) async {
+    testWidgets('exposes the label to screen readers when idle', (
+      tester,
+    ) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
         _app(SymphonyButton(label: 'Pay', onPressed: () {})),
@@ -221,18 +227,19 @@ void main() {
       semantics.dispose();
     });
 
-    testWidgets('keeps keyboard focus when toggling the loading state',
-        (tester) async {
+    testWidgets('keeps keyboard focus when toggling the loading state', (
+      tester,
+    ) async {
       final focusNode = FocusNode();
       addTearDown(focusNode.dispose);
       Widget build({required bool loading}) => _app(
-            SymphonyButton(
-              label: 'Save',
-              focusNode: focusNode,
-              isLoading: loading,
-              onPressed: () {},
-            ),
-          );
+        SymphonyButton(
+          label: 'Save',
+          focusNode: focusNode,
+          isLoading: loading,
+          onPressed: () {},
+        ),
+      );
 
       await tester.pumpWidget(build(loading: false));
       focusNode.requestFocus();

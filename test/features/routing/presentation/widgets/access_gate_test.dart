@@ -104,8 +104,9 @@ void main() {
   });
 
   group('SymphonyAccessWidgetRef', () {
-    testWidgets('watchCanAccess rebuilds and readCanAccess reads once',
-        (tester) async {
+    testWidgets('watchCanAccess rebuilds and readCanAccess reads once', (
+      tester,
+    ) async {
       final pressed = <bool>[];
       final container = await pumpScoped(
         tester,

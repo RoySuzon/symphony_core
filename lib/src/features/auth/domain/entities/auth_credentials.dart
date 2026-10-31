@@ -22,10 +22,10 @@ class AuthCredentials {
   factory AuthCredentials.usernamePassword({
     required String username,
     required String password,
-  }) =>
-      AuthCredentials(
-        <String, Object?>{'username': username, 'password': password},
-      );
+  }) => AuthCredentials(<String, Object?>{
+    'username': username,
+    'password': password,
+  });
 
   /// The raw fields.
   final Map<String, Object?> fields;

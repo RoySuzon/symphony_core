@@ -24,8 +24,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('requests a reset and shows the confirmation message',
-      (tester) async {
+  testWidgets('requests a reset and shows the confirmation message', (
+    tester,
+  ) async {
     final container = createAuthContainer(adapter: adapter);
     String? sentTo;
     await pumpAuthWidget(
@@ -50,11 +51,7 @@ void main() {
 
   testWidgets('validates the identifier', (tester) async {
     final container = createAuthContainer(adapter: adapter);
-    await pumpAuthWidget(
-      tester,
-      container,
-      const SymphonyForgotPasswordForm(),
-    );
+    await pumpAuthWidget(tester, container, const SymphonyForgotPasswordForm());
 
     await requestReset(tester, 'not-an-email');
 
@@ -62,8 +59,9 @@ void main() {
     expect(issuedCodes, isEmpty);
   });
 
-  testWidgets('completes the reset with the code and a new password',
-      (tester) async {
+  testWidgets('completes the reset with the code and a new password', (
+    tester,
+  ) async {
     final container = createAuthContainer(adapter: adapter);
     var completed = false;
     await pumpAuthWidget(

@@ -157,8 +157,11 @@ class DefaultApiErrorMapper extends ApiErrorMapper {
     if (error is Failure) return error;
     if (error is DioException) return mapDioException(error, stackTrace);
     if (error is FormatException || error is TypeError) {
-      return ParsingFailure(parsingMessage,
-          cause: error, stackTrace: stackTrace);
+      return ParsingFailure(
+        parsingMessage,
+        cause: error,
+        stackTrace: stackTrace,
+      );
     }
     return UnexpectedFailure(unexpectedMessage, error, stackTrace);
   }
@@ -200,8 +203,11 @@ class DefaultApiErrorMapper extends ApiErrorMapper {
     }
     // DioExceptionType.unknown (and types added by future Dio versions).
     if (inner is FormatException || inner is TypeError) {
-      return ParsingFailure(parsingMessage,
-          cause: error, stackTrace: stackTrace);
+      return ParsingFailure(
+        parsingMessage,
+        cause: error,
+        stackTrace: stackTrace,
+      );
     }
     if (looksLikeConnectionError(inner) ||
         looksLikeConnectionError(error.message)) {
@@ -364,8 +370,9 @@ class DefaultApiErrorMapper extends ApiErrorMapper {
       final pointer =
           _lookup(source, 'pointer') ?? _lookup(source, 'parameter');
       if (pointer is String && pointer.trim().isNotEmpty) {
-        final segments =
-            pointer.split('/').where((segment) => segment.isNotEmpty);
+        final segments = pointer
+            .split('/')
+            .where((segment) => segment.isNotEmpty);
         if (segments.isNotEmpty) return segments.last;
       }
     }

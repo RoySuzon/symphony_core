@@ -141,9 +141,13 @@ abstract final class SymphonyRouter {
     final accessChanges = _listenAccess(ref);
     final router = custom(
       readAccess: () => ref.read(accessContextProvider),
-      refreshListenable: refreshListenable == null
-          ? accessChanges
-          : Listenable.merge(<Listenable>[accessChanges, refreshListenable]),
+      refreshListenable:
+          refreshListenable == null
+              ? accessChanges
+              : Listenable.merge(<Listenable>[
+                accessChanges,
+                refreshListenable,
+              ]),
       routes: routes,
       paths: paths,
       initialLocation: initialLocation,
@@ -264,13 +268,16 @@ abstract final class SymphonyRouter {
       publicPaths: publicPaths,
       defaultAccess: defaultAccess,
     );
-    final scope =
-        SymphonyRouteScope(readAccess: readAccess, resolver: resolver);
+    final scope = SymphonyRouteScope(
+      readAccess: readAccess,
+      resolver: resolver,
+    );
     final pushedPages = _PushedPagesGuard(resolver);
     return (BuildContext context, GoRouterState state) {
       SymphonyRouteScope.bind(context, scope);
       final access = readAccess();
-      final target = resolver.resolveGlobal(access, state.uri) ??
+      final target =
+          resolver.resolveGlobal(access, state.uri) ??
           pushedPages.check(context, state.uri, access);
       if (target != null) return target;
       final appTarget = redirect?.call(context, state);
@@ -329,8 +336,9 @@ abstract final class SymphonyRouter {
         if (previous != next) notifier.notifyAccessChanged();
       },
       // Re-run the redirects so the failure surfaces through the router.
-      onError: (Object error, StackTrace stackTrace) =>
-          notifier.notifyAccessChanged(),
+      onError:
+          (Object error, StackTrace stackTrace) =>
+              notifier.notifyAccessChanged(),
     );
     return notifier;
   }
@@ -349,8 +357,9 @@ abstract final class SymphonyRouter {
         exception: error,
         stack: stackTrace,
         library: 'symphony_core',
-        context:
-            ErrorDescription('while restoring the session on router start'),
+        context: ErrorDescription(
+          'while restoring the session on router start',
+        ),
       ),
     );
   }

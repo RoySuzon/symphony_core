@@ -24,7 +24,7 @@ class Debouncer {
   /// Creates a debouncer that runs the latest action once [delay] has elapsed
   /// without another call to [run].
   Debouncer(this.delay)
-      : assert(!delay.isNegative, 'delay must not be negative');
+    : assert(!delay.isNegative, 'delay must not be negative');
 
   /// Quiet period required before the latest action runs.
   final Duration delay;
@@ -98,7 +98,7 @@ class Debouncer {
 class Throttler {
   /// Creates a throttler allowing one action per [interval].
   Throttler(this.interval, {this.trailing = false})
-      : assert(!interval.isNegative, 'interval must not be negative');
+    : assert(!interval.isNegative, 'interval must not be negative');
 
   /// Minimum time between two executed actions.
   final Duration interval;

@@ -27,7 +27,9 @@ void main() {
       expect(CurlCommandBuilder.quote('abc'), "'abc'");
       expect(CurlCommandBuilder.quote(''), "''");
       expect(
-          CurlCommandBuilder.quote(r'$HOME `id` "x"'), r"""'$HOME `id` "x"'""");
+        CurlCommandBuilder.quote(r'$HOME `id` "x"'),
+        r"""'$HOME `id` "x"'""",
+      );
     });
 
     test('escapes embedded single quotes', () {
@@ -75,10 +77,7 @@ void main() {
 
     test('uses --head for HEAD and keeps the masked query', () {
       final command = builder.build(
-        record(
-          method: 'HEAD',
-          url: 'https://api.example.com/files?token=***',
-        ),
+        record(method: 'HEAD', url: 'https://api.example.com/files?token=***'),
       );
       expect(command, "curl --head 'https://api.example.com/files?token=***'");
     });
@@ -150,7 +149,8 @@ void main() {
           headers: const <String, String>{
             'content-type': 'application/x-www-form-urlencoded',
           },
-          body: '{"grant_type": "password", "scope": ["a", "b"], '
+          body:
+              '{"grant_type": "password", "scope": ["a", "b"], '
               '"password": "***"}',
         ),
       );

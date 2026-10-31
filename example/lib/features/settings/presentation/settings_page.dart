@@ -67,9 +67,10 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
               selected: <ThemePreference>{preferences.theme},
-              onSelectionChanged: (selection) => ref
-                  .read(appPreferencesProvider.notifier)
-                  .setTheme(selection.first),
+              onSelectionChanged:
+                  (selection) => ref
+                      .read(appPreferencesProvider.notifier)
+                      .setTheme(selection.first),
             ),
           ),
           const SizedBox(height: SymphonySpacing.lg),
@@ -77,7 +78,8 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: SymphonySpacing.lg),
           SectionCard(
             title: 'API inspector',
-            subtitle: 'Every request of the ApiClient, with headers, bodies '
+            subtitle:
+                'Every request of the ApiClient, with headers, bodies '
                 '(sensitive values masked) and cURL export.',
             icon: Icons.manage_search_rounded,
             child: Align(
@@ -141,46 +143,55 @@ class _EnvironmentSection extends ConsumerWidget {
                 environment.id == selected.id
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
-                color: environment.id == selected.id
-                    ? theme.colorScheme.primary
-                    : null,
+                color:
+                    environment.id == selected.id
+                        ? theme.colorScheme.primary
+                        : null,
               ),
               title: Text(environment.label),
-              subtitle: Text('${environment.baseUrl}\n'
-                  '${environment.description}'),
+              subtitle: Text(
+                '${environment.baseUrl}\n'
+                '${environment.description}',
+              ),
               isThreeLine: true,
-              onTap: environment.id == selected.id
-                  ? null
-                  : () => ref
-                      .read(appPreferencesProvider.notifier)
-                      .setEnvironment(environment),
+              onTap:
+                  environment.id == selected.id
+                      ? null
+                      : () => ref
+                          .read(appPreferencesProvider.notifier)
+                          .setEnvironment(environment),
             ),
           const Divider(),
           ValueListenableBuilder<String>(
             valueListenable: client.baseUrlListenable,
-            builder: (context, baseUrl, child) =>
-                InfoRow(label: 'ApiClient.baseUrl', value: baseUrl),
+            builder:
+                (context, baseUrl, child) =>
+                    InfoRow(label: 'ApiClient.baseUrl', value: baseUrl),
           ),
           status.when(
             loading: () => const InfoRow(label: 'Status', value: 'Checking…'),
-            error: (error, stackTrace) =>
-                InfoRow(label: 'Status', value: '$error'),
-            data: (result) => result.when(
-              success: (value) => Column(
-                children: <Widget>[
-                  InfoRow(
-                    label: 'Answered by',
-                    value: '${value.host} (${value.environment})',
-                  ),
-                  InfoRow(
-                    label: 'Service',
-                    value: '${value.service} ${value.version}',
-                  ),
-                ],
-              ),
-              failure: (failure) =>
-                  InfoRow(label: 'Status', value: failure.message),
-            ),
+            error:
+                (error, stackTrace) =>
+                    InfoRow(label: 'Status', value: '$error'),
+            data:
+                (result) => result.when(
+                  success:
+                      (value) => Column(
+                        children: <Widget>[
+                          InfoRow(
+                            label: 'Answered by',
+                            value: '${value.host} (${value.environment})',
+                          ),
+                          InfoRow(
+                            label: 'Service',
+                            value: '${value.service} ${value.version}',
+                          ),
+                        ],
+                      ),
+                  failure:
+                      (failure) =>
+                          InfoRow(label: 'Status', value: failure.message),
+                ),
           ),
           const SizedBox(height: SymphonySpacing.sm),
           Align(
@@ -211,7 +222,8 @@ class _DeveloperToolsSection extends ConsumerWidget {
     final expiresAt = session?.tokens.expiresAt;
     return SectionCard(
       title: 'Demo backend tools',
-      subtitle: 'Provoke the situations the core handles for you, then '
+      subtitle:
+          'Provoke the situations the core handles for you, then '
           'watch the API inspector.',
       icon: Icons.science_outlined,
       child: Column(
@@ -220,7 +232,8 @@ class _DeveloperToolsSection extends ConsumerWidget {
           if (expiresAt != null)
             InfoRow(
               label: 'Access token expiry',
-              value: '${Formatters.time(expiresAt)} '
+              value:
+                  '${Formatters.time(expiresAt)} '
                   '(${Formatters.countdown(expiresAt.difference(DateTime.now()))})',
             ),
           const SizedBox(height: SymphonySpacing.sm),
@@ -266,8 +279,9 @@ class _DeveloperToolsSection extends ConsumerWidget {
               'Requests fail with a connection error (NetworkFailure).',
             ),
             value: offline,
-            onChanged: (value) =>
-                ref.read(demoOfflineProvider.notifier).set(offline: value),
+            onChanged:
+                (value) =>
+                    ref.read(demoOfflineProvider.notifier).set(offline: value),
           ),
         ],
       ),
@@ -289,9 +303,10 @@ class _StorageSection extends ConsumerWidget {
       icon: Icons.lock_outline,
       child: InfoRow(
         label: 'Backend',
-        value: fallback
-            ? 'In memory (secure storage is unavailable on this platform)'
-            : storage is ResilientKeyValueStorage
+        value:
+            fallback
+                ? 'In memory (secure storage is unavailable on this platform)'
+                : storage is ResilientKeyValueStorage
                 ? 'Secure storage (flutter_secure_storage)'
                 : '${storage.runtimeType}',
       ),

@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:symphony_core/src/core/core.dart';
 
-/// Matches the error thrown when reading an unconfigured provider. Riverpod 3
-/// wraps it in a `ProviderException`, Riverpod 2 rethrows it as is.
+/// Matches the error thrown when reading an unconfigured provider (Riverpod
+/// wraps it in a `ProviderException`, so only its description is matched).
 Matcher throwsMentioning(String text) =>
     throwsA(predicate((Object? error) => '$error'.contains(text)));
 

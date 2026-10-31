@@ -6,8 +6,9 @@ import '../../ui_test_utils.dart';
 
 void main() {
   group('SymphonyLoadingIndicator', () {
-    testWidgets('renders a centered indicator of the given size',
-        (tester) async {
+    testWidgets('renders a centered indicator of the given size', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(const SymphonyLoadingIndicator(size: 48)),
       );
@@ -16,15 +17,18 @@ void main() {
       expect(indicator, findsOneWidget);
       expect(tester.getSize(indicator), const Size(48, 48));
       expect(
-          tester.getCenter(indicator), tester.getCenter(find.byType(Scaffold)));
+        tester.getCenter(indicator),
+        tester.getCenter(find.byType(Scaffold)),
+      );
       expect(
         tester.widget<CircularProgressIndicator>(indicator).semanticsLabel,
         'Loading',
       );
     });
 
-    testWidgets('renders the message and uses it as semantics label',
-        (tester) async {
+    testWidgets('renders the message and uses it as semantics label', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(const SymphonyLoadingIndicator(message: 'Fetching data')),
       );
@@ -40,8 +44,9 @@ void main() {
       );
     });
 
-    testWidgets('uses the theme colour by default and the given colour',
-        (tester) async {
+    testWidgets('uses the theme colour by default and the given colour', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestApp(const SymphonyLoadingIndicator()));
       final theme = SymphonyTheme.light();
       var indicator = tester.widget<CircularProgressIndicator>(
@@ -113,8 +118,9 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('blocks taps and shows the indicator while loading',
-        (tester) async {
+    testWidgets('blocks taps and shows the indicator while loading', (
+      tester,
+    ) async {
       var taps = 0;
       await tester.pumpWidget(
         overlay(isLoading: true, onTap: () => taps++, message: 'Saving'),

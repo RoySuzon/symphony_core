@@ -29,8 +29,9 @@ class ApiCallRecord {
   /// Body text stored for a binary body of [length] bytes.
   static String binaryBodyPlaceholder(int length) => '[binary $length bytes]';
 
-  static final RegExp _binaryPlaceholderPattern =
-      RegExp(r'^\[binary \d+ bytes\]$');
+  static final RegExp _binaryPlaceholderPattern = RegExp(
+    r'^\[binary \d+ bytes\]$',
+  );
 
   /// Whether [body] is a placeholder standing for content that was not
   /// captured as text (see [streamBodyPlaceholder] and
@@ -125,7 +126,8 @@ class ApiCallRecord {
   }
 
   /// [startedAt] formatted as `HH:mm:ss`.
-  String get timeLabel => '${_twoDigits(startedAt.hour)}:'
+  String get timeLabel =>
+      '${_twoDigits(startedAt.hour)}:'
       '${_twoDigits(startedAt.minute)}:${_twoDigits(startedAt.second)}';
 
   /// `Content-Type` of the request, if known.

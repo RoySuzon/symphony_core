@@ -127,10 +127,7 @@ void main() {
 
     test('use the configured parameter name', () {
       const custom = SymphonyRoutePaths(redirectParameter: 'next');
-      expect(
-        custom.loginLocation(from: '/orders'),
-        '/login?next=%2Forders',
-      );
+      expect(custom.loginLocation(from: '/orders'), '/login?next=%2Forders');
     });
   });
 
@@ -160,10 +157,7 @@ void main() {
     });
 
     test('toString describes the paths', () {
-      expect(
-        const SymphonyRoutePaths().toString(),
-        contains('login: /login'),
-      );
+      expect(const SymphonyRoutePaths().toString(), contains('login: /login'));
     });
   });
 }

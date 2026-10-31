@@ -8,10 +8,11 @@ import 'package:symphony_core/src/core/di/core_providers.dart';
 import 'package:symphony_core/src/features/inspector/inspector.dart';
 
 void _record(ApiInspector inspector, String path, {int status = 200}) {
-  final id = inspector.startCall(
-    method: 'GET',
-    uri: Uri.parse('https://api.example.com$path'),
-  )!;
+  final id =
+      inspector.startCall(
+        method: 'GET',
+        uri: Uri.parse('https://api.example.com$path'),
+      )!;
   if (status >= 400) {
     inspector.failCall(id, error: 'HTTP $status', statusCode: status);
   } else {
@@ -38,11 +39,12 @@ class _AppState extends State<_App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      builder: (context, child) => SymphonyInspectorOverlay(
-        inspector: widget.inspector,
-        enabled: widget.enabled,
-        child: child!,
-      ),
+      builder:
+          (context, child) => SymphonyInspectorOverlay(
+            inspector: widget.inspector,
+            enabled: widget.enabled,
+            child: child!,
+          ),
       home: Scaffold(
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -91,35 +93,46 @@ void main() {
 
   tearDown(() => inspector.dispose());
 
-  testWidgets('shows the floating button with call and error counts',
-      (tester) async {
+  testWidgets('shows the floating button with call and error counts', (
+    tester,
+  ) async {
     await tester.pumpWidget(_App(inspector: inspector));
 
     expect(_button, findsOneWidget);
     expect(
-        find.descendant(of: _button, matching: find.text('3')), findsOneWidget);
+      find.descendant(of: _button, matching: find.text('3')),
+      findsOneWidget,
+    );
     expect(
-        find.descendant(of: _button, matching: find.text('1')), findsOneWidget);
+      find.descendant(of: _button, matching: find.text('1')),
+      findsOneWidget,
+    );
 
     _record(inspector, '/new');
     _record(inspector, '/again', status: 404);
     await tester.pump();
 
     expect(
-        find.descendant(of: _button, matching: find.text('5')), findsOneWidget);
+      find.descendant(of: _button, matching: find.text('5')),
+      findsOneWidget,
+    );
     expect(
-        find.descendant(of: _button, matching: find.text('2')), findsOneWidget);
+      find.descendant(of: _button, matching: find.text('2')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('works without any ProviderScope when given an inspector',
-      (tester) async {
+  testWidgets('works without any ProviderScope when given an inspector', (
+    tester,
+  ) async {
     await tester.pumpWidget(_App(inspector: inspector));
     expect(tester.takeException(), isNull);
     expect(_button, findsOneWidget);
   });
 
-  testWidgets('the app stays tappable while the panel is closed',
-      (tester) async {
+  testWidgets('the app stays tappable while the panel is closed', (
+    tester,
+  ) async {
     await tester.pumpWidget(_App(inspector: inspector));
 
     await tester.tap(find.text('Taps: 0'));
@@ -179,8 +192,9 @@ void main() {
     expect(find.text('Taps: 1'), findsNothing);
   });
 
-  testWidgets('the back button pops the panel pages, then closes it',
-      (tester) async {
+  testWidgets('the back button pops the panel pages, then closes it', (
+    tester,
+  ) async {
     await tester.pumpWidget(_App(inspector: inspector));
     await tester.tap(_button);
     await tester.pumpAndSettle();
@@ -199,8 +213,9 @@ void main() {
     expect(_button, findsOneWidget);
   });
 
-  testWidgets('the button can be dragged and snaps to the closest side',
-      (tester) async {
+  testWidgets('the button can be dragged and snaps to the closest side', (
+    tester,
+  ) async {
     await tester.pumpWidget(_App(inspector: inspector));
     final start = tester.getTopLeft(_button);
 
@@ -225,19 +240,21 @@ void main() {
       routes: <RouteBase>[
         GoRoute(
           path: '/',
-          builder: (context, state) => Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () => context.push('/details'),
-                child: const Text('Go to details'),
+          builder:
+              (context, state) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () => context.push('/details'),
+                    child: const Text('Go to details'),
+                  ),
+                ),
               ),
-            ),
-          ),
           routes: <RouteBase>[
             GoRoute(
               path: 'details',
-              builder: (context, state) =>
-                  const Scaffold(body: Text('App details page')),
+              builder:
+                  (context, state) =>
+                      const Scaffold(body: Text('App details page')),
             ),
           ],
         ),
@@ -247,8 +264,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(
         routerConfig: router,
-        builder: (context, child) =>
-            SymphonyInspectorOverlay(inspector: inspector, child: child!),
+        builder:
+            (context, child) =>
+                SymphonyInspectorOverlay(inspector: inspector, child: child!),
       ),
     );
 
@@ -313,16 +331,19 @@ void main() {
 
       _record(shared, '/shared');
       await tester.pump();
-      expect(find.descendant(of: _button, matching: find.text('1')),
-          findsOneWidget);
+      expect(
+        find.descendant(of: _button, matching: find.text('1')),
+        findsOneWidget,
+      );
 
       await tester.tap(_button);
       await tester.pumpAndSettle();
       expect(find.text('/shared'), findsOneWidget);
     });
 
-    testWidgets('falls back to enabled when the config is missing',
-        (tester) async {
+    testWidgets('falls back to enabled when the config is missing', (
+      tester,
+    ) async {
       await tester.pumpWidget(ProviderScope(child: _App(inspector: inspector)));
       await tester.pump();
 
@@ -334,8 +355,10 @@ void main() {
       await tester.pumpWidget(
         scoped(enableInspector: true, explicit: inspector),
       );
-      expect(find.descendant(of: _button, matching: find.text('3')),
-          findsOneWidget);
+      expect(
+        find.descendant(of: _button, matching: find.text('3')),
+        findsOneWidget,
+      );
     });
   });
 }

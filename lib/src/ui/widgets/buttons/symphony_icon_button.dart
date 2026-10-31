@@ -78,47 +78,51 @@ class SymphonyIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final VoidCallback? effectiveOnPressed =
         onPressed != null && isLoading ? _ignoreActivation : onPressed;
-    final Widget iconWidget = isLoading
-        ? _IconButtonSpinner(size: iconSize ?? _defaultIconSize, color: color)
-        : Icon(icon);
+    final Widget iconWidget =
+        isLoading
+            ? _IconButtonSpinner(
+              size: iconSize ?? _defaultIconSize,
+              color: color,
+            )
+            : Icon(icon);
 
     final Widget button = switch (variant) {
       SymphonyIconButtonVariant.standard => IconButton(
-          icon: iconWidget,
-          tooltip: tooltip,
-          onPressed: effectiveOnPressed,
-          iconSize: iconSize,
-          color: color,
-          focusNode: focusNode,
-          autofocus: autofocus,
-        ),
+        icon: iconWidget,
+        tooltip: tooltip,
+        onPressed: effectiveOnPressed,
+        iconSize: iconSize,
+        color: color,
+        focusNode: focusNode,
+        autofocus: autofocus,
+      ),
       SymphonyIconButtonVariant.filled => IconButton.filled(
-          icon: iconWidget,
-          tooltip: tooltip,
-          onPressed: effectiveOnPressed,
-          iconSize: iconSize,
-          color: color,
-          focusNode: focusNode,
-          autofocus: autofocus,
-        ),
+        icon: iconWidget,
+        tooltip: tooltip,
+        onPressed: effectiveOnPressed,
+        iconSize: iconSize,
+        color: color,
+        focusNode: focusNode,
+        autofocus: autofocus,
+      ),
       SymphonyIconButtonVariant.tonal => IconButton.filledTonal(
-          icon: iconWidget,
-          tooltip: tooltip,
-          onPressed: effectiveOnPressed,
-          iconSize: iconSize,
-          color: color,
-          focusNode: focusNode,
-          autofocus: autofocus,
-        ),
+        icon: iconWidget,
+        tooltip: tooltip,
+        onPressed: effectiveOnPressed,
+        iconSize: iconSize,
+        color: color,
+        focusNode: focusNode,
+        autofocus: autofocus,
+      ),
       SymphonyIconButtonVariant.outlined => IconButton.outlined(
-          icon: iconWidget,
-          tooltip: tooltip,
-          onPressed: effectiveOnPressed,
-          iconSize: iconSize,
-          color: color,
-          focusNode: focusNode,
-          autofocus: autofocus,
-        ),
+        icon: iconWidget,
+        tooltip: tooltip,
+        onPressed: effectiveOnPressed,
+        iconSize: iconSize,
+        color: color,
+        focusNode: focusNode,
+        autofocus: autofocus,
+      ),
     };
 
     return Semantics(
@@ -151,9 +155,10 @@ class _IconButtonSpinner extends StatelessWidget {
         padding: EdgeInsets.all(size / 8),
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: foreground == null
-              ? null
-              : AlwaysStoppedAnimation<Color>(foreground),
+          valueColor:
+              foreground == null
+                  ? null
+                  : AlwaysStoppedAnimation<Color>(foreground),
         ),
       ),
     );

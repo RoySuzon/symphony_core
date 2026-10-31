@@ -84,8 +84,9 @@ void main() {
       expect(container.read(authControllerProvider).isAuthenticated, isFalse);
     });
 
-    testWidgets('localizes failures with failureMessageBuilder',
-        (tester) async {
+    testWidgets('localizes failures with failureMessageBuilder', (
+      tester,
+    ) async {
       final container = createAuthContainer(adapter: adapter);
       await pumpAuthWidget(
         tester,
@@ -101,8 +102,9 @@ void main() {
       expect(find.text('Identifiants invalides'), findsOneWidget);
     });
 
-    testWidgets('shows the recovery and registration links when supported',
-        (tester) async {
+    testWidgets('shows the recovery and registration links when supported', (
+      tester,
+    ) async {
       final container = createAuthContainer(adapter: adapter);
       var forgotTaps = 0;
       var registerTaps = 0;
@@ -130,8 +132,9 @@ void main() {
       expect(find.text('Create one'), findsNothing);
     });
 
-    testWidgets('hides the links when the adapter does not support them',
-        (tester) async {
+    testWidgets('hides the links when the adapter does not support them', (
+      tester,
+    ) async {
       final container = createAuthContainer(
         adapter: InMemoryAuthAdapter(
           accounts: demoAccounts,
@@ -248,11 +251,11 @@ void main() {
         tester,
         container,
         SymphonyLoginForm(
-          credentialsBuilder: (identifier, password) =>
-              AuthCredentials.usernamePassword(
-            username: identifier,
-            password: password,
-          ),
+          credentialsBuilder:
+              (identifier, password) => AuthCredentials.usernamePassword(
+                username: identifier,
+                password: password,
+              ),
           extraFields: const <Widget>[Text('Tenant: acme')],
           extraCredentials: () => <String, Object?>{'tenant': 'acme'},
         ),

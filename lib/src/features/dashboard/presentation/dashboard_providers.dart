@@ -36,17 +36,14 @@ final dashboardItemsProvider = Provider<List<DashboardItem>>(
 ///
 /// It updates automatically when the user signs in or out, or when their
 /// roles or permissions change.
-final visibleDashboardItemsProvider = Provider<List<DashboardItem>>(
-  (ref) {
-    final items = ref.watch(dashboardItemsProvider);
-    assert(DashboardMenu.debugAssertUniqueIds(items));
-    return DashboardMenu.filterVisibleItems(
-      items,
-      ref.watch(accessContextProvider),
-    );
-  },
-  name: 'visibleDashboardItemsProvider',
-);
+final visibleDashboardItemsProvider = Provider<List<DashboardItem>>((ref) {
+  final items = ref.watch(dashboardItemsProvider);
+  assert(DashboardMenu.debugAssertUniqueIds(items));
+  return DashboardMenu.filterVisibleItems(
+    items,
+    ref.watch(accessContextProvider),
+  );
+}, name: 'visibleDashboardItemsProvider');
 
 /// Watches the menu items that the current user may see, from inside a
 /// widget's `build` method.

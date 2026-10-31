@@ -70,12 +70,14 @@ class SymphonyLoginForm extends ConsumerStatefulWidget {
   });
 
   /// Key of the identifier input (useful in widget tests).
-  static const Key identifierInputKey =
-      ValueKey<String>('symphony.login.identifier');
+  static const Key identifierInputKey = ValueKey<String>(
+    'symphony.login.identifier',
+  );
 
   /// Key of the password input.
-  static const Key passwordInputKey =
-      ValueKey<String>('symphony.login.password');
+  static const Key passwordInputKey = ValueKey<String>(
+    'symphony.login.password',
+  );
 
   /// Key of the submit button.
   static const Key submitButtonKey = ValueKey<String>('symphony.login.submit');
@@ -132,7 +134,7 @@ class SymphonyLoginForm extends ConsumerStatefulWidget {
   /// Defaults to `{identifierField: identifier, passwordField: password}`,
   /// which equals `AuthCredentials.emailPassword` with the default fields.
   final AuthCredentials Function(String identifier, String password)?
-      credentialsBuilder;
+  credentialsBuilder;
 
   /// Additional inputs displayed after the password (tenant picker,
   /// "remember me"...). Their values are added with [extraCredentials].
@@ -228,7 +230,8 @@ class _SymphonyLoginFormState extends ConsumerState<SymphonyLoginForm> {
 
     final identifier = _identifierController.text.trim();
     final password = _passwordController.text;
-    var credentials = widget.credentialsBuilder?.call(identifier, password) ??
+    var credentials =
+        widget.credentialsBuilder?.call(identifier, password) ??
         AuthCredentials(<String, Object?>{
           widget.identifierField: identifier,
           widget.passwordField: password,
@@ -241,8 +244,9 @@ class _SymphonyLoginFormState extends ConsumerState<SymphonyLoginForm> {
     final onFailure = widget.onFailure;
 
     setState(() => _submitting = true);
-    final result =
-        await ref.read(authControllerProvider.notifier).login(credentials);
+    final result = await ref
+        .read(authControllerProvider.notifier)
+        .login(credentials);
 
     switch (result) {
       case ResultSuccess<AuthSession>(:final value):

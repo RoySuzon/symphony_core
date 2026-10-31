@@ -92,11 +92,8 @@ final sessionStorageProvider = Provider<SessionStorage>(
 ///   (ref) => ref.watch(localDatabaseProvider).store('todos', todoCodec),
 /// );
 /// ```
-final localDatabaseProvider = Provider<LocalDatabase>(
-  (ref) {
-    final database = InMemoryLocalDatabase();
-    ref.onDispose(() => unawaited(database.close()));
-    return database;
-  },
-  name: 'localDatabaseProvider',
-);
+final localDatabaseProvider = Provider<LocalDatabase>((ref) {
+  final database = InMemoryLocalDatabase();
+  ref.onDispose(() => unawaited(database.close()));
+  return database;
+}, name: 'localDatabaseProvider');

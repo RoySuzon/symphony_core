@@ -15,8 +15,8 @@ import 'package:symphony_core/src/features/storage/presentation/storage_provider
 
 import 'helpers/core_test_helpers.dart';
 
-/// Matches an error whose description contains [text]. Riverpod 3 wraps
-/// provider errors in a `ProviderException`, Riverpod 2 rethrows them as is.
+/// Matches an error whose description contains [text]. Riverpod wraps
+/// provider errors in a `ProviderException`, whose description includes them.
 Matcher _throwsMentioning(String text) =>
     throwsA(predicate((Object? error) => '$error'.contains(text)));
 
@@ -96,28 +96,30 @@ void main() {
       expect(identical(FlutterError.onError, onErrorBefore), isTrue);
     });
 
-    test('re-initialization replaces and disposes the previous instance',
-        () async {
-      final first = await SymphonyCore.initialize(config: testConfig);
-      final second = await SymphonyCore.initialize(
-        config: testConfig.copyWith(appName: 'Second'),
-      );
+    test(
+      're-initialization replaces and disposes the previous instance',
+      () async {
+        final first = await SymphonyCore.initialize(config: testConfig);
+        final second = await SymphonyCore.initialize(
+          config: testConfig.copyWith(appName: 'Second'),
+        );
 
-      expect(first.isDisposed, isTrue);
-      expect(second.isDisposed, isFalse);
-      expect(SymphonyCore.instance, same(second));
-      expect(SymphonyCore.instance.config.appName, 'Second');
-      expect(
-        () => first.read(symphonyConfigProvider),
-        throwsA(
-          isA<StateError>().having(
-            (error) => error.message,
-            'message',
-            contains('disposed'),
+        expect(first.isDisposed, isTrue);
+        expect(second.isDisposed, isFalse);
+        expect(SymphonyCore.instance, same(second));
+        expect(SymphonyCore.instance.config.appName, 'Second');
+        expect(
+          () => first.read(symphonyConfigProvider),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              contains('disposed'),
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('a failing re-initialization keeps the previous instance', () async {
       final first = await SymphonyCore.initialize(config: testConfig);
@@ -135,8 +137,7 @@ void main() {
       expect(SymphonyCore.instance, same(first));
     });
 
-    test(
-        'a re-initialization whose error reporter cannot be created keeps '
+    test('a re-initialization whose error reporter cannot be created keeps '
         'the previous instance and releases the new container', () async {
       final first = await SymphonyCore.initialize(config: testConfig);
       final onErrorBefore = FlutterError.onError;
@@ -171,32 +172,34 @@ void main() {
       );
     });
 
-    test('a failing session restoration is contained without a reporter',
-        () async {
-      final sink = RecordingLogSink();
+    test(
+      'a failing session restoration is contained without a reporter',
+      () async {
+        final sink = RecordingLogSink();
 
-      final core = await SymphonyCore.initialize(
-        config: testConfig,
-        authAdapter: FakeAuthAdapter(),
-        secureStorage: InMemoryKeyValueStorage(),
-        restoreSession: true,
-        overrides: [
-          authControllerProvider.overrideWith(_FailingRestoreController.new),
-          errorReporterProvider.overrideWith(
-            (ref) => throw StateError('no crash reporter'),
-          ),
-          symphonyLoggerProvider.overrideWithValue(
-            SymphonyLogger(sinks: <LogSink>[sink]),
-          ),
-        ],
-      );
+        final core = await SymphonyCore.initialize(
+          config: testConfig,
+          authAdapter: FakeAuthAdapter(),
+          secureStorage: InMemoryKeyValueStorage(),
+          restoreSession: true,
+          overrides: [
+            authControllerProvider.overrideWith(_FailingRestoreController.new),
+            errorReporterProvider.overrideWith(
+              (ref) => throw StateError('no crash reporter'),
+            ),
+            symphonyLoggerProvider.overrideWithValue(
+              SymphonyLogger(sinks: <LogSink>[sink]),
+            ),
+          ],
+        );
 
-      expect(SymphonyCore.instance, same(core));
-      expect(
-        sink.entries.where((e) => e.level == LogLevel.warning).first.message,
-        'Session restoration failed',
-      );
-    });
+        expect(SymphonyCore.instance, same(core));
+        expect(
+          sink.entries.where((e) => e.level == LogLevel.warning).first.message,
+          'Session restoration failed',
+        );
+      },
+    );
 
     test('reset disposes and unregisters the instance', () async {
       final core = await SymphonyCore.initialize(config: testConfig);
@@ -218,8 +221,7 @@ void main() {
       expect(SymphonyCore.isInitialized, isFalse);
     });
 
-    test(
-        'installs the global error handlers when configured and removes '
+    test('installs the global error handlers when configured and removes '
         'them on dispose', () async {
       final originalOnError = FlutterError.onError;
       final originalPresentError = FlutterError.presentError;
@@ -252,7 +254,9 @@ void main() {
         expect(identical(FlutterError.onError, previous), isTrue);
         expect(
           identical(
-              PlatformDispatcher.instance.onError, originalPlatformOnError),
+            PlatformDispatcher.instance.onError,
+            originalPlatformOnError,
+          ),
           isTrue,
         );
       } finally {
@@ -262,14 +266,16 @@ void main() {
       }
     });
 
-    test('does not install error handlers when handleGlobalErrors is false',
-        () async {
-      final before = FlutterError.onError;
+    test(
+      'does not install error handlers when handleGlobalErrors is false',
+      () async {
+        final before = FlutterError.onError;
 
-      await SymphonyCore.initialize(config: testConfig);
+        await SymphonyCore.initialize(config: testConfig);
 
-      expect(identical(FlutterError.onError, before), isTrue);
-    });
+        expect(identical(FlutterError.onError, before), isTrue);
+      },
+    );
 
     test('logs one startup line without secrets', () async {
       final sink = RecordingLogSink();
@@ -393,17 +399,19 @@ void main() {
       expect(state.user?.id, 'user-7');
     });
 
-    test('restoreSession without a persisted session ends unauthenticated',
-        () async {
-      final core = await SymphonyCore.initialize(
-        config: testConfig,
-        authAdapter: FakeAuthAdapter(),
-        secureStorage: InMemoryKeyValueStorage(),
-        restoreSession: true,
-      );
+    test(
+      'restoreSession without a persisted session ends unauthenticated',
+      () async {
+        final core = await SymphonyCore.initialize(
+          config: testConfig,
+          authAdapter: FakeAuthAdapter(),
+          secureStorage: InMemoryKeyValueStorage(),
+          restoreSession: true,
+        );
 
-      expect(core.read(authControllerProvider), isA<AuthUnauthenticated>());
-    });
+        expect(core.read(authControllerProvider), isA<AuthUnauthenticated>());
+      },
+    );
 
     test('a failing session restoration is reported, not thrown', () async {
       final reporter = RecordingErrorReporter();
@@ -668,17 +676,19 @@ void main() {
       expect(root.read(_childValueProvider), 'default');
     });
 
-    test('uses the authentication configured in the parent hierarchy',
-        () async {
-      final root = configuredRoot(withAuth: true);
+    test(
+      'uses the authentication configured in the parent hierarchy',
+      () async {
+        final root = configuredRoot(withAuth: true);
 
-      final core = SymphonyCore.create(config: testConfig, parent: root);
-      addTearDown(core.dispose);
+        final core = SymphonyCore.create(config: testConfig, parent: root);
+        addTearDown(core.dispose);
 
-      expect(core.hasAuth, isTrue);
-      expect(core.read(authAdapterProvider), isA<FakeAuthAdapter>());
-      expect(core.auth, isA<AuthController>());
-    });
+        expect(core.hasAuth, isTrue);
+        expect(core.read(authAdapterProvider), isA<FakeAuthAdapter>());
+        expect(core.auth, isA<AuthController>());
+      },
+    );
 
     test('initialize accepts a configured parent', () async {
       final root = configuredRoot();
@@ -725,39 +735,41 @@ void main() {
 
       for (final create in <SymphonyCore Function()>[
         () => SymphonyCore.create(
-              config: testConfig,
-              parent: root,
-              authAdapter: FakeAuthAdapter(),
-            ),
+          config: testConfig,
+          parent: root,
+          authAdapter: FakeAuthAdapter(),
+        ),
         () => SymphonyCore.create(
-              config: testConfig,
-              parent: root,
-              authAdapterBuilder: (ref) => FakeAuthAdapter(),
-            ),
+          config: testConfig,
+          parent: root,
+          authAdapterBuilder: (ref) => FakeAuthAdapter(),
+        ),
         () => SymphonyCore.create(
-              config: testConfig,
-              parent: root,
-              secureStorage: InMemoryKeyValueStorage(),
-            ),
+          config: testConfig,
+          parent: root,
+          secureStorage: InMemoryKeyValueStorage(),
+        ),
         () => SymphonyCore.create(
-              config: testConfig,
-              parent: root,
-              errorReporter: const NoopErrorReporter(),
-            ),
+          config: testConfig,
+          parent: root,
+          errorReporter: const NoopErrorReporter(),
+        ),
       ]) {
         expect(create, throwsArgumentError);
       }
     });
 
-    test('initialize rejects the container of the instance it replaces',
-        () async {
-      final first = await SymphonyCore.initialize(config: testConfig);
+    test(
+      'initialize rejects the container of the instance it replaces',
+      () async {
+        final first = await SymphonyCore.initialize(config: testConfig);
 
-      await expectLater(
-        SymphonyCore.initialize(config: testConfig, parent: first.container),
-        throwsArgumentError,
-      );
-      expect(first.isDisposed, isFalse);
-    });
+        await expectLater(
+          SymphonyCore.initialize(config: testConfig, parent: first.container),
+          throwsArgumentError,
+        );
+        expect(first.isDisposed, isFalse);
+      },
+    );
   });
 }

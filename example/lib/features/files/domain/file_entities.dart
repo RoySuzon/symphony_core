@@ -64,9 +64,10 @@ class TransferRecord {
   factory TransferRecord.fromJson(Map<String, Object?> json) {
     return TransferRecord(
       id: JsonReader.asString(json['id']) ?? '',
-      direction: JsonReader.asString(json['direction']) == 'upload'
-          ? TransferDirection.upload
-          : TransferDirection.download,
+      direction:
+          JsonReader.asString(json['direction']) == 'upload'
+              ? TransferDirection.upload
+              : TransferDirection.download,
       fileName: JsonReader.asString(json['fileName']) ?? '',
       sizeInBytes: JsonReader.asInt(json['sizeInBytes']) ?? 0,
       at: JsonReader.asDateTime(json['at']) ?? DateTime(1970),
@@ -90,12 +91,12 @@ class TransferRecord {
 
   /// Serializes the record (stored through `LocalDatabase`).
   Map<String, Object?> toJson() => <String, Object?>{
-        'id': id,
-        'direction': direction.name,
-        'fileName': fileName,
-        'sizeInBytes': sizeInBytes,
-        'at': at.toIso8601String(),
-      };
+    'id': id,
+    'direction': direction.name,
+    'fileName': fileName,
+    'sizeInBytes': sizeInBytes,
+    'at': at.toIso8601String(),
+  };
 }
 
 /// Generates the in-memory sample files uploaded by the files screen.

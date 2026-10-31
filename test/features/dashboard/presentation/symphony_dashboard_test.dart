@@ -73,8 +73,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('reads the menu and the access from providers by default',
-        (tester) async {
+    testWidgets('reads the menu and the access from providers by default', (
+      tester,
+    ) async {
       final container = createAccessContainer(
         menu: sampleMenu,
         access: signedIn(roles: <String>{'admin'}),
@@ -88,8 +89,9 @@ void main() {
       expect(find.byType(SymphonyDashboardTile), findsNWidgets(2));
     });
 
-    testWidgets('an explicit accessContext overrides the provider',
-        (tester) async {
+    testWidgets('an explicit accessContext overrides the provider', (
+      tester,
+    ) async {
       final container = createAccessContainer(menu: sampleMenu);
       await pumpInApp(
         tester,
@@ -100,8 +102,9 @@ void main() {
       expect(tile('Admin'), findsOneWidget);
     });
 
-    testWidgets('keeps disabled items visible but ignores their taps',
-        (tester) async {
+    testWidgets('keeps disabled items visible but ignores their taps', (
+      tester,
+    ) async {
       final selected = <String>[];
       await pumpInApp(
         tester,
@@ -200,8 +203,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('falls back to the nearest visible level on access changes',
-        (tester) async {
+    testWidgets('falls back to the nearest visible level on access changes', (
+      tester,
+    ) async {
       final container = createAccessContainer(access: salesUser);
       await pumpInApp(
         tester,
@@ -228,8 +232,9 @@ void main() {
       expect(find.byTooltip('Back'), findsNothing);
     });
 
-    testWidgets('can be driven and observed through a controller',
-        (tester) async {
+    testWidgets('can be driven and observed through a controller', (
+      tester,
+    ) async {
       final controller = SymphonyDashboardController();
       addTearDown(controller.dispose);
       final container = createAccessContainer(access: salesUser);
@@ -288,8 +293,9 @@ void main() {
 
     testWidgets('supports a replaced controller', (tester) async {
       final first = SymphonyDashboardController();
-      final second =
-          SymphonyDashboardController(initialPath: <String>['sales']);
+      final second = SymphonyDashboardController(
+        initialPath: <String>['sales'],
+      );
       addTearDown(first.dispose);
       addTearDown(second.dispose);
       final container = createAccessContainer(access: salesUser);
@@ -327,8 +333,9 @@ void main() {
       expect(second.path, isEmpty);
     });
 
-    testWidgets('uses custom labels and can hide the breadcrumb',
-        (tester) async {
+    testWidgets('uses custom labels and can hide the breadcrumb', (
+      tester,
+    ) async {
       await pumpInApp(
         tester,
         createAccessContainer(access: salesUser),
@@ -357,8 +364,9 @@ void main() {
       expect(find.byTooltip('Back'), findsOneWidget);
     });
 
-    testWidgets('shows the title at the top level and keeps the header state',
-        (tester) async {
+    testWidgets('shows the title at the top level and keeps the header state', (
+      tester,
+    ) async {
       await pumpInApp(
         tester,
         createAccessContainer(access: salesUser),
@@ -383,8 +391,9 @@ void main() {
   });
 
   group('tap handling', () {
-    testWidgets('onTap replaces the submenu and the navigation',
-        (tester) async {
+    testWidgets('onTap replaces the submenu and the navigation', (
+      tester,
+    ) async {
       BuildContext? tappedContext;
       await pumpInApp(
         tester,
@@ -415,8 +424,9 @@ void main() {
       expect(find.byTooltip('Back'), findsNothing);
     });
 
-    testWidgets('onItemSelected replaces the navigation of leaves',
-        (tester) async {
+    testWidgets('onItemSelected replaces the navigation of leaves', (
+      tester,
+    ) async {
       final selected = <String>[];
       await pumpInApp(
         tester,
@@ -441,8 +451,9 @@ void main() {
   });
 
   group('customization', () {
-    testWidgets('tileBuilder replaces the tiles and keeps the tap handling',
-        (tester) async {
+    testWidgets('tileBuilder replaces the tiles and keeps the tap handling', (
+      tester,
+    ) async {
       final callbacks = <String, bool>{};
       await pumpInApp(
         tester,
@@ -483,11 +494,12 @@ void main() {
               id: 'inbox',
               label: 'Inbox',
               badge: '5',
-              iconBuilder: (context) => const SizedBox(
-                key: Key('inbox-icon'),
-                width: 24,
-                height: 24,
-              ),
+              iconBuilder:
+                  (context) => const SizedBox(
+                    key: Key('inbox-icon'),
+                    width: 24,
+                    height: 24,
+                  ),
             ),
             const DashboardItem(
               id: 'news',
@@ -521,8 +533,9 @@ void main() {
       expect(find.text('No modules available'), findsOneWidget);
     });
 
-    testWidgets('shows the empty state when everything is filtered out',
-        (tester) async {
+    testWidgets('shows the empty state when everything is filtered out', (
+      tester,
+    ) async {
       await pumpInApp(
         tester,
         createAccessContainer(),

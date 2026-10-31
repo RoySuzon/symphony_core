@@ -15,11 +15,12 @@ import '../controllers/auth_controller.dart';
 /// The project's [AuthAdapter]. Must be provided by the application
 /// (`SymphonyCore.initialize(authAdapter: ...)` or an override).
 final authAdapterProvider = Provider<AuthAdapter>(
-  (ref) => throw StateError(
-    'authAdapterProvider is not configured. Pass an AuthAdapter to '
-    'SymphonyCore.initialize(authAdapter: ...) or override '
-    'authAdapterProvider.',
-  ),
+  (ref) =>
+      throw StateError(
+        'authAdapterProvider is not configured. Pass an AuthAdapter to '
+        'SymphonyCore.initialize(authAdapter: ...) or override '
+        'authAdapterProvider.',
+      ),
   name: 'authAdapterProvider',
 );
 
@@ -72,10 +73,13 @@ final isAuthenticatedProvider = Provider<bool>(
 final sessionTokenDelegateProvider = Provider<AuthTokenDelegate>(
   (ref) => SessionTokenDelegate(
     repository: () => ref.read(authRepositoryProvider),
-    onSessionRefreshed: (session) =>
-        ref.read(authControllerProvider.notifier).updateSession(session),
-    onExpired: (failure) =>
-        ref.read(authControllerProvider.notifier).handleSessionExpired(failure),
+    onSessionRefreshed:
+        (session) =>
+            ref.read(authControllerProvider.notifier).updateSession(session),
+    onExpired:
+        (failure) => ref
+            .read(authControllerProvider.notifier)
+            .handleSessionExpired(failure),
     logger: ref.watch(symphonyLoggerProvider).withTag('Auth'),
   ),
   name: 'sessionTokenDelegateProvider',

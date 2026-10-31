@@ -58,9 +58,9 @@ class ExampleAppHarness {
 
   /// `METHOD /path STATUS` of every request handled by the backend.
   List<String> get requests => <String>[
-        for (final record in backend.requestLog)
-          '${record.method} ${record.path} ${record.statusCode}',
-      ];
+    for (final record in backend.requestLog)
+      '${record.method} ${record.path} ${record.statusCode}',
+  ];
 
   /// Pumps (fake time) until [finder] matches something.
   Future<void> pumpUntilFound(
@@ -102,10 +102,7 @@ class ExampleAppHarness {
     // Let page transitions finish: the button may still be sliding in.
     await settle(const Duration(milliseconds: 600));
     await tester.tap(
-      find.descendant(
-        of: find.byTooltip(message),
-        matching: find.byType(Icon),
-      ),
+      find.descendant(of: find.byTooltip(message), matching: find.byType(Icon)),
     );
     await tester.pump();
   }
@@ -151,10 +148,8 @@ Future<ExampleAppHarness> pumpExampleApp(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
-  final demo = backend ??
-      createTestBackend(
-        latency: const Duration(milliseconds: 20),
-      );
+  final demo =
+      backend ?? createTestBackend(latency: const Duration(milliseconds: 20));
   final core = createTestCore(demo);
   addTearDown(core.dispose);
   await tester.pumpWidget(SymphonyScope(core: core, child: const ExampleApp()));

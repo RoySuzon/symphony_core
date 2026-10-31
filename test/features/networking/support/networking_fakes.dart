@@ -21,46 +21,42 @@ SymphonyConfig testConfig({
   Set<int> refreshTokenStatusCodes = const <int>{401},
   Map<String, String> defaultHeaders = const <String, String>{},
   int maxLoggedBodyLength = 4000,
-}) =>
-    SymphonyConfig(
-      baseUrl: baseUrl,
-      maxRetries: maxRetries,
-      retryDelay: Duration.zero,
-      enableLogging: enableLogging,
-      enableInspector: enableInspector,
-      authTokenPrefix: authTokenPrefix,
-      authHeaderName: authHeaderName,
-      refreshTokenStatusCodes: refreshTokenStatusCodes,
-      defaultHeaders: defaultHeaders,
-      maxLoggedBodyLength: maxLoggedBodyLength,
-    );
+}) => SymphonyConfig(
+  baseUrl: baseUrl,
+  maxRetries: maxRetries,
+  retryDelay: Duration.zero,
+  enableLogging: enableLogging,
+  enableInspector: enableInspector,
+  authTokenPrefix: authTokenPrefix,
+  authHeaderName: authHeaderName,
+  refreshTokenStatusCodes: refreshTokenStatusCodes,
+  defaultHeaders: defaultHeaders,
+  maxLoggedBodyLength: maxLoggedBodyLength,
+);
 
 /// A JSON response body.
 ResponseBody jsonBody(
   Object? data, {
   int statusCode = 200,
   Map<String, List<String>> headers = const <String, List<String>>{},
-}) =>
-    ResponseBody.fromString(
-      jsonEncode(data),
-      statusCode,
-      headers: <String, List<String>>{
-        Headers.contentTypeHeader: <String>[Headers.jsonContentType],
-        ...headers,
-      },
-    );
+}) => ResponseBody.fromString(
+  jsonEncode(data),
+  statusCode,
+  headers: <String, List<String>>{
+    Headers.contentTypeHeader: <String>[Headers.jsonContentType],
+    ...headers,
+  },
+);
 
 /// Produces the response for a request received by [FakeHttpClientAdapter].
-typedef FakeResponder = FutureOr<ResponseBody> Function(
-  RequestOptions options,
-  List<int> body,
-);
+typedef FakeResponder =
+    FutureOr<ResponseBody> Function(RequestOptions options, List<int> body);
 
 /// An in-memory [HttpClientAdapter] recording every request.
 class FakeHttpClientAdapter implements HttpClientAdapter {
   /// Creates an adapter answering with [responder] (`{}` / 200 by default).
   FakeHttpClientAdapter([FakeResponder? responder])
-      : responder = responder ?? ((_, __) => jsonBody(<String, Object?>{}));
+    : responder = responder ?? ((_, _) => jsonBody(<String, Object?>{}));
 
   /// Produces the responses.
   FakeResponder responder;
@@ -173,7 +169,10 @@ class CapturingLogSink extends LogSink {
 /// A logger writing every level to [sink].
 SymphonyLogger capturingLogger(CapturingLogSink sink, {String tag = 'HTTP'}) =>
     SymphonyLogger(
-        tag: tag, minLevel: LogLevel.verbose, sinks: <LogSink>[sink]);
+      tag: tag,
+      minLevel: LogLevel.verbose,
+      sinks: <LogSink>[sink],
+    );
 
 /// An exception whose string form mimics `dart:io`'s `SocketException`.
 class FakeSocketException implements Exception {

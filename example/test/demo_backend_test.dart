@@ -97,33 +97,37 @@ void main() {
       );
     });
 
-    test('password recovery: request, confirm with the code, sign in',
-        () async {
-      final request = await core.auth.requestPasswordReset(
-        const AuthCredentials(<String, Object?>{'email': 'staff@example.com'}),
-      );
-      expect(request.isSuccess, isTrue);
+    test(
+      'password recovery: request, confirm with the code, sign in',
+      () async {
+        final request = await core.auth.requestPasswordReset(
+          const AuthCredentials(<String, Object?>{
+            'email': 'staff@example.com',
+          }),
+        );
+        expect(request.isSuccess, isTrue);
 
-      final wrongCode = await core.auth.confirmPasswordReset(
-        const AuthCredentials(<String, Object?>{
-          'email': 'staff@example.com',
-          'code': '000000',
-          'password': 'brand-new-pass',
-        }),
-      );
-      expect(wrongCode.failureOrNull, isA<ValidationFailure>());
+        final wrongCode = await core.auth.confirmPasswordReset(
+          const AuthCredentials(<String, Object?>{
+            'email': 'staff@example.com',
+            'code': '000000',
+            'password': 'brand-new-pass',
+          }),
+        );
+        expect(wrongCode.failureOrNull, isA<ValidationFailure>());
 
-      final confirm = await core.auth.confirmPasswordReset(
-        const AuthCredentials(<String, Object?>{
-          'email': 'staff@example.com',
-          'code': demoResetCode,
-          'password': 'brand-new-pass',
-        }),
-      );
-      expect(confirm.isSuccess, isTrue, reason: '${confirm.failureOrNull}');
+        final confirm = await core.auth.confirmPasswordReset(
+          const AuthCredentials(<String, Object?>{
+            'email': 'staff@example.com',
+            'code': demoResetCode,
+            'password': 'brand-new-pass',
+          }),
+        );
+        expect(confirm.isSuccess, isTrue, reason: '${confirm.failureOrNull}');
 
-      await signIn('staff@example.com', password: 'brand-new-pass');
-    });
+        await signIn('staff@example.com', password: 'brand-new-pass');
+      },
+    );
 
     test('sign-out revokes the refresh token on the backend', () async {
       await signIn('viewer@example.com');
@@ -139,15 +143,18 @@ void main() {
   });
 
   group('authorization', () {
-    test('the backend enforces permissions too (403 → ForbiddenFailure)',
-        () async {
-      await signIn('staff@example.com');
+    test(
+      'the backend enforces permissions too (403 → ForbiddenFailure)',
+      () async {
+        await signIn('staff@example.com');
 
-      final report = await core.read(reportsRepositoryProvider).fetchSummary();
+        final report =
+            await core.read(reportsRepositoryProvider).fetchSummary();
 
-      expect(report.failureOrNull, isA<ForbiddenFailure>());
-      expect(backend.requestLog.last.statusCode, 403);
-    });
+        expect(report.failureOrNull, isA<ForbiddenFailure>());
+        expect(backend.requestLog.last.statusCode, 403);
+      },
+    );
 
     test('requests without a session are rejected (401)', () async {
       final result = await core.read(ordersRepositoryProvider).fetchOrders();
@@ -160,9 +167,9 @@ void main() {
     test('orders are filtered by status and decoded into entities', () async {
       await signIn('staff@example.com');
 
-      final result = await core.read(ordersRepositoryProvider).fetchOrders(
-            filter: const OrderFilter(status: OrderStatus.pending),
-          );
+      final result = await core
+          .read(ordersRepositoryProvider)
+          .fetchOrders(filter: const OrderFilter(status: OrderStatus.pending));
 
       final orders = result.valueOrNull!;
       expect(orders, hasLength(3));
@@ -174,8 +181,9 @@ void main() {
     test('an unknown order is a NotFoundFailure', () async {
       await signIn('staff@example.com');
 
-      final result =
-          await core.read(ordersRepositoryProvider).fetchOrder('ord_42');
+      final result = await core
+          .read(ordersRepositoryProvider)
+          .fetchOrder('ord_42');
 
       expect(result.failureOrNull, isA<NotFoundFailure>());
     });
@@ -183,15 +191,17 @@ void main() {
     test('the sales report is consistent with the orders', () async {
       await signIn('admin@example.com');
 
-      final report = (await core.read(reportsRepositoryProvider).fetchSummary())
-          .valueOrNull!;
+      final report =
+          (await core.read(reportsRepositoryProvider).fetchSummary())
+              .valueOrNull!;
 
       expect(report.orderCount, 18);
       expect(report.pendingOrders, 3);
       expect(report.weeklyRevenue, hasLength(4));
       expect(report.topProducts, isNotEmpty);
-      final export = (await core.read(reportsRepositoryProvider).exportOrders())
-          .valueOrNull!;
+      final export =
+          (await core.read(reportsRepositoryProvider).exportOrders())
+              .valueOrNull!;
       expect(export.rowCount, 18);
       expect(export.filename, 'orders-report.csv');
     });
@@ -203,7 +213,9 @@ void main() {
       final files = SampleFiles.generate(count: 2, sizeInBytes: 4096);
       final sent = <int>[];
 
-      final upload = await core.read(filesRepositoryProvider).upload(
+      final upload = await core
+          .read(filesRepositoryProvider)
+          .upload(
             files,
             note: 'Quarterly numbers',
             onProgress: (transferred, total) => sent.add(transferred),
@@ -219,7 +231,9 @@ void main() {
       expect(sent.last, greaterThan(2 * 4096));
 
       final received = <int>[];
-      final download = await core.read(filesRepositoryProvider).download(
+      final download = await core
+          .read(filesRepositoryProvider)
+          .download(
             stored.first,
             onProgress: (transferred, total) => received.add(transferred),
           );

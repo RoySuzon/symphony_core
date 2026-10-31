@@ -91,9 +91,9 @@ void stubAdapterDefaults(MockAuthAdapter adapter) {
         (invocation.positionalArguments.first as AuthSession).user,
   );
   when(() => adapter.logout(any())).thenAnswer((_) async {});
-  when(() => adapter.refresh(any())).thenAnswer(
-    (_) => Future<AuthTokens>.error(const UnauthorizedFailure()),
-  );
+  when(
+    () => adapter.refresh(any()),
+  ).thenAnswer((_) => Future<AuthTokens>.error(const UnauthorizedFailure()));
   when(() => adapter.supportsRegistration).thenReturn(false);
   when(() => adapter.supportsPasswordRecovery).thenReturn(false);
 }
@@ -123,8 +123,8 @@ Future<AuthSession?> readPersistedSession(KeyValueStorage storage) async {
 
 /// A container wired like an application using `symphony_core` auth.
 ///
-/// [overrides] are Riverpod overrides (typed `Object` because the `Override`
-/// type is exported from different libraries in Riverpod 2 and 3).
+/// [overrides] are Riverpod overrides (typed `Object` so that callers never
+/// need to import `package:flutter_riverpod/misc.dart` for `Override`).
 ProviderContainer createAuthContainer({
   required AuthAdapter adapter,
   KeyValueStorage? storage,

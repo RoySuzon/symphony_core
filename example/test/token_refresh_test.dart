@@ -30,84 +30,91 @@ void main() {
   }
 
   List<String> requests() => <String>[
-        for (final record in backend.requestLog)
-          '${record.method} ${record.path} ${record.statusCode}',
-      ];
+    for (final record in backend.requestLog)
+      '${record.method} ${record.path} ${record.statusCode}',
+  ];
 
-  test('the custom AuthResponseMapping reads the non-default response shape',
-      () async {
-    await signIn('admin@example.com');
+  test(
+    'the custom AuthResponseMapping reads the non-default response shape',
+    () async {
+      await signIn('admin@example.com');
 
-    final state = core.read(authControllerProvider);
-    final user = state.user!;
-    expect(user.id, 'usr_admin');
-    expect(user.displayName, 'Alice Admin');
-    expect(user.email, 'admin@example.com');
-    expect(user.roles, <String>{'admin'});
-    expect(user.permissions, containsAll(demoAllPermissions));
-    expect(state.session!.tokens.tokenType, 'Bearer');
-    expect(state.session!.tokens.canRefresh, isTrue);
-    expect(core.read(accessContextProvider).hasRole('admin'), isTrue);
-  });
+      final state = core.read(authControllerProvider);
+      final user = state.user!;
+      expect(user.id, 'usr_admin');
+      expect(user.displayName, 'Alice Admin');
+      expect(user.email, 'admin@example.com');
+      expect(user.roles, <String>{'admin'});
+      expect(user.permissions, containsAll(demoAllPermissions));
+      expect(state.session!.tokens.tokenType, 'Bearer');
+      expect(state.session!.tokens.canRefresh, isTrue);
+      expect(core.read(accessContextProvider).hasRole('admin'), isTrue);
+    },
+  );
 
-  test('an expired access token is refreshed and the request replayed',
-      () async {
-    final firstToken = await signIn('staff@example.com');
+  test(
+    'an expired access token is refreshed and the request replayed',
+    () async {
+      final firstToken = await signIn('staff@example.com');
 
-    // The demo backend issues 30 s access tokens.
-    now = now.add(const Duration(seconds: 31));
-    final orders = await core.read(ordersRepositoryProvider).fetchOrders();
+      // The demo backend issues 30 s access tokens.
+      now = now.add(const Duration(seconds: 31));
+      final orders = await core.read(ordersRepositoryProvider).fetchOrders();
 
-    expect(orders.isSuccess, isTrue, reason: '${orders.failureOrNull}');
-    expect(orders.valueOrNull, hasLength(18));
-    expect(
-      requests(),
-      containsAllInOrder(<String>[
-        'POST /auth/login 200',
-        'GET /orders 401',
-        'POST /auth/token/refresh 200',
-        'GET /orders 200',
-      ]),
-    );
-    expect(backend.requestLog[1].errorCode, 'token_expired');
+      expect(orders.isSuccess, isTrue, reason: '${orders.failureOrNull}');
+      expect(orders.valueOrNull, hasLength(18));
+      expect(
+        requests(),
+        containsAllInOrder(<String>[
+          'POST /auth/login 200',
+          'GET /orders 401',
+          'POST /auth/token/refresh 200',
+          'GET /orders 200',
+        ]),
+      );
+      expect(backend.requestLog[1].errorCode, 'token_expired');
 
-    // The refreshed session is published to the auth state.
-    final state = core.read(authControllerProvider);
-    expect(state, isA<AuthAuthenticated>());
-    expect(state.session!.tokens.accessToken, isNot(firstToken));
+      // The refreshed session is published to the auth state.
+      final state = core.read(authControllerProvider);
+      expect(state, isA<AuthAuthenticated>());
+      expect(state.session!.tokens.accessToken, isNot(firstToken));
 
-    // ...and the whole sequence is visible in the API inspector.
-    final calls = core.read(apiInspectorProvider).calls.reversed.toList();
-    expect(
-      <String>[for (final call in calls) '${call.method} ${call.path}'],
-      containsAllInOrder(<String>[
-        'GET /orders',
-        'POST /auth/token/refresh',
-        'GET /orders',
-      ]),
-    );
-    expect(calls.map((call) => call.statusCode), contains(401));
-    final refresh =
-        calls.firstWhere((call) => call.path == '/auth/token/refresh');
-    // Tokens never reach the inspector in clear text.
-    expect(refresh.requestBody, isNot(contains(firstToken)));
-  });
+      // ...and the whole sequence is visible in the API inspector.
+      final calls = core.read(apiInspectorProvider).calls.reversed.toList();
+      expect(
+        <String>[for (final call in calls) '${call.method} ${call.path}'],
+        containsAllInOrder(<String>[
+          'GET /orders',
+          'POST /auth/token/refresh',
+          'GET /orders',
+        ]),
+      );
+      expect(calls.map((call) => call.statusCode), contains(401));
+      final refresh = calls.firstWhere(
+        (call) => call.path == '/auth/token/refresh',
+      );
+      // Tokens never reach the inspector in clear text.
+      expect(refresh.requestBody, isNot(contains(firstToken)));
+    },
+  );
 
-  test('expiring every token from the developer tools triggers a refresh',
-      () async {
-    final firstToken = await signIn('admin@example.com');
+  test(
+    'expiring every token from the developer tools triggers a refresh',
+    () async {
+      final firstToken = await signIn('admin@example.com');
 
-    backend.expireAccessTokens();
-    final result = await core.read(ordersRepositoryProvider).fetchOrder(
-          'ord_1001',
-        );
+      backend.expireAccessTokens();
+      final result = await core
+          .read(ordersRepositoryProvider)
+          .fetchOrder('ord_1001');
 
-    expect(result.valueOrNull?.summary.number, 'SO-1001');
-    expect(
-      core.read(authControllerProvider).session!.tokens.accessToken,
-      isNot(firstToken),
-    );
-  });
+      expect(result.valueOrNull?.summary.number, 'SO-1001');
+      expect(
+        core.read(authControllerProvider).session!.tokens.accessToken,
+        isNot(firstToken),
+      );
+    },
+  );
 
   test('concurrent requests share a single refresh', () async {
     await signIn('admin@example.com');

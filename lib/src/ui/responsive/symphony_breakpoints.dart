@@ -39,9 +39,9 @@ class SymphonyBreakpoints {
     this.medium = 600,
     this.expanded = 840,
     this.large = 1200,
-  })  : assert(medium > 0, 'medium must be positive.'),
-        assert(medium < expanded, 'medium must be smaller than expanded.'),
-        assert(expanded < large, 'expanded must be smaller than large.');
+  }) : assert(medium > 0, 'medium must be positive.'),
+       assert(medium < expanded, 'medium must be smaller than expanded.'),
+       assert(expanded < large, 'expanded must be smaller than large.');
 
   /// The Material 3 breakpoints (600 / 840 / 1200).
   static const SymphonyBreakpoints standard = SymphonyBreakpoints();
@@ -82,7 +82,8 @@ class SymphonyBreakpoints {
   int get hashCode => Object.hash(medium, expanded, large);
 
   @override
-  String toString() => 'SymphonyBreakpoints(medium: $medium, '
+  String toString() =>
+      'SymphonyBreakpoints(medium: $medium, '
       'expanded: $expanded, large: $large)';
 }
 

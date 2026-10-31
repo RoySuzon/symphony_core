@@ -68,9 +68,10 @@ void main() {
         editor: true,
         admin: true,
         const AccessContext(
-          status: AuthStatus.unauthenticated,
-          roles: <String>{'admin'},
-        ): false,
+              status: AuthStatus.unauthenticated,
+              roles: <String>{'admin'},
+            ):
+            false,
       });
     });
 
@@ -133,9 +134,10 @@ void main() {
       expectMatrix(requirement, <AccessContext, bool>{
         guest: false,
         const AccessContext(
-          status: AuthStatus.unauthenticated,
-          roles: <String>{'kiosk'},
-        ): true,
+              status: AuthStatus.unauthenticated,
+              roles: <String>{'kiosk'},
+            ):
+            true,
       });
     });
 
@@ -200,7 +202,9 @@ void main() {
 
       expect(
         identical(
-            const AccessRequirement(roles: <String>{'a', 'b'}), reordered),
+          const AccessRequirement(roles: <String>{'a', 'b'}),
+          reordered,
+        ),
         isFalse,
       );
       expect(const AccessRequirement(roles: <String>{'a', 'b'}), reordered);
@@ -211,7 +215,8 @@ void main() {
       expect(
         const AccessRequirement(roles: <String>{'a'}),
         isNot(
-            const AccessRequirement(roles: <String>{'a'}, requiresAuth: false)),
+          const AccessRequirement(roles: <String>{'a'}, requiresAuth: false),
+        ),
       );
       expect(
         const AccessRequirement(roles: <String>{'a'}).toString(),

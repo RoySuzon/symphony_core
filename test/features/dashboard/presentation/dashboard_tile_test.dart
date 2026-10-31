@@ -77,12 +77,13 @@ void main() {
           id: 'custom',
           label: 'Custom',
           icon: Icons.star,
-          iconBuilder: (context) => Icon(
-            Icons.image,
-            key: const Key('custom-icon'),
-            // Inherits the tile's icon theme.
-            color: IconTheme.of(context).color,
-          ),
+          iconBuilder:
+              (context) => Icon(
+                Icons.image,
+                key: const Key('custom-icon'),
+                // Inherits the tile's icon theme.
+                color: IconTheme.of(context).color,
+              ),
         ),
       ),
     );
@@ -215,8 +216,9 @@ void main() {
     expect(properties.button, isTrue);
     expect(properties.enabled, isFalse);
     final scheme = Theme.of(tester.element(find.byType(Card))).colorScheme;
-    final iconTheme =
-        IconTheme.of(tester.element(find.byIcon(Icons.lock_clock)));
+    final iconTheme = IconTheme.of(
+      tester.element(find.byIcon(Icons.lock_clock)),
+    );
     expect(iconTheme.color, scheme.onSurface.withAlpha(97));
     semantics.dispose();
   });

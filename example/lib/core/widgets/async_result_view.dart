@@ -14,7 +14,6 @@ import 'package:symphony_core/symphony_core.dart';
 /// The providers return a `Result` instead of throwing on purpose: Riverpod
 /// 3 automatically retries providers that throw (and reports them as
 /// loading meanwhile), which would delay error screens by many seconds.
-/// Returning a `Result` behaves the same on Riverpod 2 and 3.
 ///
 /// While a successful value is refreshed, the previous data stays visible.
 class AsyncResultView<T> extends StatelessWidget {
@@ -57,19 +56,21 @@ class AsyncResultView<T> extends StatelessWidget {
     }
     return current.when(
       loading: () => SymphonyLoadingIndicator(message: loadingMessage),
-      error: (error, stackTrace) => SymphonyErrorView(
-        failure: error is Failure
-            ? error
-            : UnexpectedFailure.fromError(error, stackTrace),
-        onRetry: onRetry,
-      ),
-      data: (result) => result.when(
-        success: (data) => _data(context, data),
-        failure: (failure) => SymphonyErrorView(
-          failure: failure,
-          onRetry: onRetry,
-        ),
-      ),
+      error:
+          (error, stackTrace) => SymphonyErrorView(
+            failure:
+                error is Failure
+                    ? error
+                    : UnexpectedFailure.fromError(error, stackTrace),
+            onRetry: onRetry,
+          ),
+      data:
+          (result) => result.when(
+            success: (data) => _data(context, data),
+            failure:
+                (failure) =>
+                    SymphonyErrorView(failure: failure, onRetry: onRetry),
+          ),
     );
   }
 

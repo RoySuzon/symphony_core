@@ -40,10 +40,10 @@ class SessionTokenDelegate extends AuthTokenDelegate {
     void Function(AuthSession session)? onSessionRefreshed,
     FutureOr<void> Function(Failure reason)? onExpired,
     SymphonyLogger? logger,
-  })  : _repository = repository,
-        _onSessionRefreshed = onSessionRefreshed,
-        _onExpired = onExpired,
-        _logger = logger;
+  }) : _repository = repository,
+       _onSessionRefreshed = onSessionRefreshed,
+       _onExpired = onExpired,
+       _logger = logger;
 
   final AuthRepository Function() _repository;
   final void Function(AuthSession session)? _onSessionRefreshed;

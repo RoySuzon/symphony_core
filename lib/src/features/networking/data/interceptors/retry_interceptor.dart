@@ -50,8 +50,8 @@ class RetryInterceptor extends Interceptor {
     this.retryableMethods = defaultRetryableMethods,
     this.respectRetryAfter = true,
     this.maxRetryAfter = const Duration(seconds: 30),
-  })  : _delay = delay ?? _defaultDelay,
-        _logger = logger ?? SymphonyLogger.disabled();
+  }) : _delay = delay ?? _defaultDelay,
+       _logger = logger ?? SymphonyLogger.disabled();
 
   /// Idempotent HTTP methods retried by default.
   static const Set<String> defaultRetryableMethods = <String>{
@@ -191,7 +191,7 @@ class RetryInterceptor extends Interceptor {
   int _maxRetries(RequestOptions options) {
     final value =
         readIntExtra(options.extra, SymphonyRequestExtras.maxRetries) ??
-            config.maxRetries;
+        config.maxRetries;
     return value < 0 ? 0 : value;
   }
 

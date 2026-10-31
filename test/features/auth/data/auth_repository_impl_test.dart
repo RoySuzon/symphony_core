@@ -32,79 +32,89 @@ void main() {
   });
 
   group('restoreSession', () {
-    test('returns null without touching the adapter when nothing is stored',
-        () async {
-      final result = await repository.restoreSession();
+    test(
+      'returns null without touching the adapter when nothing is stored',
+      () async {
+        final result = await repository.restoreSession();
 
-      expect(result, const Result<AuthSession?>.success(null));
-      expect(repository.currentSession, isNull);
-      verifyNever(() => adapter.fetchCurrentUser(any()));
-      verifyNever(() => adapter.refresh(any()));
-    });
+        expect(result, const Result<AuthSession?>.success(null));
+        expect(repository.currentSession, isNull);
+        verifyNever(() => adapter.fetchCurrentUser(any()));
+        verifyNever(() => adapter.refresh(any()));
+      },
+    );
 
-    test('restores a valid session, reloads the user and validates it',
-        () async {
-      await persistSession(keyValueStorage, testSession(user: plainUser));
-      when(() => adapter.fetchCurrentUser(any()))
-          .thenAnswer((_) async => adminUser);
+    test(
+      'restores a valid session, reloads the user and validates it',
+      () async {
+        await persistSession(keyValueStorage, testSession(user: plainUser));
+        when(
+          () => adapter.fetchCurrentUser(any()),
+        ).thenAnswer((_) async => adminUser);
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      final session = result.valueOrNull;
-      expect(session?.tokens, testTokens());
-      expect(session?.user, adminUser);
-      expect(repository.currentSession, session);
-      verifyNever(() => adapter.refresh(any()));
-      verify(() => adapter.validateSession(session!)).called(1);
-      final persisted = await readPersistedSession(keyValueStorage);
-      expect(persisted?.user, adminUser);
-    });
+        final session = result.valueOrNull;
+        expect(session?.tokens, testTokens());
+        expect(session?.user, adminUser);
+        expect(repository.currentSession, session);
+        verifyNever(() => adapter.refresh(any()));
+        verify(() => adapter.validateSession(session!)).called(1);
+        final persisted = await readPersistedSession(keyValueStorage);
+        expect(persisted?.user, adminUser);
+      },
+    );
 
-    test('authenticated adapter calls see the session being restored',
-        () async {
-      await persistSession(keyValueStorage, testSession());
-      AuthSession? visibleDuringFetch;
-      when(() => adapter.fetchCurrentUser(any())).thenAnswer((_) async {
-        visibleDuringFetch = repository.currentSession;
-        return adminUser;
-      });
+    test(
+      'authenticated adapter calls see the session being restored',
+      () async {
+        await persistSession(keyValueStorage, testSession());
+        AuthSession? visibleDuringFetch;
+        when(() => adapter.fetchCurrentUser(any())).thenAnswer((_) async {
+          visibleDuringFetch = repository.currentSession;
+          return adminUser;
+        });
 
-      await repository.restoreSession();
+        await repository.restoreSession();
 
-      expect(visibleDuringFetch?.tokens.accessToken, 'access-1');
-    });
+        expect(visibleDuringFetch?.tokens.accessToken, 'access-1');
+      },
+    );
 
-    test('refreshes expired tokens and keeps the previous refresh token',
-        () async {
-      final expired = testTokens(
-        expiresAt: testNow.subtract(const Duration(minutes: 1)),
-      );
-      await persistSession(keyValueStorage, testSession(tokens: expired));
-      final renewed = AuthTokens(
-        accessToken: 'access-2',
-        expiresAt: testNow.add(const Duration(hours: 1)),
-      );
-      when(() => adapter.refresh(any())).thenAnswer((_) async => renewed);
+    test(
+      'refreshes expired tokens and keeps the previous refresh token',
+      () async {
+        final expired = testTokens(
+          expiresAt: testNow.subtract(const Duration(minutes: 1)),
+        );
+        await persistSession(keyValueStorage, testSession(tokens: expired));
+        final renewed = AuthTokens(
+          accessToken: 'access-2',
+          expiresAt: testNow.add(const Duration(hours: 1)),
+        );
+        when(() => adapter.refresh(any())).thenAnswer((_) async => renewed);
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      verify(() => adapter.refresh(expired)).called(1);
-      final tokens = result.valueOrNull?.tokens;
-      expect(tokens?.accessToken, 'access-2');
-      expect(tokens?.refreshToken, 'refresh-1');
-      expect(tokens?.tokenType, 'Bearer');
-      final persisted = await readPersistedSession(keyValueStorage);
-      expect(persisted?.tokens.accessToken, 'access-2');
-      expect(persisted?.tokens.refreshToken, 'refresh-1');
-    });
+        verify(() => adapter.refresh(expired)).called(1);
+        final tokens = result.valueOrNull?.tokens;
+        expect(tokens?.accessToken, 'access-2');
+        expect(tokens?.refreshToken, 'refresh-1');
+        expect(tokens?.tokenType, 'Bearer');
+        final persisted = await readPersistedSession(keyValueStorage);
+        expect(persisted?.tokens.accessToken, 'access-2');
+        expect(persisted?.tokens.refreshToken, 'refresh-1');
+      },
+    );
 
     test('treats tokens expiring within the leeway as expired', () async {
       final expiringSoon = testTokens(
         expiresAt: testNow.add(const Duration(seconds: 10)),
       );
       await persistSession(keyValueStorage, testSession(tokens: expiringSoon));
-      when(() => adapter.refresh(any()))
-          .thenAnswer((_) async => testTokens(access: 'access-2'));
+      when(
+        () => adapter.refresh(any()),
+      ).thenAnswer((_) async => testTokens(access: 'access-2'));
 
       final result = await repository.restoreSession();
 
@@ -116,8 +126,7 @@ void main() {
       const UnauthorizedFailure(),
       const AuthFailure('Refresh token revoked'),
     ]) {
-      test(
-          'clears the session when the refresh is rejected '
+      test('clears the session when the refresh is rejected '
           '(${failure.runtimeType})', () async {
         await persistSession(
           keyValueStorage,
@@ -125,8 +134,9 @@ void main() {
             tokens: testTokens(expiresAt: testNow.subtract(Duration.zero)),
           ),
         );
-        when(() => adapter.refresh(any()))
-            .thenAnswer((_) => Future<AuthTokens>.error(failure));
+        when(
+          () => adapter.refresh(any()),
+        ).thenAnswer((_) => Future<AuthTokens>.error(failure));
 
         final result = await repository.restoreSession();
 
@@ -141,29 +151,33 @@ void main() {
       const NetworkFailure(),
       const TimeoutFailure(),
     ]) {
-      test('keeps the stored session when offline (${failure.runtimeType})',
-          () async {
-        final expired = testTokens(
-          expiresAt: testNow.subtract(const Duration(minutes: 5)),
-        );
-        await persistSession(
-          keyValueStorage,
-          testSession(tokens: expired, user: plainUser),
-        );
-        when(() => adapter.refresh(any()))
-            .thenAnswer((_) => Future<AuthTokens>.error(failure));
-        when(() => adapter.fetchCurrentUser(any()))
-            .thenAnswer((_) => Future<AuthUser?>.error(failure));
+      test(
+        'keeps the stored session when offline (${failure.runtimeType})',
+        () async {
+          final expired = testTokens(
+            expiresAt: testNow.subtract(const Duration(minutes: 5)),
+          );
+          await persistSession(
+            keyValueStorage,
+            testSession(tokens: expired, user: plainUser),
+          );
+          when(
+            () => adapter.refresh(any()),
+          ).thenAnswer((_) => Future<AuthTokens>.error(failure));
+          when(
+            () => adapter.fetchCurrentUser(any()),
+          ).thenAnswer((_) => Future<AuthUser?>.error(failure));
 
-        final result = await repository.restoreSession();
+          final result = await repository.restoreSession();
 
-        final session = result.valueOrNull;
-        expect(session, isNotNull);
-        expect(session?.tokens, expired);
-        expect(session?.user, plainUser);
-        expect(repository.currentSession, session);
-        expect(await readPersistedSession(keyValueStorage), isNotNull);
-      });
+          final session = result.valueOrNull;
+          expect(session, isNotNull);
+          expect(session?.tokens, expired);
+          expect(session?.user, plainUser);
+          expect(repository.currentSession, session);
+          expect(await readPersistedSession(keyValueStorage), isNotNull);
+        },
+      );
     }
 
     test('discards expired tokens that cannot be refreshed', () async {
@@ -184,28 +198,30 @@ void main() {
       verifyNever(() => adapter.refresh(any()));
     });
 
-    test('returns unexpected refresh failures without clearing the session',
-        () async {
-      await persistSession(
-        keyValueStorage,
-        testSession(tokens: testTokens(expiresAt: testNow)),
-      );
-      when(() => adapter.refresh(any())).thenAnswer(
-        (_) => Future<AuthTokens>.error(const ParsingFailure('bad payload')),
-      );
+    test(
+      'returns unexpected refresh failures without clearing the session',
+      () async {
+        await persistSession(
+          keyValueStorage,
+          testSession(tokens: testTokens(expiresAt: testNow)),
+        );
+        when(() => adapter.refresh(any())).thenAnswer(
+          (_) => Future<AuthTokens>.error(const ParsingFailure('bad payload')),
+        );
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      expect(result.failureOrNull, isA<ParsingFailure>());
-      expect(repository.currentSession, isNull);
-      expect(await readPersistedSession(keyValueStorage), isNotNull);
-    });
+        expect(result.failureOrNull, isA<ParsingFailure>());
+        expect(repository.currentSession, isNull);
+        expect(await readPersistedSession(keyValueStorage), isNotNull);
+      },
+    );
 
     test('clears the session when the user lookup is unauthorized', () async {
       await persistSession(keyValueStorage, testSession());
-      when(() => adapter.fetchCurrentUser(any())).thenAnswer(
-        (_) => Future<AuthUser?>.error(const UnauthorizedFailure()),
-      );
+      when(
+        () => adapter.fetchCurrentUser(any()),
+      ).thenAnswer((_) => Future<AuthUser?>.error(const UnauthorizedFailure()));
 
       final result = await repository.restoreSession();
 
@@ -229,19 +245,22 @@ void main() {
       expect(repository.currentSession?.user, plainUser);
     });
 
-    test('clears the session and returns the failure when validation rejects',
-        () async {
-      await persistSession(keyValueStorage, testSession());
-      const rejection = AuthFailure('Subscription expired');
-      when(() => adapter.validateSession(any()))
-          .thenAnswer((_) => Future<void>.error(rejection));
+    test(
+      'clears the session and returns the failure when validation rejects',
+      () async {
+        await persistSession(keyValueStorage, testSession());
+        const rejection = AuthFailure('Subscription expired');
+        when(
+          () => adapter.validateSession(any()),
+        ).thenAnswer((_) => Future<void>.error(rejection));
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      expect(result, const Result<AuthSession?>.failure(rejection));
-      expect(repository.currentSession, isNull);
-      expect(await readPersistedSession(keyValueStorage), isNull);
-    });
+        expect(result, const Result<AuthSession?>.failure(rejection));
+        expect(repository.currentSession, isNull);
+        expect(await readPersistedSession(keyValueStorage), isNull);
+      },
+    );
 
     test('reports unreadable storage as a StorageFailure', () async {
       repository = createRepository(
@@ -257,13 +276,16 @@ void main() {
       final expired = testTokens(
         expiresAt: testNow.subtract(const Duration(minutes: 1)),
       );
-      when(() => adapter.login(any()))
-          .thenAnswer((_) async => testSession(tokens: expired));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(tokens: expired));
       await repository.login(const AuthCredentials(<String, Object?>{}));
-      when(() => adapter.refresh(any()))
-          .thenAnswer((_) async => testTokens(access: 'access-2'));
-      when(() => adapter.fetchCurrentUser(any()))
-          .thenAnswer((_) async => plainUser);
+      when(
+        () => adapter.refresh(any()),
+      ).thenAnswer((_) async => testTokens(access: 'access-2'));
+      when(
+        () => adapter.fetchCurrentUser(any()),
+      ).thenAnswer((_) async => plainUser);
 
       final result = await repository.restoreSession();
 
@@ -273,23 +295,26 @@ void main() {
       expect((await readPersistedSession(keyValueStorage))?.user, plainUser);
     });
 
-    test('keeps tokens refreshed by the networking layer during restoration',
-        () async {
-      await persistSession(keyValueStorage, testSession());
-      when(() => adapter.refresh(any()))
-          .thenAnswer((_) async => testTokens(access: 'access-2'));
-      when(() => adapter.fetchCurrentUser(any())).thenAnswer((_) async {
-        // Simulates the ApiClient refreshing after a 401 on the profile call.
-        await repository.refreshTokens();
-        return adminUser;
-      });
+    test(
+      'keeps tokens refreshed by the networking layer during restoration',
+      () async {
+        await persistSession(keyValueStorage, testSession());
+        when(
+          () => adapter.refresh(any()),
+        ).thenAnswer((_) async => testTokens(access: 'access-2'));
+        when(() => adapter.fetchCurrentUser(any())).thenAnswer((_) async {
+          // Simulates the ApiClient refreshing after a 401 on the profile call.
+          await repository.refreshTokens();
+          return adminUser;
+        });
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      expect(result.valueOrNull?.tokens.accessToken, 'access-2');
-      final persisted = await readPersistedSession(keyValueStorage);
-      expect(persisted?.tokens.accessToken, 'access-2');
-    });
+        expect(result.valueOrNull?.tokens.accessToken, 'access-2');
+        final persisted = await readPersistedSession(keyValueStorage);
+        expect(persisted?.tokens.accessToken, 'access-2');
+      },
+    );
   });
 
   group('login', () {
@@ -315,8 +340,9 @@ void main() {
 
     test('replaces the stored user of a previous account', () async {
       await persistSession(keyValueStorage, testSession(user: plainUser));
-      when(() => adapter.login(any()))
-          .thenAnswer((_) async => testSession(user: null));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(user: null));
 
       await repository.login(credentials);
 
@@ -326,8 +352,9 @@ void main() {
 
     test('returns adapter failures unchanged', () async {
       const failure = AuthFailure('Invalid credentials');
-      when(() => adapter.login(any()))
-          .thenAnswer((_) => Future<AuthSession>.error(failure));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) => Future<AuthSession>.error(failure));
 
       final result = await repository.login(credentials);
 
@@ -336,8 +363,9 @@ void main() {
     });
 
     test('wraps unexpected errors into an UnexpectedFailure', () async {
-      when(() => adapter.login(any()))
-          .thenAnswer((_) => Future<AuthSession>.error(StateError('boom')));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) => Future<AuthSession>.error(StateError('boom')));
 
       final result = await repository.login(credentials);
 
@@ -347,8 +375,9 @@ void main() {
     test('rejects sessions refused by validateSession', () async {
       const rejection = AuthFailure('Account disabled');
       when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-      when(() => adapter.validateSession(any()))
-          .thenAnswer((_) => Future<void>.error(rejection));
+      when(
+        () => adapter.validateSession(any()),
+      ).thenAnswer((_) => Future<void>.error(rejection));
 
       final result = await repository.login(credentials);
 
@@ -370,18 +399,20 @@ void main() {
       expect(visible, session);
     });
 
-    test('reports storage failures and restores the previous session',
-        () async {
-      repository = createRepository(
-        storage: FailingSessionStorage(failWrites: true),
-      );
-      when(() => adapter.login(any())).thenAnswer((_) async => testSession());
+    test(
+      'reports storage failures and restores the previous session',
+      () async {
+        repository = createRepository(
+          storage: FailingSessionStorage(failWrites: true),
+        );
+        when(() => adapter.login(any())).thenAnswer((_) async => testSession());
 
-      final result = await repository.login(credentials);
+        final result = await repository.login(credentials);
 
-      expect(result.failureOrNull, isA<StorageFailure>());
-      expect(repository.currentSession, isNull);
-    });
+        expect(result.failureOrNull, isA<StorageFailure>());
+        expect(repository.currentSession, isNull);
+      },
+    );
   });
 
   group('logout', () {
@@ -402,9 +433,9 @@ void main() {
 
     test('clears the local session even when the adapter throws', () async {
       await signIn();
-      when(() => adapter.logout(any())).thenAnswer(
-        (_) => Future<void>.error(const NetworkFailure()),
-      );
+      when(
+        () => adapter.logout(any()),
+      ).thenAnswer((_) => Future<void>.error(const NetworkFailure()));
 
       await repository.logout();
 
@@ -433,8 +464,9 @@ void main() {
 
   group('refreshTokens', () {
     Future<void> signIn({AuthTokens? tokens}) async {
-      when(() => adapter.login(any()))
-          .thenAnswer((_) async => testSession(tokens: tokens));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(tokens: tokens));
       await repository.login(const AuthCredentials(<String, Object?>{}));
     }
 
@@ -467,8 +499,9 @@ void main() {
 
     test('starts a new refresh once the previous one completed', () async {
       await signIn();
-      when(() => adapter.refresh(any()))
-          .thenAnswer((_) async => testTokens(access: 'access-2'));
+      when(
+        () => adapter.refresh(any()),
+      ).thenAnswer((_) async => testTokens(access: 'access-2'));
 
       await repository.refreshTokens();
       await repository.refreshTokens();
@@ -476,23 +509,25 @@ void main() {
       verify(() => adapter.refresh(any())).called(2);
     });
 
-    test('persists the new tokens, keeps the refresh token and the user',
-        () async {
-      await signIn();
-      when(() => adapter.refresh(any())).thenAnswer(
-        (_) async => const AuthTokens(accessToken: 'access-2'),
-      );
+    test(
+      'persists the new tokens, keeps the refresh token and the user',
+      () async {
+        await signIn();
+        when(
+          () => adapter.refresh(any()),
+        ).thenAnswer((_) async => const AuthTokens(accessToken: 'access-2'));
 
-      final tokens = await repository.refreshTokens();
+        final tokens = await repository.refreshTokens();
 
-      expect(tokens?.accessToken, 'access-2');
-      expect(tokens?.refreshToken, 'refresh-1');
-      expect(repository.currentSession?.tokens, tokens);
-      expect(repository.currentSession?.user, adminUser);
-      final persisted = await readPersistedSession(keyValueStorage);
-      expect(persisted?.tokens.accessToken, 'access-2');
-      expect(persisted?.tokens.refreshToken, 'refresh-1');
-    });
+        expect(tokens?.accessToken, 'access-2');
+        expect(tokens?.refreshToken, 'refresh-1');
+        expect(repository.currentSession?.tokens, tokens);
+        expect(repository.currentSession?.user, adminUser);
+        final persisted = await readPersistedSession(keyValueStorage);
+        expect(persisted?.tokens.accessToken, 'access-2');
+        expect(persisted?.tokens.refreshToken, 'refresh-1');
+      },
+    );
 
     test('returns null on failure without clearing the session', () async {
       await signIn();
@@ -504,20 +539,22 @@ void main() {
       expect(await readPersistedSession(keyValueStorage), isNotNull);
     });
 
-    test('a forced restoration of the same session keeps the refresh valid',
-        () async {
-      await signIn();
-      final pending = Completer<AuthTokens>();
-      when(() => adapter.refresh(any())).thenAnswer((_) => pending.future);
+    test(
+      'a forced restoration of the same session keeps the refresh valid',
+      () async {
+        await signIn();
+        final pending = Completer<AuthTokens>();
+        when(() => adapter.refresh(any())).thenAnswer((_) => pending.future);
 
-      final refresh = repository.refreshTokens();
-      final restore = repository.restoreSession();
-      pending.complete(testTokens(access: 'access-2'));
+        final refresh = repository.refreshTokens();
+        final restore = repository.restoreSession();
+        pending.complete(testTokens(access: 'access-2'));
 
-      expect((await refresh)?.accessToken, 'access-2');
-      expect((await restore).valueOrNull?.tokens.accessToken, 'access-2');
-      expect(repository.currentSession?.tokens.accessToken, 'access-2');
-    });
+        expect((await refresh)?.accessToken, 'access-2');
+        expect((await restore).valueOrNull?.tokens.accessToken, 'access-2');
+        expect(repository.currentSession?.tokens.accessToken, 'access-2');
+      },
+    );
 
     test('never resurrects a session signed out during the refresh', () async {
       await signIn();
@@ -595,8 +632,9 @@ void main() {
 
     test('returns failures as results', () async {
       const failure = ValidationFailure('Invalid code');
-      when(() => adapter.confirmPasswordReset(any()))
-          .thenAnswer((_) => Future<void>.error(failure));
+      when(
+        () => adapter.confirmPasswordReset(any()),
+      ).thenAnswer((_) => Future<void>.error(failure));
 
       final result = await repository.confirmPasswordReset(data);
 
@@ -627,15 +665,17 @@ void main() {
     });
   });
 
-  test('clearSession removes the session without contacting the backend',
-      () async {
-    when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-    await repository.login(const AuthCredentials(<String, Object?>{}));
+  test(
+    'clearSession removes the session without contacting the backend',
+    () async {
+      when(() => adapter.login(any())).thenAnswer((_) async => testSession());
+      await repository.login(const AuthCredentials(<String, Object?>{}));
 
-    await repository.clearSession();
+      await repository.clearSession();
 
-    expect(repository.currentSession, isNull);
-    expect(await readPersistedSession(keyValueStorage), isNull);
-    verifyNever(() => adapter.logout(any()));
-  });
+      expect(repository.currentSession, isNull);
+      expect(await readPersistedSession(keyValueStorage), isNull);
+      verifyNever(() => adapter.logout(any()));
+    },
+  );
 }

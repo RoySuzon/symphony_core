@@ -69,9 +69,7 @@ abstract final class DashboardMenu {
     }
     if (children.isEmpty && !item.hasAction) return null;
     if (!changed) return item;
-    return item.copyWith(
-      children: List<DashboardItem>.unmodifiable(children),
-    );
+    return item.copyWith(children: List<DashboardItem>.unmodifiable(children));
   }
 
   /// Finds the item with [id] anywhere in the tree (depth-first), or returns

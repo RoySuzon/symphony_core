@@ -133,14 +133,14 @@ class LogRedactor {
   }
 
   String _maskedQuery(Map<String, List<String>> params) => <String>[
-        for (final entry in params.entries)
-          if (isSensitive(entry.key))
-            '${Uri.encodeQueryComponent(entry.key)}=$mask'
-          else
-            for (final value in entry.value)
-              '${Uri.encodeQueryComponent(entry.key)}='
-                  '${Uri.encodeQueryComponent(value)}',
-      ].join('&');
+    for (final entry in params.entries)
+      if (isSensitive(entry.key))
+        '${Uri.encodeQueryComponent(entry.key)}=$mask'
+      else
+        for (final value in entry.value)
+          '${Uri.encodeQueryComponent(entry.key)}='
+              '${Uri.encodeQueryComponent(value)}',
+  ].join('&');
 
   /// Deeply masks sensitive entries of maps and lists.
   ///

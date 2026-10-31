@@ -85,10 +85,7 @@ void main() {
 
       final state = container.read(authControllerProvider);
       expect(state, isA<AuthUnauthenticated>());
-      expect(
-        (state as AuthUnauthenticated).failure,
-        isA<StorageFailure>(),
-      );
+      expect((state as AuthUnauthenticated).failure, isA<StorageFailure>());
     });
 
     test('is idempotent unless forced', () async {
@@ -110,8 +107,9 @@ void main() {
       final controller = container.read(authControllerProvider.notifier);
       await controller.login(credentials);
       const rejection = AuthFailure('Subscription expired');
-      when(() => adapter.validateSession(any()))
-          .thenAnswer((_) => Future<void>.error(rejection));
+      when(
+        () => adapter.validateSession(any()),
+      ).thenAnswer((_) => Future<void>.error(rejection));
 
       await controller.restoreSession(force: true);
 
@@ -125,8 +123,9 @@ void main() {
     test('concurrent calls share one restoration', () async {
       await persistSession(storage, testSession());
       final pending = Completer<AuthUser?>();
-      when(() => adapter.fetchCurrentUser(any()))
-          .thenAnswer((_) => pending.future);
+      when(
+        () => adapter.fetchCurrentUser(any()),
+      ).thenAnswer((_) => pending.future);
       final container = createContainer();
       final controller = container.read(authControllerProvider.notifier);
 
@@ -145,8 +144,9 @@ void main() {
     test('a slow restoration never overrides a newer sign-in', () async {
       await persistSession(storage, testSession(user: plainUser));
       final pending = Completer<AuthUser?>();
-      when(() => adapter.fetchCurrentUser(any()))
-          .thenAnswer((_) => pending.future);
+      when(
+        () => adapter.fetchCurrentUser(any()),
+      ).thenAnswer((_) => pending.future);
       final fresh = testSession(tokens: testTokens(access: 'fresh'));
       when(() => adapter.login(any())).thenAnswer((_) async => fresh);
       final container = createContainer();
@@ -188,10 +188,9 @@ void main() {
       when(() => adapter.login(any())).thenAnswer((_) async => testSession());
       final container = createContainer();
 
-      final result =
-          await container.read(authControllerProvider.notifier).login(
-                credentials,
-              );
+      final result = await container
+          .read(authControllerProvider.notifier)
+          .login(credentials);
 
       expect(result.isSuccess, isTrue);
       final access = container.read(accessContextProvider);
@@ -209,8 +208,9 @@ void main() {
 
     test('returns the failure and keeps the state', () async {
       const failure = AuthFailure('Invalid credentials');
-      when(() => adapter.login(any()))
-          .thenAnswer((_) => Future<AuthSession>.error(failure));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) => Future<AuthSession>.error(failure));
       final container = createContainer();
       final controller = container.read(authControllerProvider.notifier);
       await controller.restoreSession();
@@ -240,33 +240,35 @@ void main() {
       expect(result.failureOrNull, isA<UnexpectedFailure>());
       final state = container.read(authControllerProvider);
       expect(state, isA<AuthUnauthenticated>());
-      expect(
-        (state as AuthUnauthenticated).failure,
-        isA<UnexpectedFailure>(),
-      );
+      expect((state as AuthUnauthenticated).failure, isA<UnexpectedFailure>());
     });
   });
 
-  test('logout ends unauthenticated and clears the persisted session',
-      () async {
-    when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-    when(() => adapter.logout(any()))
-        .thenAnswer((_) => Future<void>.error(const NetworkFailure()));
-    final container = createContainer();
-    final controller = container.read(authControllerProvider.notifier);
-    await controller.login(credentials);
+  test(
+    'logout ends unauthenticated and clears the persisted session',
+    () async {
+      when(() => adapter.login(any())).thenAnswer((_) async => testSession());
+      when(
+        () => adapter.logout(any()),
+      ).thenAnswer((_) => Future<void>.error(const NetworkFailure()));
+      final container = createContainer();
+      final controller = container.read(authControllerProvider.notifier);
+      await controller.login(credentials);
 
-    await controller.logout();
+      await controller.logout();
 
-    expect(
-      container.read(authControllerProvider),
-      const AuthState.unauthenticated(),
-    );
-    expect(
-        container.read(accessContextProvider), AccessContext.unauthenticated);
-    expect(await readPersistedSession(storage), isNull);
-    verify(() => adapter.logout(testSession())).called(1);
-  });
+      expect(
+        container.read(authControllerProvider),
+        const AuthState.unauthenticated(),
+      );
+      expect(
+        container.read(accessContextProvider),
+        AccessContext.unauthenticated,
+      );
+      expect(await readPersistedSession(storage), isNull);
+      verify(() => adapter.logout(testSession())).called(1);
+    },
+  );
 
   group('handleSessionExpired', () {
     test('clears the session and records the reason', () async {
@@ -318,10 +320,10 @@ void main() {
       await flushMicrotasks();
 
       expect(container.read(authControllerProvider).session, updated);
-      expect(
-        container.read(accessContextProvider).roles,
-        <String>{'admin', 'auditor'},
-      );
+      expect(container.read(accessContextProvider).roles, <String>{
+        'admin',
+        'auditor',
+      });
       expect(container.read(authRepositoryProvider).currentSession, updated);
       expect((await readPersistedSession(storage))?.user, updated.user);
     });
@@ -342,8 +344,9 @@ void main() {
 
   group('register', () {
     test('authenticates when the backend returns a session', () async {
-      when(() => adapter.register(any()))
-          .thenAnswer((_) async => testSession(user: plainUser));
+      when(
+        () => adapter.register(any()),
+      ).thenAnswer((_) async => testSession(user: plainUser));
       final container = createContainer();
 
       final result = await container

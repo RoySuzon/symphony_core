@@ -23,9 +23,10 @@ class AuthUser {
 
   /// Restores a user serialized with [toJson].
   factory AuthUser.fromJson(Map<String, Object?> json) {
-    Set<String> readSet(Object? value) => value is Iterable
-        ? value.map((dynamic e) => '$e').toSet()
-        : const <String>{};
+    Set<String> readSet(Object? value) =>
+        value is Iterable
+            ? value.map((dynamic e) => '$e').toSet()
+            : const <String>{};
     final data = json['data'];
     return AuthUser(
       id: '${json['id'] ?? ''}',
@@ -35,9 +36,10 @@ class AuthUser {
       avatarUrl: json['avatarUrl'] as String?,
       roles: readSet(json['roles']),
       permissions: readSet(json['permissions']),
-      data: data is Map
-          ? Map<String, Object?>.from(data)
-          : const <String, Object?>{},
+      data:
+          data is Map
+              ? Map<String, Object?>.from(data)
+              : const <String, Object?>{},
     );
   }
 
@@ -67,15 +69,15 @@ class AuthUser {
 
   /// Serializes the user (for session persistence).
   Map<String, Object?> toJson() => <String, Object?>{
-        'id': id,
-        if (displayName != null) 'displayName': displayName,
-        if (email != null) 'email': email,
-        if (username != null) 'username': username,
-        if (avatarUrl != null) 'avatarUrl': avatarUrl,
-        'roles': roles.toList(),
-        'permissions': permissions.toList(),
-        if (data.isNotEmpty) 'data': data,
-      };
+    'id': id,
+    if (displayName != null) 'displayName': displayName,
+    if (email != null) 'email': email,
+    if (username != null) 'username': username,
+    if (avatarUrl != null) 'avatarUrl': avatarUrl,
+    'roles': roles.toList(),
+    'permissions': permissions.toList(),
+    if (data.isNotEmpty) 'data': data,
+  };
 
   /// Returns a copy with the given fields replaced.
   AuthUser copyWith({
@@ -117,16 +119,17 @@ class AuthUser {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        displayName,
-        email,
-        username,
-        avatarUrl,
-        Object.hashAllUnordered(roles),
-        Object.hashAllUnordered(permissions),
-      );
+    id,
+    displayName,
+    email,
+    username,
+    avatarUrl,
+    Object.hashAllUnordered(roles),
+    Object.hashAllUnordered(permissions),
+  );
 
   @override
-  String toString() => 'AuthUser(id: $id, displayName: $displayName, '
+  String toString() =>
+      'AuthUser(id: $id, displayName: $displayName, '
       'roles: $roles, permissions: $permissions)';
 }

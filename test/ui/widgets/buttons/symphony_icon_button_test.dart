@@ -56,11 +56,14 @@ void main() {
       );
 
       expect(
-          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
+        tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+        isNull,
+      );
     });
 
-    testWidgets('shows a spinner and ignores taps while loading',
-        (tester) async {
+    testWidgets('shows a spinner and ignores taps while loading', (
+      tester,
+    ) async {
       var taps = 0;
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(

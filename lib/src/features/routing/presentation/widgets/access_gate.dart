@@ -52,10 +52,8 @@ extension SymphonyAccessWidgetRef on WidgetRef {
   /// Whether the current user satisfies [requirement]. Rebuilds the widget
   /// when the answer changes; call it from `build`.
   bool watchCanAccess(AccessRequirement requirement) => watch(
-        accessContextProvider.select(
-          (access) => access.satisfies(requirement),
-        ),
-      );
+    accessContextProvider.select((access) => access.satisfies(requirement)),
+  );
 
   /// Whether the current user satisfies [requirement], read once. Use it in
   /// callbacks such as `onPressed`.

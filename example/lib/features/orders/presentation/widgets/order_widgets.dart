@@ -20,12 +20,12 @@ Color orderStatusColor(BuildContext context, OrderStatus status) {
 
 /// Icon of [status].
 IconData orderStatusIcon(OrderStatus status) => switch (status) {
-      OrderStatus.pending => Icons.hourglass_top_rounded,
-      OrderStatus.processing => Icons.inventory_2_outlined,
-      OrderStatus.shipped => Icons.local_shipping_outlined,
-      OrderStatus.delivered => Icons.task_alt_rounded,
-      OrderStatus.cancelled => Icons.cancel_outlined,
-    };
+  OrderStatus.pending => Icons.hourglass_top_rounded,
+  OrderStatus.processing => Icons.inventory_2_outlined,
+  OrderStatus.shipped => Icons.local_shipping_outlined,
+  OrderStatus.delivered => Icons.task_alt_rounded,
+  OrderStatus.cancelled => Icons.cancel_outlined,
+};
 
 /// Formats [money].
 String formatMoney(Money money) =>
@@ -41,10 +41,10 @@ class OrderStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TagChip(
-        label: status.label,
-        icon: orderStatusIcon(status),
-        color: orderStatusColor(context, status),
-      );
+    label: status.label,
+    icon: orderStatusIcon(status),
+    color: orderStatusColor(context, status),
+  );
 }
 
 /// One order of the list.

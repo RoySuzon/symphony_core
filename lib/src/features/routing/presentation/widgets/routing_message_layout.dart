@@ -59,8 +59,9 @@ class RoutingMessageLayout extends StatelessWidget {
                   Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                   ...details,
                   if (actions.isNotEmpty) ...<Widget>[

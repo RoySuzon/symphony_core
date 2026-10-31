@@ -70,20 +70,24 @@ class SymphonyRegisterForm extends ConsumerStatefulWidget {
   static const Key nameInputKey = ValueKey<String>('symphony.register.name');
 
   /// Key of the identifier input.
-  static const Key identifierInputKey =
-      ValueKey<String>('symphony.register.identifier');
+  static const Key identifierInputKey = ValueKey<String>(
+    'symphony.register.identifier',
+  );
 
   /// Key of the password input.
-  static const Key passwordInputKey =
-      ValueKey<String>('symphony.register.password');
+  static const Key passwordInputKey = ValueKey<String>(
+    'symphony.register.password',
+  );
 
   /// Key of the password confirmation input.
-  static const Key confirmPasswordInputKey =
-      ValueKey<String>('symphony.register.confirmPassword');
+  static const Key confirmPasswordInputKey = ValueKey<String>(
+    'symphony.register.confirmPassword',
+  );
 
   /// Key of the submit button.
-  static const Key submitButtonKey =
-      ValueKey<String>('symphony.register.submit');
+  static const Key submitButtonKey = ValueKey<String>(
+    'symphony.register.submit',
+  );
 
   /// Whether the name input is displayed.
   final bool showNameField;
@@ -175,7 +179,8 @@ class SymphonyRegisterForm extends ConsumerStatefulWidget {
     String identifier,
     String password,
     String? name,
-  )? credentialsBuilder;
+  )?
+  credentialsBuilder;
 
   /// Additional inputs displayed after the password inputs (terms of use,
   /// phone number...). Their values are added with [extraCredentials].
@@ -258,11 +263,11 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
         widget.showNameField && trimmedName.isNotEmpty ? trimmedName : null;
     var credentials =
         widget.credentialsBuilder?.call(identifier, password, name) ??
-            AuthCredentials(<String, Object?>{
-              widget.identifierField: identifier,
-              widget.passwordField: password,
-              if (name != null) widget.nameField: name,
-            });
+        AuthCredentials(<String, Object?>{
+          widget.identifierField: identifier,
+          widget.passwordField: password,
+          if (name != null) widget.nameField: name,
+        });
     final extra = widget.extraCredentials?.call();
     if (extra != null && extra.isNotEmpty) {
       credentials = credentials.merge(extra);
@@ -271,8 +276,9 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
     final onFailure = widget.onFailure;
 
     setState(() => _submitting = true);
-    final result =
-        await ref.read(authControllerProvider.notifier).register(credentials);
+    final result = await ref
+        .read(authControllerProvider.notifier)
+        .register(credentials);
 
     switch (result) {
       case ResultSuccess<AuthSession?>(:final value):
@@ -326,7 +332,8 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
       },
       messageBuilder: widget.failureMessageBuilder,
     );
-    final passwordValidator = widget.passwordValidator ??
+    final passwordValidator =
+        widget.passwordValidator ??
         SymphonyValidators.compose(<FormFieldValidator<String>>[
           SymphonyValidators.required(message: widget.requiredFieldMessage),
           SymphonyValidators.minLength(
@@ -365,7 +372,8 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
                 autofillHints: const <String>[AutofillHints.name],
-                validator: widget.nameValidator ??
+                validator:
+                    widget.nameValidator ??
                     SymphonyValidators.required(
                       message: widget.requiredFieldMessage,
                     ),
@@ -384,7 +392,8 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
               keyboardType: widget.identifierKeyboardType,
               textInputAction: TextInputAction.next,
               autofillHints: widget.identifierAutofillHints,
-              validator: widget.identifierValidator ??
+              validator:
+                  widget.identifierValidator ??
                   SymphonyValidators.compose(<FormFieldValidator<String>>[
                     SymphonyValidators.required(
                       message: widget.requiredFieldMessage,
@@ -408,9 +417,10 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
               enabled: !_submitting,
               autofillHints: const <String>[AutofillHints.newPassword],
               showStrengthIndicator: widget.showPasswordStrength,
-              textInputAction: widget.showConfirmPasswordField
-                  ? TextInputAction.next
-                  : TextInputAction.done,
+              textInputAction:
+                  widget.showConfirmPasswordField
+                      ? TextInputAction.next
+                      : TextInputAction.done,
               onChanged: (_) => _clearFieldError(widget.passwordField),
               onSubmitted:
                   widget.showConfirmPasswordField ? null : (_) => _submit(),
@@ -424,17 +434,16 @@ class _SymphonyRegisterFormState extends ConsumerState<SymphonyRegisterForm> {
                 enabled: !_submitting,
                 autofillHints: const <String>[AutofillHints.newPassword],
                 textInputAction: TextInputAction.done,
-                validator: SymphonyValidators.compose(
-                  <FormFieldValidator<String>>[
-                    SymphonyValidators.required(
-                      message: widget.requiredFieldMessage,
-                    ),
-                    SymphonyValidators.match(
-                      () => _passwordController.text,
-                      message: widget.passwordMismatchMessage,
-                    ),
-                  ],
-                ),
+                validator:
+                    SymphonyValidators.compose(<FormFieldValidator<String>>[
+                      SymphonyValidators.required(
+                        message: widget.requiredFieldMessage,
+                      ),
+                      SymphonyValidators.match(
+                        () => _passwordController.text,
+                        message: widget.passwordMismatchMessage,
+                      ),
+                    ]),
                 onSubmitted: (_) => _submit(),
               ),
             ],

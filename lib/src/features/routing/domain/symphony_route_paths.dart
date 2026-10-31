@@ -103,12 +103,14 @@ class SymphonyRoutePaths {
   String withRedirectParameter(String location, String? from) {
     if (from == null) return location;
     final uri = Uri.parse(location);
-    return uri.replace(
-      queryParameters: <String, String>{
-        ...uri.queryParameters,
-        redirectParameter: from,
-      },
-    ).toString();
+    return uri
+        .replace(
+          queryParameters: <String, String>{
+            ...uri.queryParameters,
+            redirectParameter: from,
+          },
+        )
+        .toString();
   }
 
   /// The [splash] location, remembering [from] when given.
@@ -151,16 +153,17 @@ class SymphonyRoutePaths {
 
   @override
   int get hashCode => Object.hash(
-        splash,
-        login,
-        home,
-        unauthorized,
-        redirectParameter,
-        Object.hashAllUnordered(guestOnlyPaths),
-      );
+    splash,
+    login,
+    home,
+    unauthorized,
+    redirectParameter,
+    Object.hashAllUnordered(guestOnlyPaths),
+  );
 
   @override
-  String toString() => 'SymphonyRoutePaths(splash: $splash, login: $login, '
+  String toString() =>
+      'SymphonyRoutePaths(splash: $splash, login: $login, '
       'home: $home, unauthorized: $unauthorized, '
       'redirectParameter: $redirectParameter, '
       'guestOnlyPaths: $guestOnlyPaths)';

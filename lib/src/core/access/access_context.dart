@@ -23,8 +23,9 @@ class AccessContext {
   static const AccessContext unknown = AccessContext();
 
   /// Context of a signed-out user.
-  static const AccessContext unauthenticated =
-      AccessContext(status: AuthStatus.unauthenticated);
+  static const AccessContext unauthenticated = AccessContext(
+    status: AuthStatus.unauthenticated,
+  );
 
   /// Authentication status.
   final AuthStatus status;
@@ -94,13 +95,14 @@ class AccessContext {
 
   @override
   int get hashCode => Object.hash(
-        status,
-        Object.hashAllUnordered(roles),
-        Object.hashAllUnordered(permissions),
-        Object.hashAllUnordered(attributes.keys),
-      );
+    status,
+    Object.hashAllUnordered(roles),
+    Object.hashAllUnordered(permissions),
+    Object.hashAllUnordered(attributes.keys),
+  );
 
   @override
-  String toString() => 'AccessContext(status: ${status.name}, '
+  String toString() =>
+      'AccessContext(status: ${status.name}, '
       'roles: $roles, permissions: $permissions)';
 }

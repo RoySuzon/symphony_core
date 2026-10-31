@@ -75,12 +75,12 @@ class GuardedRoute extends GoRoute {
     this.access = AccessRequirement.authenticated,
     this.deniedRedirect,
     GoRouterRedirect? redirect,
-  })  : assert(
-          builder != null || pageBuilder != null || redirect != null,
-          'GuardedRoute needs a builder, a pageBuilder or a redirect.',
-        ),
-        appRedirect = redirect,
-        super(redirect: _guard(access, deniedRedirect, redirect));
+  }) : assert(
+         builder != null || pageBuilder != null || redirect != null,
+         'GuardedRoute needs a builder, a pageBuilder or a redirect.',
+       ),
+       appRedirect = redirect,
+       super(redirect: _guard(access, deniedRedirect, redirect));
 
   /// Who may open this route and every route nested in it. Defaults to any
   /// signed-in user.
@@ -155,12 +155,12 @@ class GuestRoute extends GoRoute {
     super.routes,
     this.authenticatedRedirect,
     GoRouterRedirect? redirect,
-  })  : assert(
-          builder != null || pageBuilder != null || redirect != null,
-          'GuestRoute needs a builder, a pageBuilder or a redirect.',
-        ),
-        appRedirect = redirect,
-        super(redirect: _guard(authenticatedRedirect, redirect));
+  }) : assert(
+         builder != null || pageBuilder != null || redirect != null,
+         'GuestRoute needs a builder, a pageBuilder or a redirect.',
+       ),
+       appRedirect = redirect,
+       super(redirect: _guard(authenticatedRedirect, redirect));
 
   /// Where signed-in users are sent instead of the remembered location or
   /// home.

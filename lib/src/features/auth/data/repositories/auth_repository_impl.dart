@@ -62,8 +62,8 @@ class AuthRepositoryImpl extends AuthRepository {
     SymphonyLogger? logger,
     this.expiryLeeway = const Duration(seconds: 30),
     DateTime Function()? clock,
-  })  : _logger = logger,
-        _clock = clock ?? DateTime.now;
+  }) : _logger = logger,
+       _clock = clock ?? DateTime.now;
 
   /// The project's authentication backend.
   final AuthAdapter adapter;
@@ -182,9 +182,10 @@ class AuthRepositoryImpl extends AuthRepository {
         if (active == null) {
           throw const AuthFailure('There is no active session to update.');
         }
-        final next = _isReplaced(session.tokens, active.tokens)
-            ? AuthSession(tokens: active.tokens, user: session.user)
-            : session;
+        final next =
+            _isReplaced(session.tokens, active.tokens)
+                ? AuthSession(tokens: active.tokens, user: session.user)
+                : session;
         _session = next;
         await _writeSession(next, replace: next.user == null);
       });
@@ -238,8 +239,10 @@ class AuthRepositoryImpl extends AuthRepository {
     var tokens = storedTokens;
     if (tokens.isExpired(leeway: expiryLeeway, now: _clock())) {
       if (!tokens.canRefresh) {
-        return _discard('The persisted session expired and cannot be '
-            'refreshed.');
+        return _discard(
+          'The persisted session expired and cannot be '
+          'refreshed.',
+        );
       }
       try {
         tokens = _mergeTokens(tokens, await adapter.refresh(tokens));

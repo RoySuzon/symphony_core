@@ -38,12 +38,12 @@ class AccessRequirement {
 
   /// A requirement satisfied by everyone, signed in or not.
   const AccessRequirement.public()
-      : requiresAuth = false,
-        roles = const <String>{},
-        permissions = const <String>{},
-        roleMatch = MatchMode.any,
-        permissionMatch = MatchMode.all,
-        predicate = null;
+    : requiresAuth = false,
+      roles = const <String>{},
+      permissions = const <String>{},
+      roleMatch = MatchMode.any,
+      permissionMatch = MatchMode.all,
+      predicate = null;
 
   /// Anyone, signed in or not.
   static const AccessRequirement none = AccessRequirement.public();
@@ -82,15 +82,17 @@ class AccessRequirement {
     if (isPublic) return true;
     if (requiresAuth && !context.isAuthenticated) return false;
     if (roles.isNotEmpty) {
-      final ok = roleMatch == MatchMode.any
-          ? context.hasAnyRole(roles)
-          : context.hasAllRoles(roles);
+      final ok =
+          roleMatch == MatchMode.any
+              ? context.hasAnyRole(roles)
+              : context.hasAllRoles(roles);
       if (!ok) return false;
     }
     if (permissions.isNotEmpty) {
-      final ok = permissionMatch == MatchMode.any
-          ? context.hasAnyPermission(permissions)
-          : context.hasAllPermissions(permissions);
+      final ok =
+          permissionMatch == MatchMode.any
+              ? context.hasAnyPermission(permissions)
+              : context.hasAllPermissions(permissions);
       if (!ok) return false;
     }
     final custom = predicate;
@@ -129,16 +131,17 @@ class AccessRequirement {
 
   @override
   int get hashCode => Object.hash(
-        requiresAuth,
-        Object.hashAllUnordered(roles),
-        Object.hashAllUnordered(permissions),
-        roleMatch,
-        permissionMatch,
-        predicate,
-      );
+    requiresAuth,
+    Object.hashAllUnordered(roles),
+    Object.hashAllUnordered(permissions),
+    roleMatch,
+    permissionMatch,
+    predicate,
+  );
 
   @override
-  String toString() => 'AccessRequirement(requiresAuth: $requiresAuth, '
+  String toString() =>
+      'AccessRequirement(requiresAuth: $requiresAuth, '
       'roles: $roles (${roleMatch.name}), '
       'permissions: $permissions (${permissionMatch.name}))';
 }

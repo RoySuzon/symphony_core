@@ -41,11 +41,12 @@ sealed class AuthState {
 
   /// Access snapshot used by guards and menus.
   AccessContext get accessContext => switch (status) {
-        AuthStatus.unknown => AccessContext.unknown,
-        AuthStatus.unauthenticated => AccessContext.unauthenticated,
-        AuthStatus.authenticated => session?.toAccessContext() ??
-            const AccessContext(status: AuthStatus.authenticated),
-      };
+    AuthStatus.unknown => AccessContext.unknown,
+    AuthStatus.unauthenticated => AccessContext.unauthenticated,
+    AuthStatus.authenticated =>
+      session?.toAccessContext() ??
+          const AccessContext(status: AuthStatus.authenticated),
+  };
 }
 
 /// The persisted session has not been restored yet.

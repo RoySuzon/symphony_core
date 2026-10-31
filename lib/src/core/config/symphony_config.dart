@@ -47,9 +47,9 @@ class SymphonyConfig {
     this.sensitiveKeys = LogRedactor.defaultSensitiveKeys,
     this.handleGlobalErrors = true,
     this.extras = const <String, Object?>{},
-  })  : assert(maxRetries >= 0, 'maxRetries must be >= 0'),
-        assert(inspectorMaxEntries > 0, 'inspectorMaxEntries must be > 0'),
-        assert(maxLoggedBodyLength > 0, 'maxLoggedBodyLength must be > 0');
+  }) : assert(maxRetries >= 0, 'maxRetries must be >= 0'),
+       assert(inspectorMaxEntries > 0, 'inspectorMaxEntries must be > 0'),
+       assert(maxLoggedBodyLength > 0, 'maxLoggedBodyLength must be > 0');
 
   /// Base URL used by the central `ApiClient`.
   ///
@@ -200,7 +200,8 @@ class SymphonyConfig {
   /// sensitive query parameters of [baseUrl] are masked, because this text
   /// ends up in logs and error messages (crash reports).
   @override
-  String toString() => 'SymphonyConfig(appName: $appName, '
+  String toString() =>
+      'SymphonyConfig(appName: $appName, '
       'environment: ${environment.name}, baseUrl: ${_redactedBaseUrl()}, '
       'enableInspector: $enableInspector, enableLogging: $enableLogging)';
 

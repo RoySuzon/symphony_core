@@ -40,9 +40,10 @@ void main() {
     });
 
     test('clear removes every value', () async {
-      final storage = InMemoryKeyValueStorage(
-        <String, String>{'a': '1', 'b': '2'},
-      );
+      final storage = InMemoryKeyValueStorage(<String, String>{
+        'a': '1',
+        'b': '2',
+      });
 
       await storage.clear();
 

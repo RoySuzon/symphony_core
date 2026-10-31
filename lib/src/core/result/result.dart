@@ -34,15 +34,15 @@ sealed class Result<T> {
 
   /// The value when successful, otherwise `null`.
   T? get valueOrNull => switch (this) {
-        ResultSuccess<T>(:final value) => value,
-        ResultFailure<T>() => null,
-      };
+    ResultSuccess<T>(:final value) => value,
+    ResultFailure<T>() => null,
+  };
 
   /// The failure when failed, otherwise `null`.
   Failure? get failureOrNull => switch (this) {
-        ResultSuccess<T>() => null,
-        ResultFailure<T>(:final failure) => failure,
-      };
+    ResultSuccess<T>() => null,
+    ResultFailure<T>(:final failure) => failure,
+  };
 
   /// Calls [success] or [failure] depending on the outcome.
   R when<R>({

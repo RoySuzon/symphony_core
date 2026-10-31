@@ -22,21 +22,21 @@ const SymphonyRoutePaths customPaths = SymphonyRoutePaths(
 );
 
 List<RouteBase> customRoutes() => <RouteBase>[
-      GoRoute(path: '/boot', builder: testPage('boot')),
-      GoRoute(path: '/auth/sign-in', builder: testPage('sign-in')),
-      GoRoute(path: '/auth/register', builder: testPage('register')),
-      GoRoute(path: '/forbidden', builder: testPage('forbidden')),
-      GoRoute(path: '/catalog', builder: testPage('catalog')),
-      GuardedRoute(path: '/dashboard', builder: testPage('dashboard')),
-      GuardedRoute(
-        path: '/admin',
-        access: const AccessRequirement(roles: <String>{'admin'}),
-        builder: testPage('admin'),
-        routes: <RouteBase>[
-          GoRoute(path: 'users', builder: testPage('admin-users')),
-        ],
-      ),
-    ];
+  GoRoute(path: '/boot', builder: testPage('boot')),
+  GoRoute(path: '/auth/sign-in', builder: testPage('sign-in')),
+  GoRoute(path: '/auth/register', builder: testPage('register')),
+  GoRoute(path: '/forbidden', builder: testPage('forbidden')),
+  GoRoute(path: '/catalog', builder: testPage('catalog')),
+  GuardedRoute(path: '/dashboard', builder: testPage('dashboard')),
+  GuardedRoute(
+    path: '/admin',
+    access: const AccessRequirement(roles: <String>{'admin'}),
+    builder: testPage('admin'),
+    routes: <RouteBase>[
+      GoRoute(path: 'users', builder: testPage('admin-users')),
+    ],
+  ),
+];
 
 /// Unmounts the app so the router can be disposed safely.
 Future<void> unmount(WidgetTester tester) =>
@@ -44,8 +44,9 @@ Future<void> unmount(WidgetTester tester) =>
 
 void main() {
   group('SymphonyRouter.custom (no Riverpod)', () {
-    testWidgets('drives the guards from readAccess and the custom paths',
-        (tester) async {
+    testWidgets('drives the guards from readAccess and the custom paths', (
+      tester,
+    ) async {
       final access = ValueNotifier<AccessContext>(AccessContext.unknown);
       addTearDown(access.dispose);
       final router = SymphonyRouter.custom(
@@ -91,8 +92,8 @@ void main() {
         routes: customRoutes(),
         paths: customPaths,
         initialLocation: '/home',
-        redirect: (context, state) =>
-            state.uri.path == '/home' ? '/dashboard' : null,
+        redirect:
+            (context, state) => state.uri.path == '/home' ? '/dashboard' : null,
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -105,8 +106,9 @@ void main() {
       router.dispose();
     });
 
-    testWidgets('applies the default requirement (secure by default)',
-        (tester) async {
+    testWidgets('applies the default requirement (secure by default)', (
+      tester,
+    ) async {
       final access = ValueNotifier<AccessContext>(AccessContext.unknown);
       addTearDown(access.dispose);
       final router = SymphonyRouter.custom(
@@ -139,8 +141,9 @@ void main() {
       router.dispose();
     });
 
-    testWidgets('closes pushed pages the user may no longer see',
-        (tester) async {
+    testWidgets('closes pushed pages the user may no longer see', (
+      tester,
+    ) async {
       final access = ValueNotifier<AccessContext>(
         signedIn(roles: <String>{'admin'}),
       );
@@ -162,10 +165,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(locationOf(router), '/forbidden');
-      expect(
-        find.text('page:admin-users', skipOffstage: false),
-        findsNothing,
-      );
+      expect(find.text('page:admin-users', skipOffstage: false), findsNothing);
 
       await unmount(tester);
       router.dispose();
@@ -180,9 +180,9 @@ void main() {
         routes: customRoutes(),
         paths: customPaths,
         initialLocation: '/missing',
-        errorBuilder: (context, state) => Scaffold(
-          body: Text('custom error: ${state.uri.path}'),
-        ),
+        errorBuilder:
+            (context, state) =>
+                Scaffold(body: Text('custom error: ${state.uri.path}')),
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
@@ -246,8 +246,9 @@ void main() {
   });
 
   group('SymphonyRouter.buildRedirect with a hand-made GoRouter', () {
-    testWidgets('provides the access source and paths to the guards',
-        (tester) async {
+    testWidgets('provides the access source and paths to the guards', (
+      tester,
+    ) async {
       final routerProvider = Provider<GoRouter>((ref) {
         final router = GoRouter(
           routes: customRoutes(),
@@ -268,8 +269,9 @@ void main() {
         routingTestScope(
           initialAccess: signedOut,
           child: Consumer(
-            builder: (context, ref, child) =>
-                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+            builder:
+                (context, ref, child) =>
+                    MaterialApp.router(routerConfig: ref.watch(routerProvider)),
           ),
         ),
       );
@@ -305,8 +307,9 @@ void main() {
         routingTestScope(
           initialAccess: signedOut,
           child: Consumer(
-            builder: (context, ref, child) =>
-                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+            builder:
+                (context, ref, child) =>
+                    MaterialApp.router(routerConfig: ref.watch(routerProvider)),
           ),
         ),
       );
@@ -326,8 +329,9 @@ void main() {
   });
 
   group('guards in a router not built by SymphonyRouter', () {
-    testWidgets('fall back to accessContextProvider and the default paths',
-        (tester) async {
+    testWidgets('fall back to accessContextProvider and the default paths', (
+      tester,
+    ) async {
       final routerProvider = Provider<GoRouter>((ref) {
         final router = GoRouter(
           initialLocation: '/orders',
@@ -349,8 +353,9 @@ void main() {
         routingTestScope(
           initialAccess: signedOut,
           child: Consumer(
-            builder: (context, ref, child) =>
-                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+            builder:
+                (context, ref, child) =>
+                    MaterialApp.router(routerConfig: ref.watch(routerProvider)),
           ),
         ),
       );

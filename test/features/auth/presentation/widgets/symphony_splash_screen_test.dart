@@ -29,8 +29,7 @@ void main() {
     );
   }
 
-  testWidgets(
-      'restores the session after the first frame and waits for the '
+  testWidgets('restores the session after the first frame and waits for the '
       'minimum duration', (tester) async {
     final container = createAuthContainer(adapter: adapter, storage: storage);
     final statesDuringBuild = <AuthState>[];
@@ -39,12 +38,13 @@ void main() {
       tester,
       container,
       SymphonySplashScreen(
-        builder: (context, error, retry) => Consumer(
-          builder: (context, ref, _) {
-            statesDuringBuild.add(ref.watch(authControllerProvider));
-            return const SizedBox.shrink();
-          },
-        ),
+        builder:
+            (context, error, retry) => Consumer(
+              builder: (context, ref, _) {
+                statesDuringBuild.add(ref.watch(authControllerProvider));
+                return const SizedBox.shrink();
+              },
+            ),
         onCompleted: (state) => completed = state,
       ),
     );
@@ -126,14 +126,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 10));
     await tester.pump(const Duration(milliseconds: 10));
 
-    expect(events, <String>[
-      'initialize:unknown',
-      'completed:unauthenticated',
-    ]);
+    expect(events, <String>['initialize:unknown', 'completed:unauthenticated']);
   });
 
-  testWidgets('shows an error with a retry button when start-up fails',
-      (tester) async {
+  testWidgets('shows an error with a retry button when start-up fails', (
+    tester,
+  ) async {
     final container = createAuthContainer(adapter: adapter);
     var attempts = 0;
     AuthState? completed;

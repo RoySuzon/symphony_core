@@ -44,8 +44,8 @@ class _FunctionStorageCodec<T> extends StorageCodec<T> {
   const _FunctionStorageCodec({
     required T Function(Map<String, Object?> json) fromJson,
     required Map<String, Object?> Function(T value) toJson,
-  })  : _fromJson = fromJson,
-        _toJson = toJson;
+  }) : _fromJson = fromJson,
+       _toJson = toJson;
 
   final T Function(Map<String, Object?> json) _fromJson;
   final Map<String, Object?> Function(T value) _toJson;

@@ -3,11 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'symphony_breakpoints.dart';
 
 /// Signature of [ResponsiveBuilder.builder].
-typedef SymphonyResponsiveWidgetBuilder = Widget Function(
-  BuildContext context,
-  ScreenSizeClass sizeClass,
-  BoxConstraints constraints,
-);
+typedef SymphonyResponsiveWidgetBuilder =
+    Widget Function(
+      BuildContext context,
+      ScreenSizeClass sizeClass,
+      BoxConstraints constraints,
+    );
 
 /// Builds a widget from the [ScreenSizeClass] of the space available to it.
 ///
@@ -26,11 +27,7 @@ typedef SymphonyResponsiveWidgetBuilder = Widget Function(
 /// ```
 class ResponsiveBuilder extends StatelessWidget {
   /// Creates a responsive builder.
-  const ResponsiveBuilder({
-    super.key,
-    required this.builder,
-    this.breakpoints,
-  });
+  const ResponsiveBuilder({super.key, required this.builder, this.breakpoints});
 
   /// Builds the content for the current size class.
   final SymphonyResponsiveWidgetBuilder builder;
@@ -45,9 +42,10 @@ class ResponsiveBuilder extends StatelessWidget {
       builder: (context, constraints) {
         final effectiveBreakpoints =
             breakpoints ?? SymphonyBreakpoints.of(context);
-        final width = constraints.hasBoundedWidth
-            ? constraints.maxWidth
-            : MediaQuery.maybeSizeOf(context)?.width ?? 0;
+        final width =
+            constraints.hasBoundedWidth
+                ? constraints.maxWidth
+                : MediaQuery.maybeSizeOf(context)?.width ?? 0;
         return builder(
           context,
           effectiveBreakpoints.classify(width),

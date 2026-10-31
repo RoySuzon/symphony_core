@@ -69,9 +69,9 @@ void main() {
 
     test('matches the expected calls', () {
       List<int> ids(ApiCallStatusFilter status) => <int>[
-            for (final record in all)
-              if (status.matches(record)) record.id,
-          ];
+        for (final record in all)
+          if (status.matches(record)) record.id,
+      ];
       expect(ids(ApiCallStatusFilter.all), <int>[1, 2, 3, 4, 5, 6]);
       expect(ids(ApiCallStatusFilter.success), <int>[1, 2]);
       expect(ids(ApiCallStatusFilter.clientError), <int>[3]);
@@ -95,9 +95,8 @@ void main() {
 
     test('searches method, url, status and error case-insensitively', () {
       List<int> search(String query) => <int>[
-            for (final record in ApiCallFilter(query: query).apply(all))
-              record.id,
-          ];
+        for (final record in ApiCallFilter(query: query).apply(all)) record.id,
+      ];
       expect(search('post'), <int>[4]);
       expect(search('ORDERS'), <int>[3]);
       expect(search('503'), <int>[4]);
@@ -107,10 +106,9 @@ void main() {
     });
 
     test('matches percent-decoded URLs', () {
-      expect(
-        const ApiCallFilter(query: 'résumé').apply(all),
-        <ApiCallRecord>[offline],
-      );
+      expect(const ApiCallFilter(query: 'résumé').apply(all), <ApiCallRecord>[
+        offline,
+      ]);
     });
 
     test('requires every term to match', () {
@@ -154,17 +152,16 @@ void main() {
       expect(copy.query, 'a');
       expect(copy.status, ApiCallStatusFilter.pending);
       expect(
-          copy,
-          const ApiCallFilter(
-            query: 'a',
-            status: ApiCallStatusFilter.pending,
-          ));
+        copy,
+        const ApiCallFilter(query: 'a', status: ApiCallStatusFilter.pending),
+      );
       expect(
-          copy.hashCode,
-          const ApiCallFilter(
-            query: 'a',
-            status: ApiCallStatusFilter.pending,
-          ).hashCode);
+        copy.hashCode,
+        const ApiCallFilter(
+          query: 'a',
+          status: ApiCallStatusFilter.pending,
+        ).hashCode,
+      );
       expect(copy == filter, isFalse);
     });
   });

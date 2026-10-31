@@ -59,7 +59,8 @@ class _FilesPageState extends ConsumerState<FilesPage> {
         children: <Widget>[
           SectionCard(
             title: 'Upload',
-            subtitle: 'Generated in memory with UploadFile.fromBytes and sent '
+            subtitle:
+                'Generated in memory with UploadFile.fromBytes and sent '
                 'as one multipart/form-data request.',
             icon: Icons.cloud_upload_outlined,
             child: Column(
@@ -74,9 +75,11 @@ class _FilesPageState extends ConsumerState<FilesPage> {
                     ButtonSegment<int>(value: 5, label: Text('5')),
                   ],
                   selected: <int>{_count},
-                  onSelectionChanged: busy
-                      ? null
-                      : (selection) => setState(() => _count = selection.first),
+                  onSelectionChanged:
+                      busy
+                          ? null
+                          : (selection) =>
+                              setState(() => _count = selection.first),
                 ),
                 const SizedBox(height: SymphonySpacing.lg),
                 const Text('Size of each file'),
@@ -90,9 +93,11 @@ class _FilesPageState extends ConsumerState<FilesPage> {
                       ),
                   ],
                   selected: <int>{_size},
-                  onSelectionChanged: busy
-                      ? null
-                      : (selection) => setState(() => _size = selection.first),
+                  onSelectionChanged:
+                      busy
+                          ? null
+                          : (selection) =>
+                              setState(() => _size = selection.first),
                 ),
                 const SizedBox(height: SymphonySpacing.lg),
                 SymphonyTextField(
@@ -105,11 +110,13 @@ class _FilesPageState extends ConsumerState<FilesPage> {
                 SymphonyButton(
                   label: 'Upload ${Formatters.bytes(_count * _size)}',
                   icon: Icons.upload_rounded,
-                  isLoading: transfer is TransferRunning &&
+                  isLoading:
+                      transfer is TransferRunning &&
                       transfer.direction == TransferDirection.upload,
-                  onPressed: busy
-                      ? null
-                      : () => _transfers.uploadSamples(
+                  onPressed:
+                      busy
+                          ? null
+                          : () => _transfers.uploadSamples(
                             count: _count,
                             sizeInBytes: _size,
                             note: _note.text,
@@ -131,35 +138,37 @@ class _FilesPageState extends ConsumerState<FilesPage> {
                 value: ref.watch(remoteFilesProvider),
                 onRetry: () => ref.invalidate(remoteFilesProvider),
                 isEmpty: (files) => files.isEmpty,
-                emptyBuilder: (context) => const SymphonyEmptyState(
-                  title: 'No files yet',
-                  message: 'Upload a file to see it here.',
-                  icon: Icons.folder_off_outlined,
-                  compact: true,
-                ),
-                builder: (context, files) => ListView.separated(
-                  itemCount: files.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final file = files[index];
-                    return ListTile(
-                      leading: Icon(_iconFor(file)),
-                      title: Text(file.name),
-                      subtitle: Text(
-                        '${Formatters.bytes(file.sizeInBytes)} · '
-                        '${file.uploadedBy} · '
-                        '${Formatters.dateTime(file.uploadedAt)}',
-                      ),
-                      trailing: SymphonyIconButton(
-                        icon: Icons.download_rounded,
-                        tooltip: 'Download ${file.name}',
-                        onPressed:
-                            busy ? null : () => _transfers.download(file),
-                      ),
-                    );
-                  },
-                ),
+                emptyBuilder:
+                    (context) => const SymphonyEmptyState(
+                      title: 'No files yet',
+                      message: 'Upload a file to see it here.',
+                      icon: Icons.folder_off_outlined,
+                      compact: true,
+                    ),
+                builder:
+                    (context, files) => ListView.separated(
+                      itemCount: files.length,
+                      separatorBuilder:
+                          (context, index) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final file = files[index];
+                        return ListTile(
+                          leading: Icon(_iconFor(file)),
+                          title: Text(file.name),
+                          subtitle: Text(
+                            '${Formatters.bytes(file.sizeInBytes)} · '
+                            '${file.uploadedBy} · '
+                            '${Formatters.dateTime(file.uploadedAt)}',
+                          ),
+                          trailing: SymphonyIconButton(
+                            icon: Icons.download_rounded,
+                            tooltip: 'Download ${file.name}',
+                            onPressed:
+                                busy ? null : () => _transfers.download(file),
+                          ),
+                        );
+                      },
+                    ),
               ),
             ),
           ),
@@ -194,76 +203,76 @@ class _TransferPanel extends StatelessWidget {
       child: switch (current) {
         TransferIdle() => const SizedBox.shrink(),
         TransferRunning() => Card(
-            key: const ValueKey<String>('transfer-running'),
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(SymphonySpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    '${current.direction == TransferDirection.upload ? 'Uploading' : 'Downloading'} '
-                    '${current.label}…',
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: SymphonySpacing.md),
-                  LinearProgressIndicator(value: current.progress),
-                  const SizedBox(height: SymphonySpacing.sm),
-                  Text(
-                    current.total > 0
-                        ? '${Formatters.bytes(current.transferred)} of '
-                            '${Formatters.bytes(current.total)} · '
-                            '${Formatters.percent(current.progress ?? 0)}'
-                        : Formatters.bytes(current.transferred),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
+          key: const ValueKey<String>('transfer-running'),
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(SymphonySpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '${current.direction == TransferDirection.upload ? 'Uploading' : 'Downloading'} '
+                  '${current.label}…',
+                  style: theme.textTheme.titleSmall,
+                ),
+                const SizedBox(height: SymphonySpacing.md),
+                LinearProgressIndicator(value: current.progress),
+                const SizedBox(height: SymphonySpacing.sm),
+                Text(
+                  current.total > 0
+                      ? '${Formatters.bytes(current.transferred)} of '
+                          '${Formatters.bytes(current.total)} · '
+                          '${Formatters.percent(current.progress ?? 0)}'
+                      : Formatters.bytes(current.transferred),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ),
           ),
+        ),
         TransferSucceeded() => Card(
-            key: const ValueKey<String>('transfer-done'),
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(SymphonySpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Icon(
-                        Icons.check_circle,
-                        color: SymphonyColors.of(context).success,
-                      ),
-                      const SizedBox(width: SymphonySpacing.md),
-                      Expanded(child: Text(current.message)),
-                    ],
-                  ),
-                  if (current.preview != null) ...<Widget>[
-                    const SizedBox(height: SymphonySpacing.md),
-                    Container(
-                      padding: const EdgeInsets.all(SymphonySpacing.md),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withAlpha(14),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        current.preview!,
-                        maxLines: 8,
-                        overflow: TextOverflow.ellipsis,
-                        style: inspectorMonospaceStyle(context, fontSize: 12),
-                      ),
+          key: const ValueKey<String>('transfer-done'),
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(SymphonySpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Icon(
+                      Icons.check_circle,
+                      color: SymphonyColors.of(context).success,
                     ),
+                    const SizedBox(width: SymphonySpacing.md),
+                    Expanded(child: Text(current.message)),
                   ],
+                ),
+                if (current.preview != null) ...<Widget>[
+                  const SizedBox(height: SymphonySpacing.md),
+                  Container(
+                    padding: const EdgeInsets.all(SymphonySpacing.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withAlpha(14),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      current.preview!,
+                      maxLines: 8,
+                      overflow: TextOverflow.ellipsis,
+                      style: inspectorMonospaceStyle(context, fontSize: 12),
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
+        ),
         TransferFailed() => SymphonyErrorView(
-            key: const ValueKey<String>('transfer-failed'),
-            failure: current.failure,
-            compact: true,
-          ),
+          key: const ValueKey<String>('transfer-failed'),
+          failure: current.failure,
+          compact: true,
+        ),
       },
     );
   }
@@ -285,29 +294,34 @@ class _TransferHistoryCard extends ConsumerWidget {
       ),
       child: records.when(
         loading: () => const SymphonyLoadingIndicator(size: 24),
-        error: (error, stackTrace) => SymphonyErrorView(
-          failure: UnexpectedFailure.fromError(error, stackTrace),
-          compact: true,
-        ),
-        data: (items) => items.isEmpty
-            ? const Text('Completed uploads and downloads appear here.')
-            : Column(
-                children: <Widget>[
-                  for (final record in items.take(8))
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      leading: Icon(
-                        record.direction == TransferDirection.upload
-                            ? Icons.north_east
-                            : Icons.south_west,
-                      ),
-                      title: Text(record.fileName),
-                      subtitle: Text(Formatters.bytes(record.sizeInBytes)),
-                      trailing: Text(Formatters.time(record.at)),
+        error:
+            (error, stackTrace) => SymphonyErrorView(
+              failure: UnexpectedFailure.fromError(error, stackTrace),
+              compact: true,
+            ),
+        data:
+            (items) =>
+                items.isEmpty
+                    ? const Text('Completed uploads and downloads appear here.')
+                    : Column(
+                      children: <Widget>[
+                        for (final record in items.take(8))
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: Icon(
+                              record.direction == TransferDirection.upload
+                                  ? Icons.north_east
+                                  : Icons.south_west,
+                            ),
+                            title: Text(record.fileName),
+                            subtitle: Text(
+                              Formatters.bytes(record.sizeInBytes),
+                            ),
+                            trailing: Text(Formatters.time(record.at)),
+                          ),
+                      ],
                     ),
-                ],
-              ),
       ),
     );
   }

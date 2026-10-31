@@ -23,10 +23,11 @@ Future<void> main() async {
     secureStorage: ResilientKeyValueStorage(
       primary: const SecureKeyValueStorage(),
       fallback: InMemoryKeyValueStorage(),
-      onFallback: (failure) => debugPrint(
-        'Secure storage unavailable (${failure.message}); '
-        'the session is kept in memory.',
-      ),
+      onFallback:
+          (failure) => debugPrint(
+            'Secure storage unavailable (${failure.message}); '
+            'the session is kept in memory.',
+          ),
     ),
     overrides: [
       // Every request of the ApiClient is answered in-process by the demo

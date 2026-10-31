@@ -140,7 +140,8 @@ class _InputsSectionState extends State<InputsSection> {
     final strength = _strength;
     return SectionCard(
       title: 'Inputs',
-      subtitle: 'SymphonyTextField · SymphonyPasswordField · '
+      subtitle:
+          'SymphonyTextField · SymphonyPasswordField · '
           'SymphonyValidators',
       icon: Icons.edit_note_outlined,
       child: Form(
@@ -178,9 +179,11 @@ class _InputsSectionState extends State<InputsSection> {
               prefixIcon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               helperText: 'Optional — validated only when filled in',
-              validator: (value) => value == null || value.isEmpty
-                  ? null
-                  : SymphonyValidators.phone()(value),
+              validator:
+                  (value) =>
+                      value == null || value.isEmpty
+                          ? null
+                          : SymphonyValidators.phone()(value),
             ),
             const SizedBox(height: SymphonySpacing.lg),
             SymphonyTextField(
@@ -235,14 +238,17 @@ class DialogsSection extends StatelessWidget {
   /// Creates the section.
   const DialogsSection({super.key});
 
-  Future<void> _confirm(BuildContext context,
-      {required bool destructive}) async {
+  Future<void> _confirm(
+    BuildContext context, {
+    required bool destructive,
+  }) async {
     final confirmed = await SymphonyDialogs.confirm(
       context,
       title: destructive ? 'Delete the project?' : 'Publish the changes?',
-      message: destructive
-          ? 'This cannot be undone.'
-          : 'Your team will be notified.',
+      message:
+          destructive
+              ? 'This cannot be undone.'
+              : 'Your team will be notified.',
       confirmLabel: destructive ? 'Delete' : 'Publish',
       destructive: destructive,
       icon: destructive ? Icons.delete_outline : Icons.publish_outlined,
@@ -268,10 +274,7 @@ class DialogsSection extends StatelessWidget {
   }
 
   Future<void> _loading(BuildContext context) async {
-    final handle = SymphonyDialogs.showLoading(
-      context,
-      message: 'Syncing…',
-    );
+    final handle = SymphonyDialogs.showLoading(context, message: 'Syncing…');
     await Future<void>.delayed(const Duration(seconds: 2));
     handle.close();
   }
@@ -315,12 +318,13 @@ class DialogsSection extends StatelessWidget {
           SymphonyButton(
             label: 'Alert',
             variant: SymphonyButtonVariant.outlined,
-            onPressed: () => SymphonyDialogs.alert(
-              context,
-              title: 'Heads up',
-              message: 'Alerts have a single button.',
-              icon: Icons.info_outline,
-            ),
+            onPressed:
+                () => SymphonyDialogs.alert(
+                  context,
+                  title: 'Heads up',
+                  message: 'Alerts have a single button.',
+                  icon: Icons.info_outline,
+                ),
           ),
           SymphonyButton(
             label: 'Prompt',
@@ -364,31 +368,34 @@ class SnackbarsSection extends StatelessWidget {
               icon: SymphonySnackbar.iconFor(type),
               variant: SymphonyButtonVariant.outlined,
               size: SymphonyButtonSize.small,
-              onPressed: () => SymphonySnackbar.show(
-                context,
-                'This is a ${type.name} message.',
-                type: type,
-              ),
+              onPressed:
+                  () => SymphonySnackbar.show(
+                    context,
+                    'This is a ${type.name} message.',
+                    type: type,
+                  ),
             ),
           SymphonyButton(
             label: 'With action',
             size: SymphonyButtonSize.small,
             variant: SymphonyButtonVariant.secondary,
-            onPressed: () => SymphonySnackbar.success(
-              context,
-              'Order archived.',
-              actionLabel: 'Undo',
-              onAction: () => SymphonySnackbar.info(context, 'Restored.'),
-            ),
+            onPressed:
+                () => SymphonySnackbar.success(
+                  context,
+                  'Order archived.',
+                  actionLabel: 'Undo',
+                  onAction: () => SymphonySnackbar.info(context, 'Restored.'),
+                ),
           ),
           SymphonyButton(
             label: 'From a Failure',
             size: SymphonyButtonSize.small,
             variant: SymphonyButtonVariant.secondary,
-            onPressed: () => SymphonySnackbar.showFailure(
-              context,
-              const TimeoutFailure(),
-            ),
+            onPressed:
+                () => SymphonySnackbar.showFailure(
+                  context,
+                  const TimeoutFailure(),
+                ),
           ),
         ],
       ),
@@ -542,14 +549,14 @@ class ResponsiveSection extends StatelessWidget {
       large: 4,
     );
     Widget panel(String label, Color color, Color onColor) => Container(
-          height: 72,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: SymphonyRadius.of(context).mediumBorderRadius,
-          ),
-          child: Text(label, style: TextStyle(color: onColor)),
-        );
+      height: 72,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: SymphonyRadius.of(context).mediumBorderRadius,
+      ),
+      child: Text(label, style: TextStyle(color: onColor)),
+    );
 
     return SectionCard(
       title: 'Responsive layout',
@@ -591,7 +598,7 @@ class ResponsiveSection extends StatelessWidget {
               );
               final width =
                   (constraints.maxWidth - SymphonySpacing.sm * (count - 1)) /
-                      count;
+                  count;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[

@@ -20,8 +20,7 @@ class _ReturningReporter extends ErrorReporter {
     String? reason,
     bool fatal = false,
     Map<String, Object?> context = const <String, Object?>{},
-  }) =>
-      _result();
+  }) => _result();
 }
 
 void main() {
@@ -73,15 +72,14 @@ void main() {
   }
 
   FlutterErrorDetails details([Object? exception]) => FlutterErrorDetails(
-        exception: exception ?? StateError('build failed'),
-        stack: StackTrace.current,
-        library: 'widgets library',
-        context: ErrorDescription('while building MyWidget'),
-      );
+    exception: exception ?? StateError('build failed'),
+    stack: StackTrace.current,
+    library: 'widgets library',
+    context: ErrorDescription('while building MyWidget'),
+  );
 
   group('GlobalErrorHandler.install', () {
-    test(
-        'reports framework errors as non-fatal and chains to the previous '
+    test('reports framework errors as non-fatal and chains to the previous '
         'handler', () {
       final registration = install();
       final error = details();
@@ -114,8 +112,10 @@ void main() {
       install();
       final error = StateError('unawaited future');
 
-      final handled =
-          PlatformDispatcher.instance.onError!(error, StackTrace.current);
+      final handled = PlatformDispatcher.instance.onError!(
+        error,
+        StackTrace.current,
+      );
 
       expect(handled, isTrue);
       final report = reporter.reports.single;
@@ -131,8 +131,10 @@ void main() {
           (error, stackTrace) => throw StateError('previous exploded');
       install(logger: SymphonyLogger(sinks: <LogSink>[sink]));
 
-      final handled =
-          PlatformDispatcher.instance.onError!('error', StackTrace.current);
+      final handled = PlatformDispatcher.instance.onError!(
+        'error',
+        StackTrace.current,
+      );
 
       expect(handled, isTrue);
       expect(reporter.reports, hasLength(1));
@@ -227,8 +229,7 @@ void main() {
       expect(identical(FlutterError.onError, previousHandler), isTrue);
     });
 
-    test(
-        'presents framework errors in debug unless the previous handler '
+    test('presents framework errors in debug unless the previous handler '
         'already presents them', () {
       final presented = <FlutterErrorDetails>[];
       FlutterError.presentError = presented.add;
@@ -305,8 +306,7 @@ void main() {
       expect(warning.message, contains('ErrorReporter.report failed'));
     });
 
-    test(
-        'contains asynchronous errors leaked by the reporter instead of '
+    test('contains asynchronous errors leaked by the reporter instead of '
         'reporting them again (no infinite loop)', () async {
       final sink = RecordingLogSink();
       reporter.onReport = (error) {
@@ -343,8 +343,7 @@ void main() {
       expect('${warning.error}', contains('upload failed'));
     });
 
-    test(
-        'logs a failed future returned by the reporter once, whatever zone '
+    test('logs a failed future returned by the reporter once, whatever zone '
         'created it', () async {
       final sink = RecordingLogSink();
       // A future created outside of the reporting call (for example a shared
@@ -375,10 +374,10 @@ void main() {
       FlutterError.reportError(details());
 
       expect(reporter.reports, hasLength(1));
-      expect(
-        previousCalls.map((d) => d.exception.runtimeType),
-        <Type>[ArgumentError, StateError],
-      );
+      expect(previousCalls.map((d) => d.exception.runtimeType), <Type>[
+        ArgumentError,
+        StateError,
+      ]);
     });
 
     test('logs installation and removal at debug level', () {
@@ -388,10 +387,10 @@ void main() {
       );
       registration.uninstall();
 
-      expect(
-        sink.entries.map((e) => e.message),
-        <Matcher>[contains('installed'), contains('removed')],
-      );
+      expect(sink.entries.map((e) => e.message), <Matcher>[
+        contains('installed'),
+        contains('removed'),
+      ]);
       expect(sink.entries.every((e) => e.level == LogLevel.debug), isTrue);
     });
   });

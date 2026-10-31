@@ -40,18 +40,21 @@ final routerProvider = Provider<GoRouter>(
       unauthorized: AppRoutes.unauthorized,
       guestOnlyPaths: <String>{AppRoutes.register, AppRoutes.forgotPassword},
     ),
-    errorBuilder: (context, state) => SymphonyRouteErrorScreen(
-      error: state.error,
-      location: state.uri.toString(),
-      homeLocation: AppRoutes.home,
-      message: 'This page does not exist. The router shows '
-          'SymphonyRouteErrorScreen for unknown locations.',
-    ),
+    errorBuilder:
+        (context, state) => SymphonyRouteErrorScreen(
+          error: state.error,
+          location: state.uri.toString(),
+          homeLocation: AppRoutes.home,
+          message:
+              'This page does not exist. The router shows '
+              'SymphonyRouteErrorScreen for unknown locations.',
+        ),
     routes: <RouteBase>[
       GoRoute(
         path: AppRoutes.splash,
-        builder: (context, state) =>
-            const SplashPage(onInitialize: initializeExampleApp),
+        builder:
+            (context, state) =>
+                const SplashPage(onInitialize: initializeExampleApp),
       ),
       GuestRoute(
         path: AppRoutes.login,
@@ -82,9 +85,10 @@ final routerProvider = Provider<GoRouter>(
             routes: <RouteBase>[
               GoRoute(
                 path: ':orderId',
-                builder: (context, state) => OrderDetailPage(
-                  orderId: state.pathParameters['orderId'] ?? '',
-                ),
+                builder:
+                    (context, state) => OrderDetailPage(
+                      orderId: state.pathParameters['orderId'] ?? '',
+                    ),
               ),
             ],
           ),
@@ -142,7 +146,8 @@ class UnauthorizedPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SymphonyUnauthorizedScreen(
-      message: "Your account doesn't have the role or permission this page "
+      message:
+          "Your account doesn't have the role or permission this page "
           'requires.',
       homeLocation: AppRoutes.home,
       homeLabel: 'Back to the dashboard',

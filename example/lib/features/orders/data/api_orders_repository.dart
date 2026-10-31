@@ -22,33 +22,27 @@ class ApiOrdersRepository implements OrdersRepository {
     OrderFilter filter = const OrderFilter(),
   }) {
     final status = filter.status;
-    return guardResult(
-      () async {
-        final response = await _client.get<List<OrderSummary>>(
-          '/orders',
-          queryParameters: <String, dynamic>{
-            if (status != null) 'status': status.name,
-            if (filter.query.isNotEmpty) 'q': filter.query,
-          },
-          decoder: OrderJson.decodeList,
-        );
-        return response.data;
-      },
-      mapError: _client.mapError,
-    );
+    return guardResult(() async {
+      final response = await _client.get<List<OrderSummary>>(
+        '/orders',
+        queryParameters: <String, dynamic>{
+          if (status != null) 'status': status.name,
+          if (filter.query.isNotEmpty) 'q': filter.query,
+        },
+        decoder: OrderJson.decodeList,
+      );
+      return response.data;
+    }, mapError: _client.mapError);
   }
 
   @override
   Future<Result<OrderDetail>> fetchOrder(String id) {
-    return guardResult(
-      () async {
-        final response = await _client.get<OrderDetail>(
-          '/orders/${Uri.encodeComponent(id)}',
-          decoder: OrderJson.decodeDetail,
-        );
-        return response.data;
-      },
-      mapError: _client.mapError,
-    );
+    return guardResult(() async {
+      final response = await _client.get<OrderDetail>(
+        '/orders/${Uri.encodeComponent(id)}',
+        decoder: OrderJson.decodeDetail,
+      );
+      return response.data;
+    }, mapError: _client.mapError);
   }
 }

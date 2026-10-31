@@ -8,13 +8,13 @@ import '../domain/file_entities.dart';
 class LocalTransferHistory implements TransferHistory {
   /// Creates the history on [database].
   LocalTransferHistory(LocalDatabase database)
-      : _store = database.store<TransferRecord>(
-          'transfer_history',
-          StorageCodec<TransferRecord>.json(
-            fromJson: TransferRecord.fromJson,
-            toJson: (record) => record.toJson(),
-          ),
-        );
+    : _store = database.store<TransferRecord>(
+        'transfer_history',
+        StorageCodec<TransferRecord>.json(
+          fromJson: TransferRecord.fromJson,
+          toJson: (record) => record.toJson(),
+        ),
+      );
 
   final LocalStore<TransferRecord> _store;
 
@@ -23,9 +23,9 @@ class LocalTransferHistory implements TransferHistory {
 
   @override
   Stream<List<TransferRecord>> watch() => _store.watchAll().map(
-        (records) => List<TransferRecord>.of(records)
-          ..sort((a, b) => b.at.compareTo(a.at)),
-      );
+    (records) =>
+        List<TransferRecord>.of(records)..sort((a, b) => b.at.compareTo(a.at)),
+  );
 
   @override
   Future<void> clear() => _store.clear();

@@ -55,29 +55,25 @@ final httpClientAdapterProvider = Provider<HttpClientAdapter?>(
 /// The central [ApiClient], configured from `symphonyConfigProvider` and the
 /// networking providers above. It is closed when the provider is disposed
 /// (for example when the configuration changes).
-final apiClientProvider = Provider<ApiClient>(
-  (ref) {
-    final config = ref.watch(symphonyConfigProvider);
-    // The token delegate is resolved lazily, on each request, because it
-    // usually depends on this provider:
-    // apiClient -> delegate -> auth repository -> adapter -> apiClient.
-    // It is read through the container rather than `ref.read`: in debug
-    // builds Riverpod (2.x and 3.x) throws a CircularDependencyError when a
-    // provider reads another provider that depends on it, even lazily.
-    final container = ref.container;
-    final client = ApiClient(
-      config: config,
-      logger: ref.watch(symphonyLoggerProvider).withTag('HTTP'),
-      inspector:
-          config.enableInspector ? ref.watch(apiInspectorProvider) : null,
-      tokenDelegate: () => container.read(authTokenDelegateProvider),
-      errorMapper: ref.watch(apiErrorMapperProvider),
-      interceptors: ref.watch(apiInterceptorsProvider),
-      headerProviders: ref.watch(apiHeaderProvidersProvider),
-      httpClientAdapter: ref.watch(httpClientAdapterProvider),
-    );
-    ref.onDispose(client.close);
-    return client;
-  },
-  name: 'apiClientProvider',
-);
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final config = ref.watch(symphonyConfigProvider);
+  // The token delegate is resolved lazily, on each request, because it
+  // usually depends on this provider:
+  // apiClient -> delegate -> auth repository -> adapter -> apiClient.
+  // It is read through the container rather than `ref.read`: in debug
+  // builds Riverpod throws a CircularDependencyError when a
+  // provider reads another provider that depends on it, even lazily.
+  final container = ref.container;
+  final client = ApiClient(
+    config: config,
+    logger: ref.watch(symphonyLoggerProvider).withTag('HTTP'),
+    inspector: config.enableInspector ? ref.watch(apiInspectorProvider) : null,
+    tokenDelegate: () => container.read(authTokenDelegateProvider),
+    errorMapper: ref.watch(apiErrorMapperProvider),
+    interceptors: ref.watch(apiInterceptorsProvider),
+    headerProviders: ref.watch(apiHeaderProvidersProvider),
+    httpClientAdapter: ref.watch(httpClientAdapterProvider),
+  );
+  ref.onDispose(client.close);
+  return client;
+}, name: 'apiClientProvider');

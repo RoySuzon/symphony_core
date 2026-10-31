@@ -49,14 +49,14 @@ class _OrderDetailView extends StatelessWidget {
     final confirmed = await SymphonyDialogs.confirm(
       context,
       title: 'Refund ${order.summary.number}?',
-      message: 'The customer will be refunded '
+      message:
+          'The customer will be refunded '
           '${formatMoney(order.summary.total)}.',
       confirmLabel: 'Refund',
       destructive: true,
       icon: Icons.currency_exchange,
     );
-    // Positive `context.mounted` checks are understood by every supported
-    // analyzer version (Dart 3.0 flags `if (!context.mounted) return;`).
+    // Only show feedback when the page is still mounted after the dialog.
     if (confirmed && context.mounted) {
       SymphonySnackbar.success(
         context,
@@ -106,9 +106,10 @@ class _OrderDetailView extends StatelessWidget {
               InfoRow(label: 'Subtotal', value: formatMoney(order.subtotal)),
               InfoRow(
                 label: 'Shipping',
-                value: order.shippingFee.amountInCents == 0
-                    ? 'Free'
-                    : formatMoney(order.shippingFee),
+                value:
+                    order.shippingFee.amountInCents == 0
+                        ? 'Free'
+                        : formatMoney(order.shippingFee),
               ),
               Row(
                 children: <Widget>[
@@ -155,9 +156,10 @@ class _OrderDetailView extends StatelessWidget {
             label: 'Refund order',
             icon: Icons.currency_exchange,
             variant: SymphonyButtonVariant.danger,
-            onPressed: summary.status == OrderStatus.cancelled
-                ? null
-                : () => _requestRefund(context),
+            onPressed:
+                summary.status == OrderStatus.cancelled
+                    ? null
+                    : () => _requestRefund(context),
           ),
         ),
         const SizedBox(height: SymphonySpacing.lg),

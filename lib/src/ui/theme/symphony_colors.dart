@@ -157,7 +157,8 @@ class SymphonyColors extends ThemeExtension<SymphonyColors> {
       Object.hash(success, onSuccess, warning, onWarning, info, onInfo);
 
   @override
-  String toString() => 'SymphonyColors(success: $success, '
+  String toString() =>
+      'SymphonyColors(success: $success, '
       'onSuccess: $onSuccess, warning: $warning, onWarning: $onWarning, '
       'info: $info, onInfo: $onInfo)';
 }

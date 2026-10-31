@@ -61,8 +61,8 @@ class AuthTokenInterceptor extends Interceptor {
     required this.config,
     AuthTokenDelegateResolver? tokenDelegate,
     SymphonyLogger? logger,
-  })  : _resolveDelegate = tokenDelegate,
-        _logger = logger ?? SymphonyLogger.disabled();
+  }) : _resolveDelegate = tokenDelegate,
+       _logger = logger ?? SymphonyLogger.disabled();
 
   /// Dio instance used to replay requests after a token refresh.
   final Dio dio;
@@ -183,15 +183,16 @@ class AuthTokenInterceptor extends Interceptor {
 
       final options = err.requestOptions;
       final sentHeader = findHeader(options.headers, config.authHeaderName);
-      final (String? token, bool refreshed) = sentHeader == null
-          // Sent without credentials (signed out at that time): only replay
-          // when a token became available meanwhile.
-          ? (await _readToken(delegate), false)
-          : await _tokenForRetry(
-              delegate,
-              '$sentHeader',
-              options.extra[_generationKey],
-            );
+      final (String? token, bool refreshed) =
+          sentHeader == null
+              // Sent without credentials (signed out at that time): only replay
+              // when a token became available meanwhile.
+              ? (await _readToken(delegate), false)
+              : await _tokenForRetry(
+                delegate,
+                '$sentHeader',
+                options.extra[_generationKey],
+              );
 
       if (token == null) {
         // No refresh was attempted for this request (the session was already

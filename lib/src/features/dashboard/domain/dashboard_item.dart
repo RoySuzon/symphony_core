@@ -233,12 +233,14 @@ class DashboardItem {
     final query = routeQueryParameters;
     if (query.isEmpty) return location;
     final uri = Uri.parse(location);
-    return uri.replace(
-      queryParameters: <String, dynamic>{
-        ...uri.queryParametersAll,
-        ...query,
-      },
-    ).toString();
+    return uri
+        .replace(
+          queryParameters: <String, dynamic>{
+            ...uri.queryParametersAll,
+            ...query,
+          },
+        )
+        .toString();
   }
 
   /// Returns a copy with the given fields replaced. `null` arguments keep the

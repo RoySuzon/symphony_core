@@ -26,10 +26,10 @@ class SymphonyRadius extends ThemeExtension<SymphonyRadius> {
     this.medium = 12,
     this.large = 16,
     this.extraLarge = 28,
-  })  : assert(small >= 0),
-        assert(medium >= 0),
-        assert(large >= 0),
-        assert(extraLarge >= 0);
+  }) : assert(small >= 0),
+       assert(medium >= 0),
+       assert(large >= 0),
+       assert(extraLarge >= 0);
 
   /// Derives a harmonious scale from a [base] radius, used as [medium].
   ///
@@ -120,6 +120,7 @@ class SymphonyRadius extends ThemeExtension<SymphonyRadius> {
   int get hashCode => Object.hash(small, medium, large, extraLarge);
 
   @override
-  String toString() => 'SymphonyRadius(small: $small, medium: $medium, '
+  String toString() =>
+      'SymphonyRadius(small: $small, medium: $medium, '
       'large: $large, extraLarge: $extraLarge)';
 }

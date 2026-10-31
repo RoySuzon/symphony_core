@@ -60,8 +60,8 @@ class DemoBackend implements HttpClientAdapter {
     this.uploadBytesPerSecond = 768 * 1024,
     this.downloadBytesPerSecond = 2 * 1024 * 1024,
     DateTime Function()? clock,
-  })  : _clock = clock ?? DateTime.now,
-        database = DemoDatabase() {
+  }) : _clock = clock ?? DateTime.now,
+       database = DemoDatabase() {
     _tokens = DemoTokenService(
       clock: _clock,
       accessTokenLifetime: accessTokenLifetime,
@@ -226,9 +226,10 @@ class DemoBackend implements HttpClientAdapter {
     };
     final contentType = response.contentType;
     if (contentType != null) headers['content-type'] = <String>[contentType];
-    final stream = response.simulateTransfer
-        ? _chunked(response.body)
-        : Stream<Uint8List>.value(response.body);
+    final stream =
+        response.simulateTransfer
+            ? _chunked(response.body)
+            : Stream<Uint8List>.value(response.body);
     return ResponseBody(
       stream,
       response.statusCode,
@@ -315,11 +316,11 @@ class DemoBackend implements HttpClientAdapter {
 
   /// Sign-in / refresh payload: credentials plus (optionally) the account.
   Map<String, Object?> _credentials(DemoAccount account) => <String, Object?>{
-        'jwt': _tokens.issueAccessToken(account.id),
-        'renewal_token': _tokens.issueRefreshToken(account.id),
-        'kind': 'Bearer',
-        'ttl': accessTokenLifetime.inSeconds,
-      };
+    'jwt': _tokens.issueAccessToken(account.id),
+    'renewal_token': _tokens.issueRefreshToken(account.id),
+    'kind': 'Bearer',
+    'ttl': accessTokenLifetime.inSeconds,
+  };
 
   // ---------------------------------------------------------------------
   // Handlers
@@ -331,9 +332,12 @@ class DemoBackend implements HttpClientAdapter {
       'service': 'symphony-demo-backend',
       'version': '1.4.2',
       'host': request.host,
-      'environment': host.startsWith('staging')
-          ? 'staging'
-          : host == 'localhost' || host.startsWith('10.') || host == '127.0.0.1'
+      'environment':
+          host.startsWith('staging')
+              ? 'staging'
+              : host == 'localhost' ||
+                  host.startsWith('10.') ||
+                  host == '127.0.0.1'
               ? 'local'
               : 'production',
       'server_time': _now().toIso8601String(),
@@ -387,9 +391,9 @@ class DemoBackend implements HttpClientAdapter {
     // Refresh tokens rotate: the presented one cannot be used again.
     _tokens.revoke(claims);
     database.record(account.email, 'auth.refresh', 'Token refreshed', _now());
-    return DemoResponse.ok(
-      <String, Object?>{'credentials': _credentials(account)},
-    );
+    return DemoResponse.ok(<String, Object?>{
+      'credentials': _credentials(account),
+    });
   }
 
   DemoResponse _logout(DemoRequest request) {
@@ -408,9 +412,9 @@ class DemoBackend implements HttpClientAdapter {
 
   DemoResponse _me(DemoRequest request) {
     final account = _authenticate(request);
-    return DemoResponse.ok(
-      <String, Object?>{'account': account.toAccountJson()},
-    );
+    return DemoResponse.ok(<String, Object?>{
+      'account': account.toAccountJson(),
+    });
   }
 
   DemoResponse _register(DemoRequest request) {
@@ -446,13 +450,10 @@ class DemoBackend implements HttpClientAdapter {
     )..lastLoginAt = _now();
     database.accounts.add(account);
     database.record(email, 'auth.register', 'Created an account', _now());
-    return DemoResponse.ok(
-      <String, Object?>{
-        'credentials': _credentials(account),
-        'account': account.toAccountJson(),
-      },
-      statusCode: 201,
-    );
+    return DemoResponse.ok(<String, Object?>{
+      'credentials': _credentials(account),
+      'account': account.toAccountJson(),
+    }, statusCode: 201);
   }
 
   DemoResponse _forgotPassword(DemoRequest request) {
@@ -475,10 +476,9 @@ class DemoBackend implements HttpClientAdapter {
       );
     }
     // Same answer whether the account exists or not (no user enumeration).
-    return DemoResponse.ok(
-      <String, Object?>{'message': 'If the account exists, a code was sent.'},
-      statusCode: 202,
-    );
+    return DemoResponse.ok(<String, Object?>{
+      'message': 'If the account exists, a code was sent.',
+    }, statusCode: 202);
   }
 
   DemoResponse _resetPassword(DemoRequest request) {
@@ -492,7 +492,7 @@ class DemoBackend implements HttpClientAdapter {
         <String, List<String>>{
           'code': <String>[
             'Invalid code. In this demo the code is '
-                '$demoResetCode.'
+                '$demoResetCode.',
           ],
         },
       );
@@ -512,23 +512,24 @@ class DemoBackend implements HttpClientAdapter {
       'Reset the password',
       _now(),
     );
-    return DemoResponse.ok(
-      const <String, Object?>{'message': 'Password updated.'},
-    );
+    return DemoResponse.ok(const <String, Object?>{
+      'message': 'Password updated.',
+    });
   }
 
   DemoResponse _orders(DemoRequest request) {
     _authorize(request, 'orders.read');
     final status = request.query('status');
     final search = request.query('q')?.trim().toLowerCase() ?? '';
-    final items = database.orders.where((order) {
-      if (status != null && status.isNotEmpty && order.status != status) {
-        return false;
-      }
-      if (search.isEmpty) return true;
-      return order.number.toLowerCase().contains(search) ||
-          order.customerName.toLowerCase().contains(search);
-    }).toList();
+    final items =
+        database.orders.where((order) {
+          if (status != null && status.isNotEmpty && order.status != status) {
+            return false;
+          }
+          if (search.isEmpty) return true;
+          return order.number.toLowerCase().contains(search) ||
+              order.customerName.toLowerCase().contains(search);
+        }).toList();
     return DemoResponse.ok(<String, Object?>{
       'items': <Object?>[for (final order in items) order.toSummaryJson()],
       'total': items.length,
@@ -550,8 +551,10 @@ class DemoBackend implements HttpClientAdapter {
     final orders = database.orders;
     final billable =
         orders.where((order) => order.status != 'cancelled').toList();
-    final revenue =
-        billable.fold<int>(0, (sum, order) => sum + order.totalInCents);
+    final revenue = billable.fold<int>(
+      0,
+      (sum, order) => sum + order.totalInCents,
+    );
 
     final byStatus = <String, int>{};
     for (final order in orders) {
@@ -583,8 +586,9 @@ class DemoBackend implements HttpClientAdapter {
         revenues[sku] = (revenues[sku] ?? 0) + line.totalInCents;
       }
     }
-    final top = quantities.keys.toList()
-      ..sort((a, b) => revenues[b]!.compareTo(revenues[a]!));
+    final top =
+        quantities.keys.toList()
+          ..sort((a, b) => revenues[b]!.compareTo(revenues[a]!));
 
     return DemoResponse.ok(<String, Object?>{
       'currency': 'USD',
@@ -632,9 +636,7 @@ class DemoBackend implements HttpClientAdapter {
   DemoResponse _auditLog(DemoRequest request) {
     _requireAdmin(request);
     return DemoResponse.ok(<String, Object?>{
-      'items': <Object?>[
-        for (final event in database.auditLog) event.toJson(),
-      ],
+      'items': <Object?>[for (final event in database.auditLog) event.toJson()],
     });
   }
 
@@ -653,10 +655,11 @@ class DemoBackend implements HttpClientAdapter {
         'Send at least one file as multipart/form-data.',
       );
     }
-    final note = request.multipart
-        .where((part) => !part.isFile && part.name == 'note')
-        .map((part) => part.text)
-        .join();
+    final note =
+        request.multipart
+            .where((part) => !part.isFile && part.name == 'note')
+            .map((part) => part.text)
+            .join();
     final stored = <DemoStoredFile>[
       for (final part in parts)
         database.addFile(
@@ -674,12 +677,9 @@ class DemoBackend implements HttpClientAdapter {
           '${note.isEmpty ? '' : ' — "$note"'}',
       _now(),
     );
-    return DemoResponse.ok(
-      <String, Object?>{
-        'files': <Object?>[for (final file in stored) file.toJson()],
-      },
-      statusCode: 201,
-    );
+    return DemoResponse.ok(<String, Object?>{
+      'files': <Object?>[for (final file in stored) file.toJson()],
+    }, statusCode: 201);
   }
 
   DemoResponse _download(DemoRequest request) {
@@ -700,23 +700,23 @@ class DemoBackend implements HttpClientAdapter {
       path.split('/').where((segment) => segment.isNotEmpty).toList();
 
   static String _reasonPhrase(int statusCode) => switch (statusCode) {
-        200 => 'OK',
-        201 => 'Created',
-        202 => 'Accepted',
-        204 => 'No Content',
-        400 => 'Bad Request',
-        401 => 'Unauthorized',
-        403 => 'Forbidden',
-        404 => 'Not Found',
-        405 => 'Method Not Allowed',
-        422 => 'Unprocessable Entity',
-        _ => 'Status $statusCode',
-      };
+    200 => 'OK',
+    201 => 'Created',
+    202 => 'Accepted',
+    204 => 'No Content',
+    400 => 'Bad Request',
+    401 => 'Unauthorized',
+    403 => 'Forbidden',
+    404 => 'Not Found',
+    405 => 'Method Not Allowed',
+    422 => 'Unprocessable Entity',
+    _ => 'Status $statusCode',
+  };
 }
 
 class _DemoRoute {
   _DemoRoute(this.method, String pattern, this.handler)
-      : _segments = DemoBackend._segments(pattern);
+    : _segments = DemoBackend._segments(pattern);
 
   final String method;
   final DemoHandler handler;

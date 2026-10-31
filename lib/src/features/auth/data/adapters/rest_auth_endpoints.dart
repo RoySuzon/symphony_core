@@ -107,24 +107,25 @@ class RestAuthEndpoints {
 
   @override
   int get hashCode => Object.hash(
-        login,
-        refresh,
-        logout,
-        currentUser,
-        register,
-        requestPasswordReset,
-        confirmPasswordReset,
-        loginMethod,
-        refreshMethod,
-        logoutMethod,
-        currentUserMethod,
-        registerMethod,
-        requestPasswordResetMethod,
-        confirmPasswordResetMethod,
-      );
+    login,
+    refresh,
+    logout,
+    currentUser,
+    register,
+    requestPasswordReset,
+    confirmPasswordReset,
+    loginMethod,
+    refreshMethod,
+    logoutMethod,
+    currentUserMethod,
+    registerMethod,
+    requestPasswordResetMethod,
+    confirmPasswordResetMethod,
+  );
 
   @override
-  String toString() => 'RestAuthEndpoints(login: $login, refresh: $refresh, '
+  String toString() =>
+      'RestAuthEndpoints(login: $login, refresh: $refresh, '
       'logout: $logout, currentUser: $currentUser, register: $register, '
       'requestPasswordReset: $requestPasswordReset, '
       'confirmPasswordReset: $confirmPasswordReset)';

@@ -47,7 +47,9 @@ void main() {
       expect(strengthOf('Zebra-cat9-Moon'), PasswordStrength.strong);
       expect(strengthOf(r'Xk9#mP2$vL7!qR4&'), PasswordStrength.strong);
       expect(
-          strengthOf('correct horse battery staple'), PasswordStrength.strong);
+        strengthOf('correct horse battery staple'),
+        PasswordStrength.strong,
+      );
     });
 
     test('is deterministic and produces scores within 0..100', () {
@@ -89,7 +91,9 @@ void main() {
 
       expect(custom.evaluate('Symphony2024!').strength, PasswordStrength.weak);
       expect(
-          custom.evaluate('password').strength, isNot(PasswordStrength.good));
+        custom.evaluate('password').strength,
+        isNot(PasswordStrength.good),
+      );
     });
 
     test('strengthForScore maps the score thresholds', () {

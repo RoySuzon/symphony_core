@@ -9,7 +9,7 @@ import '../domain/settings_entities.dart';
 class StoragePreferencesRepository implements PreferencesRepository {
   /// Creates the repository.
   StoragePreferencesRepository(KeyValueStorage storage)
-      : _storage = PrefixedKeyValueStorage(storage, 'symphony_example.prefs.');
+    : _storage = PrefixedKeyValueStorage(storage, 'symphony_example.prefs.');
 
   static const String _key = 'app';
 
@@ -46,25 +46,22 @@ class ApiServerStatusRepository implements ServerStatusRepository {
   final ApiClient _client;
 
   @override
-  Future<Result<ServerStatus>> check() => guardResult(
-        () async {
-          final response = await _client.get<ServerStatus>(
-            '/status',
-            // Public endpoint: no token, no refresh on 401.
-            options: ApiRequestOptions.unauthenticated,
-            decoder: (body) {
-              final json = ApiEnvelope.result(body);
-              return ServerStatus(
-                service: JsonReader.asString(json['service']) ?? 'unknown',
-                version: JsonReader.asString(json['version']) ?? '?',
-                host: JsonReader.asString(json['host']) ?? '',
-                environment: JsonReader.asString(json['environment']) ?? '',
-                serverTime: ApiEnvelope.requireDate(json, 'server_time'),
-              );
-            },
-          );
-          return response.data;
-        },
-        mapError: _client.mapError,
-      );
+  Future<Result<ServerStatus>> check() => guardResult(() async {
+    final response = await _client.get<ServerStatus>(
+      '/status',
+      // Public endpoint: no token, no refresh on 401.
+      options: ApiRequestOptions.unauthenticated,
+      decoder: (body) {
+        final json = ApiEnvelope.result(body);
+        return ServerStatus(
+          service: JsonReader.asString(json['service']) ?? 'unknown',
+          version: JsonReader.asString(json['version']) ?? '?',
+          host: JsonReader.asString(json['host']) ?? '',
+          environment: JsonReader.asString(json['environment']) ?? '',
+          serverTime: ApiEnvelope.requireDate(json, 'server_time'),
+        );
+      },
+    );
+    return response.data;
+  }, mapError: _client.mapError);
 }

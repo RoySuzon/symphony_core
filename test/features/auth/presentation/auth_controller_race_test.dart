@@ -37,13 +37,13 @@ void main() {
     );
   });
 
-  test(
-      'a sign-in racing the start-up restoration never leaves the state '
+  test('a sign-in racing the start-up restoration never leaves the state '
       'authenticated with a session the repository dropped', () async {
     final validation = Completer<void>();
     when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-    when(() => adapter.validateSession(any()))
-        .thenAnswer((_) => validation.future);
+    when(
+      () => adapter.validateSession(any()),
+    ).thenAnswer((_) => validation.future);
     final readGate = storage.readGate = Completer<void>();
 
     final restoring = controllerOf().restoreSession();
@@ -71,8 +71,9 @@ void main() {
     final renewed = testTokens(access: 'access-2', refresh: 'refresh-2');
 
     setUp(() async {
-      when(() => adapter.login(any()))
-          .thenAnswer((_) async => testSession(user: plainUser));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(user: plainUser));
       when(() => adapter.refresh(any())).thenAnswer((_) async => renewed);
       final result = await controllerOf().login(credentials);
       expect(result.isSuccess, isTrue);
@@ -88,31 +89,32 @@ void main() {
       expect(state.user, user);
     }
 
-    test('an update made while the refresh is persisted keeps the new tokens',
-        () async {
-      final writeGate = storage.writeGate = Completer<void>();
-      // What the ApiClient does after a 401.
-      final refreshing =
-          container.read(sessionTokenDelegateProvider).refreshAccessToken();
-      await flushMicrotasks();
-
-      // The application updates the profile from the state it can see.
-      final session = controllerOf().session!;
-      controllerOf().updateSession(session.copyWith(user: adminUser));
-      storage.writeGate = null;
-      writeGate.complete();
-
-      expect(await refreshing, 'access-2');
-      await flushMicrotasks();
-
-      expectRenewedEverywhere(adminUser);
-      final persisted = await readPersistedSession(keyValueStorage);
-      expect(persisted?.tokens, renewed);
-      expect(persisted?.user, adminUser);
-    });
-
     test(
-        'an update built from a session read before the refresh keeps the '
+      'an update made while the refresh is persisted keeps the new tokens',
+      () async {
+        final writeGate = storage.writeGate = Completer<void>();
+        // What the ApiClient does after a 401.
+        final refreshing =
+            container.read(sessionTokenDelegateProvider).refreshAccessToken();
+        await flushMicrotasks();
+
+        // The application updates the profile from the state it can see.
+        final session = controllerOf().session!;
+        controllerOf().updateSession(session.copyWith(user: adminUser));
+        storage.writeGate = null;
+        writeGate.complete();
+
+        expect(await refreshing, 'access-2');
+        await flushMicrotasks();
+
+        expectRenewedEverywhere(adminUser);
+        final persisted = await readPersistedSession(keyValueStorage);
+        expect(persisted?.tokens, renewed);
+        expect(persisted?.user, adminUser);
+      },
+    );
+
+    test('an update built from a session read before the refresh keeps the '
         'new tokens', () async {
       final stale = controllerOf().session!;
       await container.read(sessionTokenDelegateProvider).refreshAccessToken();
@@ -125,31 +127,37 @@ void main() {
     });
   });
 
-  test('a profile update changing only custom user data reaches listeners',
-      () async {
-    when(() => adapter.login(any()))
-        .thenAnswer((_) async => testSession(user: plainUser));
-    await controllerOf().login(credentials);
-    final users = <AuthUser?>[];
-    final states = <AuthState>[];
-    container
-      ..listen<AuthUser?>(currentUserProvider, (_, next) => users.add(next))
-      ..listen<AuthState>(
-          authControllerProvider, (_, next) => states.add(next));
+  test(
+    'a profile update changing only custom user data reaches listeners',
+    () async {
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(user: plainUser));
+      await controllerOf().login(credentials);
+      final users = <AuthUser?>[];
+      final states = <AuthState>[];
+      container
+        ..listen<AuthUser?>(currentUserProvider, (_, next) => users.add(next))
+        ..listen<AuthState>(
+          authControllerProvider,
+          (_, next) => states.add(next),
+        );
 
-    final updated = plainUser.copyWith(
-      data: <String, Object?>{
-        'plan': 'pro',
-        'address': <String, Object?>{'city': 'Paris'},
-      },
-    );
-    controllerOf()
-        .updateSession(controllerOf().session!.copyWith(user: updated));
-    // Dependent providers are notified by Riverpod's scheduler.
-    await flushMicrotasks();
+      final updated = plainUser.copyWith(
+        data: <String, Object?>{
+          'plan': 'pro',
+          'address': <String, Object?>{'city': 'Paris'},
+        },
+      );
+      controllerOf().updateSession(
+        controllerOf().session!.copyWith(user: updated),
+      );
+      // Dependent providers are notified by Riverpod's scheduler.
+      await flushMicrotasks();
 
-    expect(states, hasLength(1));
-    expect(users, <AuthUser?>[updated]);
-    expect(container.read(currentUserProvider)?.data['plan'], 'pro');
-  });
+      expect(states, hasLength(1));
+      expect(users, <AuthUser?>[updated]);
+      expect(container.read(currentUserProvider)?.data['plan'], 'pro');
+    },
+  );
 }

@@ -93,8 +93,9 @@ void main() {
       expect(_snackBar(tester).duration, const Duration(seconds: 6));
     });
 
-    testWidgets('hides the current snack bar before showing a new one',
-        (tester) async {
+    testWidgets('hides the current snack bar before showing a new one', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
 
       SymphonySnackbar.show(context, 'First');
@@ -106,8 +107,9 @@ void main() {
       expect(find.text('Second'), findsOneWidget);
     });
 
-    testWidgets('never shows a message superseded while another was hiding',
-        (tester) async {
+    testWidgets('never shows a message superseded while another was hiding', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
 
       SymphonySnackbar.show(context, 'First');
@@ -160,8 +162,9 @@ void main() {
       expect(_snackBar(tester).showCloseIcon, isFalse);
     });
 
-    testWidgets('showFailure displays the failure message as an error',
-        (tester) async {
+    testWidgets('showFailure displays the failure message as an error', (
+      tester,
+    ) async {
       final theme = SymphonyTheme.light();
       final context = await pumpTestContext(tester, theme: theme);
 
@@ -180,8 +183,9 @@ void main() {
       expect(await controller.closed, SnackBarClosedReason.hide);
     });
 
-    testWidgets('falls back to the default colours without the extension',
-        (tester) async {
+    testWidgets('falls back to the default colours without the extension', (
+      tester,
+    ) async {
       final context = await pumpTestContext(
         tester,
         theme: ThemeData(useMaterial3: true),

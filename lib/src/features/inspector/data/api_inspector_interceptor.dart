@@ -100,10 +100,7 @@ class ApiInspectorInterceptor extends Interceptor {
   }
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     try {
       _start(options);
     } on Object catch (error) {
@@ -152,9 +149,10 @@ class ApiInspectorInterceptor extends Interceptor {
           statusMessage: response?.statusMessage,
           requestHeaders: _requestHeaders(options),
           headers: response == null ? null : _masked(response.headers.map),
-          body: response != null && inspector.captureResponseBodies
-              ? _responseBody(response)
-              : null,
+          body:
+              response != null && inspector.captureResponseBodies
+                  ? _responseBody(response)
+                  : null,
           uri: options.uri,
         );
       }
@@ -231,9 +229,10 @@ class ApiInspectorInterceptor extends Interceptor {
     if (data is ResponseBody) return ApiCallRecord.streamBodyPlaceholder;
     if (data is String) {
       final contentTypes = response.headers[Headers.contentTypeHeader];
-      final contentType = contentTypes == null || contentTypes.isEmpty
-          ? null
-          : contentTypes.first;
+      final contentType =
+          contentTypes == null || contentTypes.isEmpty
+              ? null
+              : contentTypes.first;
       if (_isUrlEncoded(contentType)) return _parseUrlEncoded(data);
     }
     return data;
@@ -259,10 +258,9 @@ class ApiInspectorInterceptor extends Interceptor {
 
   static bool _isUrlEncoded(String? contentType) =>
       contentType != null &&
-      contentType
-          .trimLeft()
-          .toLowerCase()
-          .startsWith(Headers.formUrlEncodedContentType);
+      contentType.trimLeft().toLowerCase().startsWith(
+        Headers.formUrlEncodedContentType,
+      );
 
   /// Parses an `application/x-www-form-urlencoded` body into fields
   /// (repeated names become lists) so that the inspector can redact it.

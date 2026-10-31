@@ -49,8 +49,9 @@ void main() {
       expect(find.byType(SymphonyButton), findsNothing);
     });
 
-    testWidgets('lets the title, message and icon be overridden',
-        (tester) async {
+    testWidgets('lets the title, message and icon be overridden', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           const SymphonyErrorView(
@@ -152,14 +153,15 @@ void main() {
       await tester.pumpWidget(
         buildTestApp(const SymphonyErrorView(failure: NotFoundFailure())),
       );
-      final semantics = tester
-          .widgetList<Semantics>(
-            find.descendant(
-              of: find.byType(SymphonyErrorView),
-              matching: find.byType(Semantics),
-            ),
-          )
-          .toList();
+      final semantics =
+          tester
+              .widgetList<Semantics>(
+                find.descendant(
+                  of: find.byType(SymphonyErrorView),
+                  matching: find.byType(Semantics),
+                ),
+              )
+              .toList();
 
       expect(
         semantics.where((widget) => widget.properties.liveRegion ?? false),

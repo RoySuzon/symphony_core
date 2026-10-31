@@ -6,8 +6,9 @@ import 'package:symphony_core/src/features/dashboard/dashboard.dart';
 
 import '../dashboard_test_utils.dart';
 
-List<String> ids(Iterable<DashboardItem> items) =>
-    <String>[for (final item in items) item.id];
+List<String> ids(Iterable<DashboardItem> items) => <String>[
+  for (final item in items) item.id,
+];
 
 void main() {
   group('DashboardMenu.filterVisibleItems', () {
@@ -78,10 +79,7 @@ void main() {
         <String>['any', 'all'],
       );
       expect(
-        DashboardMenu.filterVisibleItems(
-          items,
-          signedIn(roles: <String>{'c'}),
-        ),
+        DashboardMenu.filterVisibleItems(items, signedIn(roles: <String>{'c'})),
         isEmpty,
       );
     });
@@ -172,10 +170,10 @@ void main() {
         ),
       );
       expect(ids(admin), <String>['orders', 'sales', 'admin', 'help']);
-      expect(
-        ids(admin[1].children[1].children),
-        <String>['sales.reports.daily', 'sales.reports.monthly'],
-      );
+      expect(ids(admin[1].children[1].children), <String>[
+        'sales.reports.daily',
+        'sales.reports.monthly',
+      ]);
     });
 
     test('hides a restricted group with all of its children', () {
@@ -314,20 +312,20 @@ void main() {
     test('resolveSubmenuPath returns the longest valid prefix', () {
       expect(
         ids(
-          DashboardMenu.resolveSubmenuPath(
-            sampleMenu,
-            <String>['sales', 'sales.reports'],
-          ),
+          DashboardMenu.resolveSubmenuPath(sampleMenu, <String>[
+            'sales',
+            'sales.reports',
+          ]),
         ),
         <String>['sales', 'sales.reports'],
       );
       // A leaf cannot be opened as a submenu.
       expect(
         ids(
-          DashboardMenu.resolveSubmenuPath(
-            sampleMenu,
-            <String>['sales', 'sales.invoices'],
-          ),
+          DashboardMenu.resolveSubmenuPath(sampleMenu, <String>[
+            'sales',
+            'sales.invoices',
+          ]),
         ),
         <String>['sales'],
       );
@@ -348,10 +346,10 @@ void main() {
       );
       expect(
         ids(
-          DashboardMenu.resolveSubmenuPath(
-            visible,
-            <String>['sales', 'sales.reports'],
-          ),
+          DashboardMenu.resolveSubmenuPath(visible, <String>[
+            'sales',
+            'sales.reports',
+          ]),
         ),
         <String>['sales'],
       );
@@ -367,10 +365,7 @@ void main() {
         ),
       ];
 
-      expect(
-        DashboardMenu.resolveSubmenuPath(items, <String>['g']),
-        isEmpty,
-      );
+      expect(DashboardMenu.resolveSubmenuPath(items, <String>['g']), isEmpty);
     });
   });
 

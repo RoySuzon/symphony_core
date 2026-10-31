@@ -32,22 +32,23 @@ class _FakeAdapter implements HttpClientAdapter {
 }
 
 ResponseBody _json(Object? body, {int status = 200}) => ResponseBody.fromString(
-      jsonEncode(body),
-      status,
-      headers: <String, List<String>>{
-        Headers.contentTypeHeader: <String>[Headers.jsonContentType],
-      },
-    );
+  jsonEncode(body),
+  status,
+  headers: <String, List<String>>{
+    Headers.contentTypeHeader: <String>[Headers.jsonContentType],
+  },
+);
 
 void main() {
   late ApiInspector inspector;
   late Dio dio;
 
   Dio createDio(_Handler handler, {List<Interceptor> after = const []}) {
-    final client = Dio(BaseOptions(baseUrl: 'https://api.example.com'))
-      ..httpClientAdapter = _FakeAdapter(handler)
-      ..interceptors.add(ApiInspectorInterceptor(inspector))
-      ..interceptors.addAll(after);
+    final client =
+        Dio(BaseOptions(baseUrl: 'https://api.example.com'))
+          ..httpClientAdapter = _FakeAdapter(handler)
+          ..interceptors.add(ApiInspectorInterceptor(inspector))
+          ..interceptors.addAll(after);
     addTearDown(client.close);
     return client;
   }
@@ -108,10 +109,10 @@ void main() {
       ],
     );
 
-    await dio.get<Object?>('/me',
-        options: Options(headers: <String, Object?>{
-          'X-Request-Id': 'r-1',
-        }));
+    await dio.get<Object?>(
+      '/me',
+      options: Options(headers: <String, Object?>{'X-Request-Id': 'r-1'}),
+    );
 
     final call = inspector.calls.single;
     expect(call.requestHeaders['Authorization'], '***');
@@ -126,7 +127,7 @@ void main() {
       '/auth/login',
       data: <String, Object?>{
         'email': 'ada@example.com',
-        'password': 'hunter2'
+        'password': 'hunter2',
       },
     );
 
@@ -155,9 +156,10 @@ void main() {
 
   test('records 4xx and 5xx responses as failures', () async {
     dio = createDio(
-      (options) => options.path.contains('missing')
-          ? _json(<String, Object?>{'error': 'not found'}, status: 404)
-          : _json(<String, Object?>{'error': 'boom'}, status: 500),
+      (options) =>
+          options.path.contains('missing')
+              ? _json(<String, Object?>{'error': 'not found'}, status: 404)
+              : _json(<String, Object?>{'error': 'boom'}, status: 500),
     );
 
     await expectLater(
@@ -183,12 +185,13 @@ void main() {
 
   test('records connection errors without a response', () async {
     dio = createDio(
-      (options) => throw DioException(
-        requestOptions: options,
-        type: DioExceptionType.connectionError,
-        message: 'The connection errored: Connection refused',
-        error: 'SocketException: Connection refused',
-      ),
+      (options) =>
+          throw DioException(
+            requestOptions: options,
+            type: DioExceptionType.connectionError,
+            message: 'The connection errored: Connection refused',
+            error: 'SocketException: Connection refused',
+          ),
     );
 
     await expectLater(
@@ -212,19 +215,20 @@ void main() {
       data: FormData.fromMap(<String, Object?>{
         'name': 'Ada',
         'password': 'p@ss-secret',
-        'avatar': MultipartFile.fromBytes(
-          <int>[1, 2, 3],
-          filename: 'avatar.png',
-        ),
+        'avatar': MultipartFile.fromBytes(<int>[
+          1,
+          2,
+          3,
+        ], filename: 'avatar.png'),
       }),
     );
 
     final call = inspector.calls.single;
     final form = call.requestFormData!;
-    expect(
-      form.fields.map((field) => '${field.key}=${field.value}'),
-      <String>['name=Ada', 'password=***'],
-    );
+    expect(form.fields.map((field) => '${field.key}=${field.value}'), <String>[
+      'name=Ada',
+      'password=***',
+    ]);
     expect(form.files.single.field, 'avatar');
     expect(form.files.single.filename, 'avatar.png');
     expect(form.files.single.length, 3);
@@ -298,32 +302,35 @@ void main() {
   test('closes an attempt that is retried before it completed', () async {
     var attempts = 0;
     late Dio retrying;
-    retrying = Dio(BaseOptions(baseUrl: 'https://api.example.com'))
-      ..httpClientAdapter = _FakeAdapter(
-        (_) => ++attempts == 1
-            ? _json(<String, Object?>{'error': 'busy'}, status: 503)
-            : _json(<String, Object?>{'ok': true}),
-      )
-      // A retry interceptor placed BEFORE the inspector resolves the error,
-      // so the inspector never sees the first failure.
-      ..interceptors.add(
-        InterceptorsWrapper(
-          onError: (error, handler) async {
-            if (error.requestOptions.extra['retried'] == true) {
-              handler.next(error);
-              return;
-            }
-            error.requestOptions.extra['retried'] = true;
-            try {
-              handler
-                  .resolve(await retrying.fetch<Object?>(error.requestOptions));
-            } on DioException catch (retryError) {
-              handler.next(retryError);
-            }
-          },
-        ),
-      )
-      ..interceptors.add(ApiInspectorInterceptor(inspector));
+    retrying =
+        Dio(BaseOptions(baseUrl: 'https://api.example.com'))
+          ..httpClientAdapter = _FakeAdapter(
+            (_) =>
+                ++attempts == 1
+                    ? _json(<String, Object?>{'error': 'busy'}, status: 503)
+                    : _json(<String, Object?>{'ok': true}),
+          )
+          // A retry interceptor placed BEFORE the inspector resolves the error,
+          // so the inspector never sees the first failure.
+          ..interceptors.add(
+            InterceptorsWrapper(
+              onError: (error, handler) async {
+                if (error.requestOptions.extra['retried'] == true) {
+                  handler.next(error);
+                  return;
+                }
+                error.requestOptions.extra['retried'] = true;
+                try {
+                  handler.resolve(
+                    await retrying.fetch<Object?>(error.requestOptions),
+                  );
+                } on DioException catch (retryError) {
+                  handler.next(retryError);
+                }
+              },
+            ),
+          )
+          ..interceptors.add(ApiInspectorInterceptor(inspector));
     addTearDown(retrying.close);
 
     final response = await retrying.get<Object?>('/busy');

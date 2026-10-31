@@ -73,35 +73,35 @@ class DemoAccount {
   /// deliberately non-standard shape, decoded on the client by a custom
   /// `AuthResponseMapping`.
   Map<String, Object?> toAccountJson() => <String, Object?>{
-        'uid': id,
-        'profile': <String, Object?>{
-          'given_name': givenName,
-          'family_name': familyName,
-          'avatar': null,
-        },
-        'contact': <String, Object?>{'mail': email},
-        'groups': <Object?>[
-          for (final role in roles)
-            <String, Object?>{'slug': role, 'label': _label(role)},
-        ],
-        // OAuth-style space separated scopes.
-        'grants': (permissions.toList()..sort()).join(' '),
-        'department': department,
-        'email_verified': emailVerified,
-        'member_since': createdAt.toIso8601String(),
-      };
+    'uid': id,
+    'profile': <String, Object?>{
+      'given_name': givenName,
+      'family_name': familyName,
+      'avatar': null,
+    },
+    'contact': <String, Object?>{'mail': email},
+    'groups': <Object?>[
+      for (final role in roles)
+        <String, Object?>{'slug': role, 'label': _label(role)},
+    ],
+    // OAuth-style space separated scopes.
+    'grants': (permissions.toList()..sort()).join(' '),
+    'department': department,
+    'email_verified': emailVerified,
+    'member_since': createdAt.toIso8601String(),
+  };
 
   /// The account as listed by the administration endpoints.
   Map<String, Object?> toAdminJson() => <String, Object?>{
-        'id': id,
-        'name': fullName,
-        'email': email,
-        'roles': roles.toList()..sort(),
-        'permissions': permissions.toList()..sort(),
-        'department': department,
-        'status': emailVerified ? 'active' : 'pending_verification',
-        'last_login_at': lastLoginAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': fullName,
+    'email': email,
+    'roles': roles.toList()..sort(),
+    'permissions': permissions.toList()..sort(),
+    'department': department,
+    'status': emailVerified ? 'active' : 'pending_verification',
+    'last_login_at': lastLoginAt?.toIso8601String(),
+  };
 
   static String _label(String role) =>
       role.isEmpty ? role : role[0].toUpperCase() + role.substring(1);
@@ -192,43 +192,42 @@ class DemoOrder {
   /// Number of items.
   int get itemCount => lines.fold(0, (sum, line) => sum + line.quantity);
 
-  static Map<String, Object?> _money(int cents) =>
-      <String, Object?>{'amount': cents, 'currency': 'USD'};
+  static Map<String, Object?> _money(int cents) => <String, Object?>{
+    'amount': cents,
+    'currency': 'USD',
+  };
 
   /// The order as listed by `GET /orders`.
   Map<String, Object?> toSummaryJson() => <String, Object?>{
-        'id': id,
-        'number': number,
-        'status': status,
-        'customer': <String, Object?>{
-          'name': customerName,
-          'email': customerEmail,
-        },
-        'total': _money(totalInCents),
-        'item_count': itemCount,
-        'placed_at': placedAt.toIso8601String(),
-      };
+    'id': id,
+    'number': number,
+    'status': status,
+    'customer': <String, Object?>{'name': customerName, 'email': customerEmail},
+    'total': _money(totalInCents),
+    'item_count': itemCount,
+    'placed_at': placedAt.toIso8601String(),
+  };
 
   /// The order as returned by `GET /orders/{id}`.
   Map<String, Object?> toDetailJson() => <String, Object?>{
-        ...toSummaryJson(),
-        'lines': <Object?>[
-          for (final line in lines)
-            <String, Object?>{
-              'sku': line.product.sku,
-              'name': line.product.name,
-              'quantity': line.quantity,
-              'unit_price': _money(line.product.priceInCents),
-            },
-        ],
-        'subtotal': _money(subtotalInCents),
-        'shipping': <String, Object?>{
-          'fee': _money(shippingInCents),
-          'address': address,
+    ...toSummaryJson(),
+    'lines': <Object?>[
+      for (final line in lines)
+        <String, Object?>{
+          'sku': line.product.sku,
+          'name': line.product.name,
+          'quantity': line.quantity,
+          'unit_price': _money(line.product.priceInCents),
         },
-        'note': note,
-        'timeline': _timeline(),
-      };
+    ],
+    'subtotal': _money(subtotalInCents),
+    'shipping': <String, Object?>{
+      'fee': _money(shippingInCents),
+      'address': address,
+    },
+    'note': note,
+    'timeline': _timeline(),
+  };
 
   List<Object?> _timeline() {
     const flow = <String>['pending', 'processing', 'shipped', 'delivered'];
@@ -287,13 +286,13 @@ class DemoStoredFile {
 
   /// The file as listed by `GET /files`.
   Map<String, Object?> toJson() => <String, Object?>{
-        'id': id,
-        'name': name,
-        'size': bytes.length,
-        'content_type': contentType,
-        'uploaded_at': uploadedAt.toIso8601String(),
-        'uploaded_by': uploadedBy,
-      };
+    'id': id,
+    'name': name,
+    'size': bytes.length,
+    'content_type': contentType,
+    'uploaded_at': uploadedAt.toIso8601String(),
+    'uploaded_by': uploadedBy,
+  };
 }
 
 /// An entry of the audit log.
@@ -324,12 +323,12 @@ class DemoAuditEvent {
 
   /// The event as listed by `GET /admin/audit-log`.
   Map<String, Object?> toJson() => <String, Object?>{
-        'id': id,
-        'at': at.toIso8601String(),
-        'actor': actor,
-        'action': action,
-        'summary': summary,
-      };
+    'id': id,
+    'at': at.toIso8601String(),
+    'actor': actor,
+    'action': action,
+    'summary': summary,
+  };
 }
 
 /// The deterministic data set of the demo backend.
@@ -338,9 +337,7 @@ class DemoAuditEvent {
 /// sees exactly the same accounts, orders and files.
 class DemoDatabase {
   /// Creates the seeded data set.
-  DemoDatabase()
-      : accounts = _seedAccounts(),
-        orders = _seedOrders() {
+  DemoDatabase() : accounts = _seedAccounts(), orders = _seedOrders() {
     files.addAll(_seedFiles(orders));
     auditLog.addAll(_seedAudit());
   }
@@ -434,52 +431,52 @@ class DemoDatabase {
   }
 
   static List<DemoAccount> _seedAccounts() => <DemoAccount>[
-        DemoAccount(
-          id: 'usr_admin',
-          email: 'admin@example.com',
-          password: demoPassword,
-          givenName: 'Alice',
-          familyName: 'Admin',
-          roles: <String>{'admin'},
-          permissions: <String>{...demoAllPermissions},
-          department: 'Operations',
-          createdAt: DateTime.utc(2024, 3, 4),
-        ),
-        DemoAccount(
-          id: 'usr_staff',
-          email: 'staff@example.com',
-          password: demoPassword,
-          givenName: 'Sam',
-          familyName: 'Staff',
-          roles: <String>{'staff'},
-          permissions: <String>{'orders.read'},
-          department: 'Customer service',
-          createdAt: DateTime.utc(2025, 1, 13),
-        ),
-        DemoAccount(
-          id: 'usr_viewer',
-          email: 'viewer@example.com',
-          password: demoPassword,
-          givenName: 'Victor',
-          familyName: 'Viewer',
-          roles: <String>{'viewer'},
-          permissions: <String>{},
-          department: 'Marketing',
-          createdAt: DateTime.utc(2025, 6, 2),
-        ),
-        DemoAccount(
-          id: 'usr_unverified',
-          email: 'unverified@example.com',
-          password: demoPassword,
-          givenName: 'Uma',
-          familyName: 'Unverified',
-          roles: <String>{'viewer'},
-          permissions: <String>{},
-          department: 'Sales',
-          createdAt: DateTime.utc(2026, 10, 1),
-          emailVerified: false,
-        ),
-      ];
+    DemoAccount(
+      id: 'usr_admin',
+      email: 'admin@example.com',
+      password: demoPassword,
+      givenName: 'Alice',
+      familyName: 'Admin',
+      roles: <String>{'admin'},
+      permissions: <String>{...demoAllPermissions},
+      department: 'Operations',
+      createdAt: DateTime.utc(2024, 3, 4),
+    ),
+    DemoAccount(
+      id: 'usr_staff',
+      email: 'staff@example.com',
+      password: demoPassword,
+      givenName: 'Sam',
+      familyName: 'Staff',
+      roles: <String>{'staff'},
+      permissions: <String>{'orders.read'},
+      department: 'Customer service',
+      createdAt: DateTime.utc(2025, 1, 13),
+    ),
+    DemoAccount(
+      id: 'usr_viewer',
+      email: 'viewer@example.com',
+      password: demoPassword,
+      givenName: 'Victor',
+      familyName: 'Viewer',
+      roles: <String>{'viewer'},
+      permissions: <String>{},
+      department: 'Marketing',
+      createdAt: DateTime.utc(2025, 6, 2),
+    ),
+    DemoAccount(
+      id: 'usr_unverified',
+      email: 'unverified@example.com',
+      password: demoPassword,
+      givenName: 'Uma',
+      familyName: 'Unverified',
+      roles: <String>{'viewer'},
+      permissions: <String>{},
+      department: 'Sales',
+      createdAt: DateTime.utc(2026, 10, 1),
+      emailVerified: false,
+    ),
+  ];
 
   static const List<DemoProduct> _products = <DemoProduct>[
     DemoProduct('SKU-AUR-01', 'Aurora Desk Lamp', 4900),
@@ -607,7 +604,8 @@ class DemoDatabase {
       for (var i = 0; i < 1200; i++)
         <String, Object?>{
           'sku': '${_products[i % _products.length].sku}-V${i ~/ 8}',
-          'name': '${_products[i % _products.length].name} '
+          'name':
+              '${_products[i % _products.length].name} '
               '(variant ${i ~/ 8 + 1})',
           'price': _products[i % _products.length].priceInCents / 100,
           'stock': (i * 37) % 120,
@@ -630,26 +628,26 @@ class DemoDatabase {
   }
 
   static List<DemoAuditEvent> _seedAudit() => <DemoAuditEvent>[
-        DemoAuditEvent(
-          id: 'evt_seed_3',
-          at: DateTime.utc(2026, 10, 30, 10, 2),
-          actor: 'staff@example.com',
-          action: 'orders.view',
-          summary: 'Viewed order SO-1015',
-        ),
-        DemoAuditEvent(
-          id: 'evt_seed_2',
-          at: DateTime.utc(2026, 10, 29, 8, 15),
-          actor: 'admin@example.com',
-          action: 'users.update',
-          summary: 'Granted orders.read to Sam Staff',
-        ),
-        DemoAuditEvent(
-          id: 'evt_seed_1',
-          at: DateTime.utc(2026, 10, 29, 8, 12),
-          actor: 'admin@example.com',
-          action: 'auth.login',
-          summary: 'Signed in',
-        ),
-      ];
+    DemoAuditEvent(
+      id: 'evt_seed_3',
+      at: DateTime.utc(2026, 10, 30, 10, 2),
+      actor: 'staff@example.com',
+      action: 'orders.view',
+      summary: 'Viewed order SO-1015',
+    ),
+    DemoAuditEvent(
+      id: 'evt_seed_2',
+      at: DateTime.utc(2026, 10, 29, 8, 15),
+      actor: 'admin@example.com',
+      action: 'users.update',
+      summary: 'Granted orders.read to Sam Staff',
+    ),
+    DemoAuditEvent(
+      id: 'evt_seed_1',
+      at: DateTime.utc(2026, 10, 29, 8, 12),
+      actor: 'admin@example.com',
+      action: 'auth.login',
+      summary: 'Signed in',
+    ),
+  ];
 }

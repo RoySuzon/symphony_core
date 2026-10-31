@@ -151,7 +151,9 @@ void main() {
       const original = UnexpectedFailure('Already wrapped');
 
       expect(
-          identical(UnexpectedFailure.fromError(original), original), isTrue);
+        identical(UnexpectedFailure.fromError(original), original),
+        isTrue,
+      );
     });
 
     test('wraps other failures instead of passing them through', () {

@@ -9,17 +9,16 @@ import 'dashboard_tile.dart';
 /// notify `onItemSelected`...). It is `null` when the item is disabled or
 /// when the grid has no tap handler. Wrap [SymphonyDashboardTile] to
 /// decorate the default tile.
-typedef DashboardTileBuilder = Widget Function(
-  BuildContext context,
-  DashboardItem item,
-  VoidCallback? onTap,
-);
+typedef DashboardTileBuilder =
+    Widget Function(
+      BuildContext context,
+      DashboardItem item,
+      VoidCallback? onTap,
+    );
 
 /// Handles a tap on the tile of [item]; [context] is the tile's context.
-typedef DashboardItemTapHandler = void Function(
-  BuildContext context,
-  DashboardItem item,
-);
+typedef DashboardItemTapHandler =
+    void Function(BuildContext context, DashboardItem item);
 
 /// A scrollable grid of dashboard tiles.
 ///
@@ -45,13 +44,13 @@ class SymphonyDashboardGrid extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.shrinkWrap = false,
     this.physics,
-  })  : assert(maxCrossAxisExtent > 0, 'maxCrossAxisExtent must be positive.'),
-        assert(
-          crossAxisCount == null || crossAxisCount > 0,
-          'crossAxisCount must be positive.',
-        ),
-        assert(childAspectRatio > 0, 'childAspectRatio must be positive.'),
-        assert(spacing >= 0, 'spacing must not be negative.');
+  }) : assert(maxCrossAxisExtent > 0, 'maxCrossAxisExtent must be positive.'),
+       assert(
+         crossAxisCount == null || crossAxisCount > 0,
+         'crossAxisCount must be positive.',
+       ),
+       assert(childAspectRatio > 0, 'childAspectRatio must be positive.'),
+       assert(spacing >= 0, 'spacing must not be negative.');
 
   /// The items to display.
   final List<DashboardItem> items;
@@ -139,13 +138,13 @@ class SymphonyDashboardGrid extends StatelessWidget {
         slivers.add(
           shrinkWrap
               ? SliverPadding(
-                  padding: bodyPadding,
-                  sliver: SliverToBoxAdapter(child: emptyState),
-                )
+                padding: bodyPadding,
+                sliver: SliverToBoxAdapter(child: emptyState),
+              )
               : SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(padding: bodyPadding, child: emptyState),
-                ),
+                hasScrollBody: false,
+                child: Padding(padding: bodyPadding, child: emptyState),
+              ),
         );
       }
     }
@@ -186,9 +185,10 @@ class SymphonyDashboardGrid extends StatelessWidget {
       key: ValueKey<String>(item.id),
       builder: (tileContext) {
         final handler = onItemTap;
-        final VoidCallback? onTap = item.enabled && handler != null
-            ? () => handler(tileContext, item)
-            : null;
+        final VoidCallback? onTap =
+            item.enabled && handler != null
+                ? () => handler(tileContext, item)
+                : null;
         final builder = tileBuilder;
         if (builder != null) return builder(tileContext, item, onTap);
         return SymphonyDashboardTile(item: item, onTap: onTap);

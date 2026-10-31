@@ -13,29 +13,24 @@ class ApiReportsRepository implements ReportsRepository {
   final ApiClient _client;
 
   @override
-  Future<Result<SalesReport>> fetchSummary() => guardResult(
-        () async {
-          final response = await _client.get<SalesReport>(
-            '/reports/summary',
-            decoder: decodeSalesReport,
-          );
-          return response.data;
-        },
-        mapError: _client.mapError,
-      );
+  Future<Result<SalesReport>> fetchSummary() => guardResult(() async {
+    final response = await _client.get<SalesReport>(
+      '/reports/summary',
+      decoder: decodeSalesReport,
+    );
+    return response.data;
+  }, mapError: _client.mapError);
 
   @override
-  Future<Result<ReportExport>> exportOrders() => guardResult(
-        () async {
-          final response = await _client.downloadBytes('/reports/export');
-          return ReportExport(
-            filename: _filename(response.header('content-disposition')) ??
-                'orders-report.csv',
-            content: utf8.decode(response.data, allowMalformed: true),
-          );
-        },
-        mapError: _client.mapError,
-      );
+  Future<Result<ReportExport>> exportOrders() => guardResult(() async {
+    final response = await _client.downloadBytes('/reports/export');
+    return ReportExport(
+      filename:
+          _filename(response.header('content-disposition')) ??
+          'orders-report.csv',
+      content: utf8.decode(response.data, allowMalformed: true),
+    );
+  }, mapError: _client.mapError);
 
   static String? _filename(String? disposition) {
     if (disposition == null) return null;
@@ -83,8 +78,8 @@ SalesReport decodeSalesReport(Object? body) {
 }
 
 TopProduct _topProduct(Map<String, Object?> json) => TopProduct(
-      sku: ApiEnvelope.requireString(json, 'sku'),
-      name: JsonReader.asString(json['name']) ?? '',
-      quantity: JsonReader.asInt(json['quantity']) ?? 0,
-      revenueInCents: JsonReader.asInt(json['revenue']) ?? 0,
-    );
+  sku: ApiEnvelope.requireString(json, 'sku'),
+  name: JsonReader.asString(json['name']) ?? '',
+  quantity: JsonReader.asInt(json['quantity']) ?? 0,
+  revenueInCents: JsonReader.asInt(json['revenue']) ?? 0,
+);

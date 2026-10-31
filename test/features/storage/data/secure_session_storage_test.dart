@@ -157,9 +157,9 @@ void main() {
     test('wraps backend errors into StorageFailures', () async {
       final error = StateError('backend down');
       when(() => storage.read(any())).thenThrow(error);
-      when(() => storage.write(any(), any())).thenAnswer(
-        (_) => Future<void>.error(error),
-      );
+      when(
+        () => storage.write(any(), any()),
+      ).thenAnswer((_) => Future<void>.error(error));
 
       await expectLater(
         session.readTokens(),
@@ -200,9 +200,9 @@ void main() {
 
     test('propagates Failures thrown by the storage unchanged', () async {
       const failure = StorageFailure('secure storage down', code: 'custom');
-      when(() => storage.read(any())).thenAnswer(
-        (_) => Future<String?>.error(failure),
-      );
+      when(
+        () => storage.read(any()),
+      ).thenAnswer((_) => Future<String?>.error(failure));
 
       await expectLater(session.readTokens(), throwsA(same(failure)));
     });
@@ -210,8 +210,9 @@ void main() {
     test('clear attempts both keys and rethrows the first error', () async {
       final error = StateError('cannot delete');
       when(() => storage.delete('symphony.session.tokens')).thenThrow(error);
-      when(() => storage.delete('symphony.session.user'))
-          .thenAnswer((_) async {});
+      when(
+        () => storage.delete('symphony.session.user'),
+      ).thenAnswer((_) async {});
 
       await expectLater(
         session.clear(),

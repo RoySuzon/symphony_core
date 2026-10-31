@@ -13,17 +13,16 @@ import '../../orders/presentation/providers/orders_providers.dart';
 /// sign in as `viewer@example.com`, `staff@example.com` or
 /// `admin@example.com` to see different grids. The Orders badge is live
 /// (number of pending orders, fetched from the backend).
-final dashboardModulesProvider = Provider<List<DashboardItem>>(
-  (ref) {
-    final pending = ref.watch(pendingOrdersCountProvider).when(
-          data: (count) => count,
-          loading: () => null,
-          error: (error, stackTrace) => null,
-        );
-    return buildDashboardModules(pendingOrders: pending);
-  },
-  name: 'dashboardModulesProvider',
-);
+final dashboardModulesProvider = Provider<List<DashboardItem>>((ref) {
+  final pending = ref
+      .watch(pendingOrdersCountProvider)
+      .when(
+        data: (count) => count,
+        loading: () => null,
+        error: (error, stackTrace) => null,
+      );
+  return buildDashboardModules(pendingOrders: pending);
+}, name: 'dashboardModulesProvider');
 
 /// Builds the module list; [pendingOrders] feeds the Orders badge.
 List<DashboardItem> buildDashboardModules({int? pendingOrders}) {

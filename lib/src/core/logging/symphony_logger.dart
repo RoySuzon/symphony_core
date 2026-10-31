@@ -74,15 +74,15 @@ class SymphonyLogger {
     this.tag,
     List<LogSink>? sinks,
   }) : sinks = List<LogSink>.unmodifiable(
-          sinks ?? const <LogSink>[DebugPrintLogSink()],
-        );
+         sinks ?? const <LogSink>[DebugPrintLogSink()],
+       );
 
   /// A logger that discards everything.
   SymphonyLogger.disabled()
-      : enabled = false,
-        minLevel = LogLevel.none,
-        tag = null,
-        sinks = const <LogSink>[];
+    : enabled = false,
+      minLevel = LogLevel.none,
+      tag = null,
+      sinks = const <LogSink>[];
 
   /// Whether the logger writes anything at all.
   final bool enabled;
@@ -98,11 +98,11 @@ class SymphonyLogger {
 
   /// Returns a logger sharing this configuration with a different [tag].
   SymphonyLogger withTag(String tag) => SymphonyLogger(
-        enabled: enabled,
-        minLevel: minLevel,
-        tag: tag,
-        sinks: sinks,
-      );
+    enabled: enabled,
+    minLevel: minLevel,
+    tag: tag,
+    sinks: sinks,
+  );
 
   /// Whether an entry at [level] would be written.
   bool isEnabledFor(LogLevel level) =>
@@ -156,14 +156,13 @@ class SymphonyLogger {
     String? tag,
     Object? error,
     StackTrace? stackTrace,
-  }) =>
-      log(
-        LogLevel.warning,
-        message,
-        tag: tag,
-        error: error,
-        stackTrace: stackTrace,
-      );
+  }) => log(
+    LogLevel.warning,
+    message,
+    tag: tag,
+    error: error,
+    stackTrace: stackTrace,
+  );
 
   /// Logs at [LogLevel.error].
   void error(
@@ -171,12 +170,11 @@ class SymphonyLogger {
     String? tag,
     Object? error,
     StackTrace? stackTrace,
-  }) =>
-      log(
-        LogLevel.error,
-        message,
-        tag: tag,
-        error: error,
-        stackTrace: stackTrace,
-      );
+  }) => log(
+    LogLevel.error,
+    message,
+    tag: tag,
+    error: error,
+    stackTrace: stackTrace,
+  );
 }

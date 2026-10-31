@@ -87,10 +87,10 @@ class KeyValueLocalStore<T> extends LocalStore<T> {
 
   @override
   Future<T?> get(String id) => _run(() async {
-        final entries = await _readEntries();
-        if (!entries.containsKey(id)) return null;
-        return _decodeValue(entries[id]);
-      });
+    final entries = await _readEntries();
+    if (!entries.containsKey(id)) return null;
+    return _decodeValue(entries[id]);
+  });
 
   @override
   Future<List<T>> getAll() =>
@@ -98,74 +98,74 @@ class KeyValueLocalStore<T> extends LocalStore<T> {
 
   @override
   Future<void> put(String id, T value) => _run(() async {
-        final encoded = _encodeValue(value);
-        final entries = await _readEntries();
-        entries[id] = encoded;
-        _notify(await _writeEntries(entries));
-      });
+    final encoded = _encodeValue(value);
+    final entries = await _readEntries();
+    entries[id] = encoded;
+    _notify(await _writeEntries(entries));
+  });
 
   @override
   Future<void> putAll(Map<String, T> values) => _run(() async {
-        if (values.isEmpty) return;
-        // Encode everything first so that a failing value writes nothing.
-        final encoded = values.map(
-          (id, value) => MapEntry<String, Object?>(id, _encodeValue(value)),
-        );
-        final entries = await _readEntries();
-        entries.addAll(encoded);
-        _notify(await _writeEntries(entries));
-      });
+    if (values.isEmpty) return;
+    // Encode everything first so that a failing value writes nothing.
+    final encoded = values.map(
+      (id, value) => MapEntry<String, Object?>(id, _encodeValue(value)),
+    );
+    final entries = await _readEntries();
+    entries.addAll(encoded);
+    _notify(await _writeEntries(entries));
+  });
 
   @override
   Future<void> delete(String id) => _run(() async {
-        final entries = await _readEntries();
-        if (!entries.containsKey(id)) return;
-        entries.remove(id);
-        _notify(await _writeEntries(entries));
-      });
+    final entries = await _readEntries();
+    if (!entries.containsKey(id)) return;
+    entries.remove(id);
+    _notify(await _writeEntries(entries));
+  });
 
   @override
   Future<void> clear() => _run(() async {
-        final exists = await guardStorage(
-          () => storage.containsKey(key),
-          message: failureMessage,
-          code: StorageFailureCodes.read,
-        );
-        if (!exists) return;
-        await guardStorage(
-          () => storage.delete(key),
-          message: failureMessage,
-          code: StorageFailureCodes.clear,
-        );
-        _notify(null);
-      });
+    final exists = await guardStorage(
+      () => storage.containsKey(key),
+      message: failureMessage,
+      code: StorageFailureCodes.read,
+    );
+    if (!exists) return;
+    await guardStorage(
+      () => storage.delete(key),
+      message: failureMessage,
+      code: StorageFailureCodes.clear,
+    );
+    _notify(null);
+  });
 
   @override
   Future<int> count() => _run(() async => (await _readEntries()).length);
 
   @override
   Stream<List<T>> watchAll() => _watchers.watch((controller) {
-        // The initial snapshot is queued like any other operation, so it is
-        // consistent with the changes notified afterwards.
-        unawaited(
-          _queue.run(() async {
-            try {
-              await _openDatabase();
-              _watchers.start(controller, _decodeValues(await _readEntries()));
-            } on Object catch (error, stackTrace) {
-              _watchers.startWithError(controller, error, stackTrace);
-            }
-          }),
-        );
-      });
+    // The initial snapshot is queued like any other operation, so it is
+    // consistent with the changes notified afterwards.
+    unawaited(
+      _queue.run(() async {
+        try {
+          await _openDatabase();
+          _watchers.start(controller, _decodeValues(await _readEntries()));
+        } on Object catch (error, stackTrace) {
+          _watchers.startWithError(controller, error, stackTrace);
+        }
+      }),
+    );
+  });
 
   /// Completes after every operation scheduled so far.
   Future<void> _drain() => _queue.run(() async {});
 
   Future<R> _run<R>(Future<R> Function() task) => _queue.run(() async {
-        await _openDatabase();
-        return task();
-      });
+    await _openDatabase();
+    return task();
+  });
 
   /// Stores of a database open it on first use (see [LocalDatabase]).
   Future<void> _openDatabase() async {
@@ -274,10 +274,10 @@ class KeyValueLocalStore<T> extends LocalStore<T> {
       List<T>.unmodifiable(entries.values.map<T>(_decodeValue));
 
   StorageFailure _corrupted(String problem) => _failure(
-        StorageFailureCodes.decode,
-        FormatException('The collection stored under "$key" $problem.'),
-        StackTrace.current,
-      );
+    StorageFailureCodes.decode,
+    FormatException('The collection stored under "$key" $problem.'),
+    StackTrace.current,
+  );
 
   StorageFailure _failure(String code, Object error, StackTrace stackTrace) =>
       StorageFailure(

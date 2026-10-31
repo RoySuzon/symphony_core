@@ -84,8 +84,9 @@ class SymphonyRedirectResolver {
   final AccessRequirement? defaultAccess;
 
   /// Whether [path] is one of [publicPaths] (or below one of them).
-  bool isPublicPath(String path) => publicPaths
-      .any((String entry) => SymphonyRoutePaths.matchesPath(path, entry));
+  bool isPublicPath(String path) => publicPaths.any(
+    (String entry) => SymphonyRoutePaths.matchesPath(path, entry),
+  );
 
   /// Whether [path] is exempt from [defaultAccess]: the splash route, the
   /// guest-only routes (the login route included) and the [publicPaths],
@@ -199,7 +200,8 @@ class SymphonyRedirectResolver {
     // Only possible with a misconfiguration (no page left for denied users):
     // staying is then the same as redirecting to the current location.
     final finalUri = Uri.tryParse(finalTarget);
-    final isCurrent = finalUri != null &&
+    final isCurrent =
+        finalUri != null &&
         finalUri.query == location.query &&
         _isSamePath(finalTarget, location.path);
     return isCurrent ? null : finalTarget;
@@ -304,8 +306,10 @@ class SymphonyRedirectResolver {
   static String _pathOf(String location) =>
       Uri.tryParse(location)?.path ?? location;
 
-  static bool _hasForbiddenCharacter(String value,
-      {required bool rejectSpace}) {
+  static bool _hasForbiddenCharacter(
+    String value, {
+    required bool rejectSpace,
+  }) {
     for (final unit in value.codeUnits) {
       if (unit < 0x20 || unit == 0x7F || unit == 0x5C) return true;
       if (rejectSpace && unit == 0x20) return true;
@@ -321,11 +325,8 @@ class SymphonyRedirectResolver {
       other.defaultAccess == defaultAccess;
 
   @override
-  int get hashCode => Object.hash(
-        paths,
-        Object.hashAllUnordered(publicPaths),
-        defaultAccess,
-      );
+  int get hashCode =>
+      Object.hash(paths, Object.hashAllUnordered(publicPaths), defaultAccess);
 
   @override
   String toString() =>

@@ -154,8 +154,9 @@ class _SymphonyPasswordFieldState extends State<SymphonyPasswordField> {
         _internalController?.dispose();
         _internalController = null;
       } else {
-        _internalController =
-            TextEditingController(text: oldWidget.controller?.text);
+        _internalController = TextEditingController(
+          text: oldWidget.controller?.text,
+        );
       }
       _controller.addListener(_handleTextChanged);
       // Never notify listeners while the framework is building.

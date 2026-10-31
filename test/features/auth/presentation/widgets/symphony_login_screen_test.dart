@@ -47,8 +47,9 @@ void main() {
     expect(find.text('Enter'), findsOneWidget);
   });
 
-  testWidgets('SymphonyAuthLayout constrains the content width',
-      (tester) async {
+  testWidgets('SymphonyAuthLayout constrains the content width', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

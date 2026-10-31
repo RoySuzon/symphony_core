@@ -15,11 +15,12 @@ class _Clock {
 /// Fills [inspector] with a successful GET, a failed POST (500), a 404 and a
 /// call without response.
 void _seed(ApiInspector inspector, _Clock clock) {
-  final users = inspector.startCall(
-    method: 'GET',
-    uri: Uri.parse('https://api.example.com/users?page=1'),
-    headers: const <String, dynamic>{'accept': 'application/json'},
-  )!;
+  final users =
+      inspector.startCall(
+        method: 'GET',
+        uri: Uri.parse('https://api.example.com/users?page=1'),
+        headers: const <String, dynamic>{'accept': 'application/json'},
+      )!;
   clock.now = clock.now.add(const Duration(milliseconds: 42));
   inspector.completeCall(
     users,
@@ -29,24 +30,27 @@ void _seed(ApiInspector inspector, _Clock clock) {
     body: const <String, Object?>{'name': 'Ada Lovelace'},
   );
 
-  final login = inspector.startCall(
-    method: 'POST',
-    uri: Uri.parse('https://api.example.com/auth/login'),
-    headers: const <String, dynamic>{'Authorization': 'Bearer secret'},
-    body: const <String, Object?>{'password': 'hunter2'},
-  )!;
+  final login =
+      inspector.startCall(
+        method: 'POST',
+        uri: Uri.parse('https://api.example.com/auth/login'),
+        headers: const <String, dynamic>{'Authorization': 'Bearer secret'},
+        body: const <String, Object?>{'password': 'hunter2'},
+      )!;
   inspector.failCall(login, error: 'Internal failure', statusCode: 500);
 
-  final order = inspector.startCall(
-    method: 'DELETE',
-    uri: Uri.parse('https://api.example.com/orders/7'),
-  )!;
+  final order =
+      inspector.startCall(
+        method: 'DELETE',
+        uri: Uri.parse('https://api.example.com/orders/7'),
+      )!;
   inspector.failCall(order, error: 'Not found', statusCode: 404);
 
-  final offline = inspector.startCall(
-    method: 'GET',
-    uri: Uri.parse('https://cdn.example.com/feed'),
-  )!;
+  final offline =
+      inspector.startCall(
+        method: 'GET',
+        uri: Uri.parse('https://cdn.example.com/feed'),
+      )!;
   inspector.failCall(offline, error: '[connectionError] Connection refused');
 }
 
@@ -111,10 +115,11 @@ void main() {
   testWidgets('updates when new calls are recorded', (tester) async {
     await pumpScreen(tester);
 
-    final id = inspector.startCall(
-      method: 'PUT',
-      uri: Uri.parse('https://api.example.com/profile'),
-    )!;
+    final id =
+        inspector.startCall(
+          method: 'PUT',
+          uri: Uri.parse('https://api.example.com/profile'),
+        )!;
     inspector.completeCall(id, statusCode: 204);
     await tester.pumpAndSettle();
 
@@ -187,10 +192,7 @@ void main() {
     expect(find.text('Overview'), findsOneWidget);
     expect(find.text('Request'), findsOneWidget);
     expect(find.text('Response'), findsOneWidget);
-    expect(
-      find.text('https://api.example.com/users?page=1'),
-      findsOneWidget,
-    );
+    expect(find.text('https://api.example.com/users?page=1'), findsOneWidget);
     expect(find.text('200 OK'), findsOneWidget);
 
     await tester.tap(find.text('Request'));
@@ -234,8 +236,10 @@ void main() {
       },
     );
     addTearDown(
-      () => tester.binding.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null),
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
     );
     await pumpScreen(tester);
 
@@ -252,8 +256,9 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 
-  testWidgets('clear all asks for confirmation and empties the list',
-      (tester) async {
+  testWidgets('clear all asks for confirmation and empties the list', (
+    tester,
+  ) async {
     await pumpScreen(tester);
 
     await tester.tap(find.byKey(ApiInspectorScreen.clearAllButtonKey));
@@ -333,8 +338,9 @@ void main() {
     expect(find.text('Tous 0'), findsOneWidget);
   });
 
-  testWidgets('reads the shared inspector from the ProviderScope',
-      (tester) async {
+  testWidgets('reads the shared inspector from the ProviderScope', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -355,10 +361,11 @@ void main() {
       tester.element(find.byType(ApiInspectorScreen)),
     );
     final shared = container.read(apiInspectorProvider);
-    final id = shared.startCall(
-      method: 'GET',
-      uri: Uri.parse('https://api.example.com/shared'),
-    )!;
+    final id =
+        shared.startCall(
+          method: 'GET',
+          uri: Uri.parse('https://api.example.com/shared'),
+        )!;
     shared.completeCall(id, statusCode: 200);
     await tester.pumpAndSettle();
 
@@ -376,17 +383,16 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
-          builder: (context) => Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () => showApiInspector(
-                  context,
-                  inspector: inspector,
+          builder:
+              (context) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed:
+                        () => showApiInspector(context, inspector: inspector),
+                    child: const Text('Open'),
+                  ),
                 ),
-                child: const Text('Open'),
               ),
-            ),
-          ),
         ),
       ),
     );

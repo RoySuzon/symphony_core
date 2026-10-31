@@ -45,8 +45,9 @@ void main() {
 
   group('login', () {
     test('returns the account user and expiring tokens', () async {
-      final session =
-          await adapter.login(credentials('admin@example.com', 'secret123'));
+      final session = await adapter.login(
+        credentials('admin@example.com', 'secret123'),
+      );
 
       expect(session.user, adminUser);
       expect(session.tokens.accessToken, isNotEmpty);
@@ -56,8 +57,9 @@ void main() {
     });
 
     test('matches identifiers case-insensitively', () async {
-      final session =
-          await adapter.login(credentials(' ADMIN@example.com ', 'secret123'));
+      final session = await adapter.login(
+        credentials(' ADMIN@example.com ', 'secret123'),
+      );
 
       expect(session.user, adminUser);
     });
@@ -91,8 +93,9 @@ void main() {
     late AuthSession session;
 
     setUp(() async {
-      session =
-          await adapter.login(credentials('admin@example.com', 'secret123'));
+      session = await adapter.login(
+        credentials('admin@example.com', 'secret123'),
+      );
     });
 
     test('fetchCurrentUser accepts a valid access token', () async {
@@ -143,8 +146,9 @@ void main() {
         adapter.fetchCurrentUser(session),
         throwsA(isA<UnauthorizedFailure>()),
       );
-      final fresh =
-          await adapter.login(credentials('admin@example.com', 'secret123'));
+      final fresh = await adapter.login(
+        credentials('admin@example.com', 'secret123'),
+      );
       expect(await adapter.fetchCurrentUser(fresh), adminUser);
     });
 
@@ -165,8 +169,9 @@ void main() {
 
     test('refresh can be disabled', () async {
       final noRefresh = createAdapter(refreshEnabled: false);
-      final session =
-          await noRefresh.login(credentials('admin@example.com', 'secret123'));
+      final session = await noRefresh.login(
+        credentials('admin@example.com', 'secret123'),
+      );
 
       expect(session.tokens.canRefresh, isFalse);
       await expectLater(
@@ -189,20 +194,22 @@ void main() {
       expect(session?.user?.displayName, 'Newton');
       expect(session?.user?.email, 'new@example.com');
       expect(session?.user?.roles, <String>{'user'});
-      final login =
-          await adapter.login(credentials('new@example.com', 'brandNew1'));
+      final login = await adapter.login(
+        credentials('new@example.com', 'brandNew1'),
+      );
       expect(login.user?.id, session?.user?.id);
       expect(adapter.accounts, hasLength(3));
     });
 
     test('rejects existing identifiers with a field error', () async {
       await expectLater(
-        adapter.register(
-          credentials('admin@example.com', 'whatever1'),
-        ),
+        adapter.register(credentials('admin@example.com', 'whatever1')),
         throwsA(
-          isA<ValidationFailure>()
-              .having((f) => f.errorFor('email'), 'email', isNotNull),
+          isA<ValidationFailure>().having(
+            (f) => f.errorFor('email'),
+            'email',
+            isNotNull,
+          ),
         ),
       );
     });
@@ -248,8 +255,9 @@ void main() {
       );
 
       expect(recovering.resetCodeFor('admin@example.com'), isNull);
-      final session =
-          await recovering.login(credentials('admin@example.com', 'changed99'));
+      final session = await recovering.login(
+        credentials('admin@example.com', 'changed99'),
+      );
       expect(session.user, adminUser);
       await expectLater(
         recovering.login(credentials('admin@example.com', 'secret123')),
@@ -271,8 +279,11 @@ void main() {
           }),
         ),
         throwsA(
-          isA<ValidationFailure>()
-              .having((f) => f.errorFor('code'), 'code', isNotNull),
+          isA<ValidationFailure>().having(
+            (f) => f.errorFor('code'),
+            'code',
+            isNotNull,
+          ),
         ),
       );
     });
@@ -300,9 +311,11 @@ void main() {
 
   test('injects failures per operation', () async {
     final offline = createAdapter(
-      failureInjector: (operation) => operation == InMemoryAuthOperation.login
-          ? const NetworkFailure()
-          : null,
+      failureInjector:
+          (operation) =>
+              operation == InMemoryAuthOperation.login
+                  ? const NetworkFailure()
+                  : null,
     );
 
     await expectLater(

@@ -91,9 +91,7 @@ DemoMultipartPart? _parsePart(Uint8List bytes) {
     filename: parameters['filename'],
     contentType: headers['content-type'],
     headers: headers,
-    bytes: Uint8List.fromList(
-      Uint8List.sublistView(bytes, headerEnd + 4),
-    ),
+    bytes: Uint8List.fromList(Uint8List.sublistView(bytes, headerEnd + 4)),
   );
 }
 

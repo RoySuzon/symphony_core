@@ -34,56 +34,63 @@ void main() {
   });
 
   group('restoration racing a sign-in', () {
-    test('never reports a sign-in session that is still being validated',
-        () async {
-      final validation = Completer<void>();
-      when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-      when(() => adapter.validateSession(any()))
-          .thenAnswer((_) => validation.future);
-      final readGate = storage.readGate = Completer<void>();
+    test(
+      'never reports a sign-in session that is still being validated',
+      () async {
+        final validation = Completer<void>();
+        when(() => adapter.login(any())).thenAnswer((_) async => testSession());
+        when(
+          () => adapter.validateSession(any()),
+        ).thenAnswer((_) => validation.future);
+        final readGate = storage.readGate = Completer<void>();
 
-      final restoring = repository.restoreSession();
-      final signingIn = repository.login(credentials);
-      await flushMicrotasks();
-      readGate.complete();
-      await flushMicrotasks();
-      validation.completeError(const AuthFailure('Account disabled'));
+        final restoring = repository.restoreSession();
+        final signingIn = repository.login(credentials);
+        await flushMicrotasks();
+        readGate.complete();
+        await flushMicrotasks();
+        validation.completeError(const AuthFailure('Account disabled'));
 
-      // Nothing was persisted and the sign-in was rejected: the restoration
-      // must report "no session", not the session of the rejected sign-in.
-      expect(await restoring, const Result<AuthSession?>.success(null));
-      expect(
-        (await signingIn).failureOrNull,
-        const AuthFailure('Account disabled'),
-      );
-      expect(repository.currentSession, isNull);
-      expect(await readPersistedSession(keyValueStorage), isNull);
-    });
+        // Nothing was persisted and the sign-in was rejected: the restoration
+        // must report "no session", not the session of the rejected sign-in.
+        expect(await restoring, const Result<AuthSession?>.success(null));
+        expect(
+          (await signingIn).failureOrNull,
+          const AuthFailure('Account disabled'),
+        );
+        expect(repository.currentSession, isNull);
+        expect(await readPersistedSession(keyValueStorage), isNull);
+      },
+    );
 
-    test('a rejected sign-in does not cancel the restoration it overtook',
-        () async {
-      await persistSession(keyValueStorage, testSession(user: plainUser));
-      when(() => adapter.login(any())).thenAnswer(
-        (_) async => testSession(tokens: testTokens(access: 'access-new')),
-      );
-      when(() => adapter.validateSession(any())).thenAnswer((invocation) async {
-        final session = invocation.positionalArguments.first as AuthSession;
-        if (session.tokens.accessToken == 'access-new') {
-          throw const AuthFailure('Account disabled');
-        }
-      });
-      final readGate = storage.readGate = Completer<void>();
+    test(
+      'a rejected sign-in does not cancel the restoration it overtook',
+      () async {
+        await persistSession(keyValueStorage, testSession(user: plainUser));
+        when(() => adapter.login(any())).thenAnswer(
+          (_) async => testSession(tokens: testTokens(access: 'access-new')),
+        );
+        when(() => adapter.validateSession(any())).thenAnswer((
+          invocation,
+        ) async {
+          final session = invocation.positionalArguments.first as AuthSession;
+          if (session.tokens.accessToken == 'access-new') {
+            throw const AuthFailure('Account disabled');
+          }
+        });
+        final readGate = storage.readGate = Completer<void>();
 
-      final restoring = repository.restoreSession();
-      final result = await repository.login(credentials);
-      readGate.complete();
-      final restored = (await restoring).valueOrNull;
+        final restoring = repository.restoreSession();
+        final result = await repository.login(credentials);
+        readGate.complete();
+        final restored = (await restoring).valueOrNull;
 
-      expect(result.failureOrNull, const AuthFailure('Account disabled'));
-      expect(restored?.tokens.accessToken, 'access-1');
-      expect(restored?.user, plainUser);
-      expect(repository.currentSession, restored);
-    });
+        expect(result.failureOrNull, const AuthFailure('Account disabled'));
+        expect(restored?.tokens.accessToken, 'access-1');
+        expect(restored?.user, plainUser);
+        expect(repository.currentSession, restored);
+      },
+    );
 
     test('a sign-in is not delayed by the restoration and wins', () async {
       await persistSession(keyValueStorage, testSession(user: plainUser));
@@ -111,8 +118,9 @@ void main() {
     final renewed = testTokens(access: 'access-2', refresh: 'refresh-2');
 
     setUp(() async {
-      when(() => adapter.login(any()))
-          .thenAnswer((_) async => testSession(user: plainUser));
+      when(
+        () => adapter.login(any()),
+      ).thenAnswer((_) async => testSession(user: plainUser));
       when(() => adapter.refresh(any())).thenAnswer((_) async => renewed);
       await repository.login(credentials);
     });
@@ -124,8 +132,9 @@ void main() {
       final refreshing = repository.refreshTokens();
       await flushMicrotasks();
       // A caller still holding the pre-refresh session updates the profile.
-      final updating =
-          repository.updateSession(beforeRefresh.copyWith(user: adminUser));
+      final updating = repository.updateSession(
+        beforeRefresh.copyWith(user: adminUser),
+      );
       storage.writeGate = null;
       writeGate.complete();
 
@@ -142,8 +151,9 @@ void main() {
       final stale = repository.currentSession!;
       expect(await repository.refreshTokens(), renewed);
 
-      final result =
-          await repository.updateSession(stale.copyWith(user: adminUser));
+      final result = await repository.updateSession(
+        stale.copyWith(user: adminUser),
+      );
 
       expect(result.isSuccess, isTrue);
       expect(repository.currentSession?.tokens, renewed);
@@ -162,37 +172,39 @@ void main() {
     });
   });
 
-  test('a refresh of a previous session is not shared with the next one',
-      () async {
-    final staleRefresh = Completer<AuthTokens>();
-    final renewedB = testTokens(access: 'access-B2', refresh: 'refresh-B2');
-    when(() => adapter.refresh(any())).thenAnswer((invocation) {
-      final current = invocation.positionalArguments.first as AuthTokens;
-      return current.accessToken == 'access-1'
-          ? staleRefresh.future
-          : Future<AuthTokens>.value(renewedB);
-    });
-    when(() => adapter.login(any())).thenAnswer((_) async => testSession());
-    await repository.login(credentials);
+  test(
+    'a refresh of a previous session is not shared with the next one',
+    () async {
+      final staleRefresh = Completer<AuthTokens>();
+      final renewedB = testTokens(access: 'access-B2', refresh: 'refresh-B2');
+      when(() => adapter.refresh(any())).thenAnswer((invocation) {
+        final current = invocation.positionalArguments.first as AuthTokens;
+        return current.accessToken == 'access-1'
+            ? staleRefresh.future
+            : Future<AuthTokens>.value(renewedB);
+      });
+      when(() => adapter.login(any())).thenAnswer((_) async => testSession());
+      await repository.login(credentials);
 
-    final first = repository.refreshTokens();
-    await repository.clearSession();
-    when(() => adapter.login(any())).thenAnswer(
-      (_) async => testSession(
-        tokens: testTokens(access: 'access-B', refresh: 'refresh-B'),
-        user: plainUser,
-      ),
-    );
-    await repository.login(credentials);
+      final first = repository.refreshTokens();
+      await repository.clearSession();
+      when(() => adapter.login(any())).thenAnswer(
+        (_) async => testSession(
+          tokens: testTokens(access: 'access-B', refresh: 'refresh-B'),
+          user: plainUser,
+        ),
+      );
+      await repository.login(credentials);
 
-    final second = repository.refreshTokens();
-    staleRefresh.complete(testTokens(access: 'access-A2'));
+      final second = repository.refreshTokens();
+      staleRefresh.complete(testTokens(access: 'access-A2'));
 
-    expect(await first, isNull);
-    expect(await second, renewedB);
-    expect(repository.currentSession?.tokens, renewedB);
-    expect(repository.currentSession?.user, plainUser);
-  });
+      expect(await first, isNull);
+      expect(await second, renewedB);
+      expect(repository.currentSession?.tokens, renewedB);
+      expect(repository.currentSession?.user, plainUser);
+    },
+  );
 }
 
 /// A [SessionStorage] whose token reads and writes can be held back.

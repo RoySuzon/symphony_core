@@ -4,7 +4,9 @@ import 'package:symphony_core/src/core/core.dart';
 
 void main() {
   Future<BuildContext> pumpWithTheme(
-      WidgetTester tester, ThemeData theme) async {
+    WidgetTester tester,
+    ThemeData theme,
+  ) async {
     late BuildContext captured;
     await tester.pumpWidget(
       MaterialApp(
@@ -21,8 +23,9 @@ void main() {
   }
 
   group('SymphonyContextX', () {
-    testWidgets('exposes the theme, color scheme and text theme',
-        (tester) async {
+    testWidgets('exposes the theme, color scheme and text theme', (
+      tester,
+    ) async {
       final theme = ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),

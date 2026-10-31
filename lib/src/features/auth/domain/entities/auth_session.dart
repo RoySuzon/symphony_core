@@ -19,11 +19,11 @@ class AuthSession {
 
   /// Builds the [AccessContext] used by guards and menus.
   AccessContext toAccessContext() => AccessContext(
-        status: AuthStatus.authenticated,
-        roles: user?.roles ?? const <String>{},
-        permissions: user?.permissions ?? const <String>{},
-        attributes: user?.data ?? const <String, Object?>{},
-      );
+    status: AuthStatus.authenticated,
+    roles: user?.roles ?? const <String>{},
+    permissions: user?.permissions ?? const <String>{},
+    attributes: user?.data ?? const <String, Object?>{},
+  );
 
   /// Returns a copy with the given fields replaced.
   AuthSession copyWith({AuthTokens? tokens, AuthUser? user}) =>

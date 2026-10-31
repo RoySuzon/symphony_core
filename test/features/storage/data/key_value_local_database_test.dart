@@ -139,8 +139,9 @@ void main() {
       final store = createStore(
         codec: StorageCodec<Todo>.json(
           fromJson: Todo.fromJson,
-          toJson: (todo) =>
-              todo.id == '3' ? throw StateError('bad todo') : todo.toJson(),
+          toJson:
+              (todo) =>
+                  todo.id == '3' ? throw StateError('bad todo') : todo.toJson(),
         ),
       );
 
@@ -157,34 +158,36 @@ void main() {
     });
 
     group('corrupted data', () {
-      test('an invalid document fails every read and write but clear',
-          () async {
-        await storage.write('todos', '[{"id": "1", "value": ');
-        final store = createStore();
-        final isDecodeFailure = throwsA(
-          isStorageFailure(
-            code: StorageFailureCodes.decode,
-            message: 'Unable to access the local data.',
-          ),
-        );
+      test(
+        'an invalid document fails every read and write but clear',
+        () async {
+          await storage.write('todos', '[{"id": "1", "value": ');
+          final store = createStore();
+          final isDecodeFailure = throwsA(
+            isStorageFailure(
+              code: StorageFailureCodes.decode,
+              message: 'Unable to access the local data.',
+            ),
+          );
 
-        await expectLater(store.get('1'), isDecodeFailure);
-        await expectLater(store.getAll(), isDecodeFailure);
-        await expectLater(store.count(), isDecodeFailure);
-        await expectLater(store.put('1', milk), isDecodeFailure);
-        await expectLater(store.delete('1'), isDecodeFailure);
-        expect(
-          await storage.read('todos'),
-          '[{"id": "1", "value": ',
-          reason: 'corrupted data is left untouched',
-        );
+          await expectLater(store.get('1'), isDecodeFailure);
+          await expectLater(store.getAll(), isDecodeFailure);
+          await expectLater(store.count(), isDecodeFailure);
+          await expectLater(store.put('1', milk), isDecodeFailure);
+          await expectLater(store.delete('1'), isDecodeFailure);
+          expect(
+            await storage.read('todos'),
+            '[{"id": "1", "value": ',
+            reason: 'corrupted data is left untouched',
+          );
 
-        await store.clear();
+          await store.clear();
 
-        expect(await store.getAll(), isEmpty);
-        await store.put('1', milk);
-        expect(await store.getAll(), <Todo>[milk]);
-      });
+          expect(await store.getAll(), isEmpty);
+          await store.put('1', milk);
+          expect(await store.getAll(), <Todo>[milk]);
+        },
+      );
 
       for (final document in <String>[
         '{"1": {"id": "1"}}',
@@ -246,35 +249,37 @@ void main() {
         failing = MockKeyValueStorage();
       });
 
-      test('are wrapped into StorageFailures with the custom message',
-          () async {
-        final error = StateError('disk full');
-        when(() => failing.read(any())).thenAnswer((_) async => null);
-        when(() => failing.write(any(), any())).thenThrow(error);
-        final store = KeyValueLocalStore<Todo>(
-          failing,
-          key: 'todos',
-          codec: todoCodec,
-          failureMessage: 'Données locales indisponibles.',
-        );
+      test(
+        'are wrapped into StorageFailures with the custom message',
+        () async {
+          final error = StateError('disk full');
+          when(() => failing.read(any())).thenAnswer((_) async => null);
+          when(() => failing.write(any(), any())).thenThrow(error);
+          final store = KeyValueLocalStore<Todo>(
+            failing,
+            key: 'todos',
+            codec: todoCodec,
+            failureMessage: 'Données locales indisponibles.',
+          );
 
-        await expectLater(
-          store.put('1', milk),
-          throwsA(
-            isStorageFailure(
-              code: StorageFailureCodes.write,
-              cause: same(error),
-              message: 'Données locales indisponibles.',
+          await expectLater(
+            store.put('1', milk),
+            throwsA(
+              isStorageFailure(
+                code: StorageFailureCodes.write,
+                cause: same(error),
+                message: 'Données locales indisponibles.',
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
 
       test('Failures are propagated unchanged', () async {
         const failure = StorageFailure('locked', code: 'custom');
-        when(() => failing.read(any())).thenAnswer(
-          (_) => Future<String?>.error(failure),
-        );
+        when(
+          () => failing.read(any()),
+        ).thenAnswer((_) => Future<String?>.error(failure));
         final store = KeyValueLocalStore<Todo>(
           failing,
           key: 'todos',
@@ -339,18 +344,18 @@ void main() {
         // decodes once it went through JSON, like persisted data.
         final store = createStore(
           codec: StorageCodec<Todo>.json(
-            fromJson: (json) => Todo.fromJson(
-              json['payload']! as Map<String, Object?>,
-            ),
+            fromJson:
+                (json) =>
+                    Todo.fromJson(json['payload']! as Map<String, Object?>),
             toJson: (todo) => <String, Object?>{'payload': _JsonBox(todo)},
           ),
         );
         final emissions = <List<Todo>>[];
         final errors = <Object>[];
         final subscription = store.watchAll().listen(
-              emissions.add,
-              onError: errors.add,
-            );
+          emissions.add,
+          onError: errors.add,
+        );
         addTearDown(() => subscription.cancel());
 
         await store.put('1', milk);
@@ -396,9 +401,9 @@ void main() {
         final errors = <Object>[];
 
         final subscription = store.watchAll().listen(
-              emissions.add,
-              onError: errors.add,
-            );
+          emissions.add,
+          onError: errors.add,
+        );
         addTearDown(() => subscription.cancel());
         await settle();
         await store.clear();
@@ -447,10 +452,9 @@ void main() {
         (await storage.readAll()).keys,
         unorderedEquals(<String>['symphony.db.todos', 'symphony.db.archive']),
       );
-      expect(
-        await database.store<Todo>('todos', todoCodec).getAll(),
-        <Todo>[milk],
-      );
+      expect(await database.store<Todo>('todos', todoCodec).getAll(), <Todo>[
+        milk,
+      ]);
     });
 
     test('uses the custom key prefix and failure message', () async {
@@ -471,17 +475,18 @@ void main() {
     });
 
     test('persists data across database instances', () async {
-      await database.store<Todo>('todos', todoCodec).putAll(
-        <String, Todo>{'1': milk, '2': bread},
-      );
+      await database.store<Todo>('todos', todoCodec).putAll(<String, Todo>{
+        '1': milk,
+        '2': bread,
+      });
       await database.close();
 
       final reopened = KeyValueLocalDatabase(storage);
 
-      expect(
-        await reopened.store<Todo>('todos', todoCodec).getAll(),
-        <Todo>[milk, bread],
-      );
+      expect(await reopened.store<Todo>('todos', todoCodec).getAll(), <Todo>[
+        milk,
+        bread,
+      ]);
     });
 
     test('returns the same store for the same name', () {
@@ -523,9 +528,9 @@ void main() {
       final todos = database.store<Todo>('todos', todoCodec);
       var done = false;
       final subscription = todos.watchAll().listen(
-            (_) {},
-            onDone: () => done = true,
-          );
+        (_) {},
+        onDone: () => done = true,
+      );
       addTearDown(() => subscription.cancel());
 
       unawaited(todos.putAll(<String, Todo>{'1': milk, '2': bread}));

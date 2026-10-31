@@ -54,9 +54,10 @@ abstract final class SymphonyDialogs {
       builder: (dialogContext) {
         final scheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          icon: icon == null
-              ? null
-              : Icon(icon, color: destructive ? scheme.error : null),
+          icon:
+              icon == null
+                  ? null
+                  : Icon(icon, color: destructive ? scheme.error : null),
           title: Text(title),
           content: message == null ? null : Text(message),
           actions: <Widget>[
@@ -67,9 +68,10 @@ abstract final class SymphonyDialogs {
             ),
             SymphonyButton(
               label: confirmLabel,
-              variant: destructive
-                  ? SymphonyButtonVariant.danger
-                  : SymphonyButtonVariant.primary,
+              variant:
+                  destructive
+                      ? SymphonyButtonVariant.danger
+                      : SymphonyButtonVariant.primary,
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -95,18 +97,19 @@ abstract final class SymphonyDialogs {
       context: context,
       barrierDismissible: barrierDismissible,
       useRootNavigator: useRootNavigator,
-      builder: (dialogContext) => AlertDialog(
-        icon: icon == null ? null : Icon(icon),
-        title: Text(title),
-        content: message == null ? null : Text(message),
-        actions: <Widget>[
-          SymphonyButton(
-            label: buttonLabel,
-            variant: SymphonyButtonVariant.text,
-            onPressed: () => Navigator.of(dialogContext).pop(),
+      builder:
+          (dialogContext) => AlertDialog(
+            icon: icon == null ? null : Icon(icon),
+            title: Text(title),
+            content: message == null ? null : Text(message),
+            actions: <Widget>[
+              SymphonyButton(
+                label: buttonLabel,
+                variant: SymphonyButtonVariant.text,
+                onPressed: () => Navigator.of(dialogContext).pop(),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -137,21 +140,22 @@ abstract final class SymphonyDialogs {
       context: context,
       barrierDismissible: barrierDismissible,
       useRootNavigator: useRootNavigator,
-      builder: (_) => _SymphonyPromptDialog(
-        title: title,
-        message: message,
-        initialValue: initialValue,
-        label: label,
-        hint: hint,
-        confirmLabel: confirmLabel,
-        cancelLabel: cancelLabel,
-        validator: validator,
-        keyboardType: keyboardType,
-        textCapitalization: textCapitalization,
-        obscureText: obscureText,
-        maxLength: maxLength,
-        maxLines: maxLines,
-      ),
+      builder:
+          (_) => _SymphonyPromptDialog(
+            title: title,
+            message: message,
+            initialValue: initialValue,
+            label: label,
+            hint: hint,
+            confirmLabel: confirmLabel,
+            cancelLabel: cancelLabel,
+            validator: validator,
+            keyboardType: keyboardType,
+            textCapitalization: textCapitalization,
+            obscureText: obscureText,
+            maxLength: maxLength,
+            maxLines: maxLines,
+          ),
     );
   }
 
@@ -174,10 +178,11 @@ abstract final class SymphonyDialogs {
       themes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierDismissible: false,
       barrierColor: barrierColor ?? Colors.black54,
-      builder: (_) => _SymphonyLoadingDialog(
-        message: message,
-        semanticsLabel: semanticsLabel,
-      ),
+      builder:
+          (_) => _SymphonyLoadingDialog(
+            message: message,
+            semanticsLabel: semanticsLabel,
+          ),
     );
     final handle = SymphonyLoadingDialogHandle._(route);
     unawaited(navigator.push(route));
@@ -331,8 +336,9 @@ class _SymphonyPromptDialog extends StatefulWidget {
 
 class _SymphonyPromptDialogState extends State<_SymphonyPromptDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
   bool _submitted = false;
 
   @override
@@ -355,9 +361,10 @@ class _SymphonyPromptDialogState extends State<_SymphonyPromptDialog> {
       title: Text(widget.title),
       content: Form(
         key: _formKey,
-        autovalidateMode: _submitted
-            ? AutovalidateMode.onUserInteraction
-            : AutovalidateMode.disabled,
+        autovalidateMode:
+            _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -377,9 +384,10 @@ class _SymphonyPromptDialogState extends State<_SymphonyPromptDialog> {
               obscureText: widget.obscureText,
               maxLength: widget.maxLength,
               maxLines: widget.maxLines,
-              textInputAction: widget.maxLines == 1
-                  ? TextInputAction.done
-                  : TextInputAction.newline,
+              textInputAction:
+                  widget.maxLines == 1
+                      ? TextInputAction.done
+                      : TextInputAction.newline,
               onSubmitted: widget.maxLines == 1 ? (_) => _submit() : null,
             ),
           ],
@@ -391,10 +399,7 @@ class _SymphonyPromptDialogState extends State<_SymphonyPromptDialog> {
           variant: SymphonyButtonVariant.text,
           onPressed: () => Navigator.of(context).pop(),
         ),
-        SymphonyButton(
-          label: widget.confirmLabel,
-          onPressed: _submit,
-        ),
+        SymphonyButton(label: widget.confirmLabel, onPressed: _submit),
       ],
     );
   }

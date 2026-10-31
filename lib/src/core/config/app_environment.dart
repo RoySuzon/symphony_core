@@ -16,8 +16,10 @@ class AppEnvironment {
   static const AppEnvironment staging = AppEnvironment('staging');
 
   /// Production environment.
-  static const AppEnvironment production =
-      AppEnvironment('production', isProduction: true);
+  static const AppEnvironment production = AppEnvironment(
+    'production',
+    isProduction: true,
+  );
 
   /// Unique, human readable identifier of the environment.
   final String name;

@@ -22,13 +22,9 @@ void main() {
       expect(radius.large, 32);
       expect(radius.extraLarge, 56);
       expect(
-          SymphonyRadius.fromBase(0),
-          const SymphonyRadius(
-            small: 0,
-            medium: 0,
-            large: 0,
-            extraLarge: 0,
-          ));
+        SymphonyRadius.fromBase(0),
+        const SymphonyRadius(small: 0, medium: 0, large: 0, extraLarge: 0),
+      );
     });
 
     test('exposes border radii', () {

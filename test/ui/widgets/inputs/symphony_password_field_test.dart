@@ -4,9 +4,8 @@ import 'package:symphony_core/src/ui/ui.dart';
 
 import '../../ui_test_utils.dart';
 
-Widget _app(Widget field) => buildTestApp(
-      Padding(padding: const EdgeInsets.all(16), child: field),
-    );
+Widget _app(Widget field) =>
+    buildTestApp(Padding(padding: const EdgeInsets.all(16), child: field));
 
 bool _isObscured(WidgetTester tester) =>
     tester.widget<EditableText>(find.byType(EditableText)).obscureText;
@@ -53,14 +52,17 @@ void main() {
       expect(find.byTooltip('Masquer'), findsOneWidget);
     });
 
-    testWidgets('disables the toggle when the field is disabled',
-        (tester) async {
+    testWidgets('disables the toggle when the field is disabled', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _app(const SymphonyPasswordField(enabled: false)),
       );
 
       expect(
-          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
+        tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+        isNull,
+      );
       expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     });
 
@@ -165,8 +167,9 @@ void main() {
       expect(find.text('Weak'), findsOneWidget);
     });
 
-    testWidgets('switches between internal and external controllers',
-        (tester) async {
+    testWidgets('switches between internal and external controllers', (
+      tester,
+    ) async {
       final external = TextEditingController(text: 'Zebra-cat9-Moon');
       addTearDown(external.dispose);
       TextEditingController? current;
@@ -203,8 +206,9 @@ void main() {
       expect(external.text, 'Zebra-cat9-Moon');
     });
 
-    testWidgets('keeps the form field state when toggling the indicator',
-        (tester) async {
+    testWidgets('keeps the form field state when toggling the indicator', (
+      tester,
+    ) async {
       late StateSetter setOuterState;
       var showIndicator = false;
       await tester.pumpWidget(
@@ -231,8 +235,9 @@ void main() {
       );
     });
 
-    testWidgets('validates and saves through the enclosing form',
-        (tester) async {
+    testWidgets('validates and saves through the enclosing form', (
+      tester,
+    ) async {
       final formKey = GlobalKey<FormState>();
       String? saved;
       await tester.pumpWidget(
@@ -240,8 +245,8 @@ void main() {
           Form(
             key: formKey,
             child: SymphonyPasswordField(
-              validator: (value) =>
-                  (value ?? '').length < 8 ? 'Too short' : null,
+              validator:
+                  (value) => (value ?? '').length < 8 ? 'Too short' : null,
               onSaved: (value) => saved = value,
             ),
           ),
@@ -259,8 +264,9 @@ void main() {
       expect(saved, 'long enough');
     });
 
-    testWidgets('forwards autofill hints and disables suggestions',
-        (tester) async {
+    testWidgets('forwards autofill hints and disables suggestions', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _app(
           const SymphonyPasswordField(
@@ -280,8 +286,9 @@ void main() {
   });
 
   group('SymphonyPasswordStrengthMeter', () {
-    testWidgets('fills one segment per level with the level colour',
-        (tester) async {
+    testWidgets('fills one segment per level with the level colour', (
+      tester,
+    ) async {
       final theme = SymphonyTheme.light();
       for (final strength in PasswordStrength.values) {
         await tester.pumpWidget(
@@ -293,12 +300,17 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final activeColor =
-            SymphonyPasswordStrengthMeter.colorFor(strength, theme);
-        final colors = tester
-            .widgetList<AnimatedContainer>(find.byType(AnimatedContainer))
-            .map((container) => (container.decoration! as BoxDecoration).color)
-            .toList();
+        final activeColor = SymphonyPasswordStrengthMeter.colorFor(
+          strength,
+          theme,
+        );
+        final colors =
+            tester
+                .widgetList<AnimatedContainer>(find.byType(AnimatedContainer))
+                .map(
+                  (container) => (container.decoration! as BoxDecoration).color,
+                )
+                .toList();
 
         expect(colors, hasLength(4));
         expect(
@@ -311,10 +323,13 @@ void main() {
 
     testWidgets('uses distinct colours for each level', (tester) async {
       final theme = SymphonyTheme.light();
-      final colors = PasswordStrength.values
-          .map((strength) =>
-              SymphonyPasswordStrengthMeter.colorFor(strength, theme))
-          .toSet();
+      final colors =
+          PasswordStrength.values
+              .map(
+                (strength) =>
+                    SymphonyPasswordStrengthMeter.colorFor(strength, theme),
+              )
+              .toSet();
 
       expect(colors, hasLength(PasswordStrength.values.length));
       expect(
@@ -327,8 +342,9 @@ void main() {
       );
     });
 
-    testWidgets('renders empty segments without a label for a null result',
-        (tester) async {
+    testWidgets('renders empty segments without a label for a null result', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(const SymphonyPasswordStrengthMeter(result: null)),
       );

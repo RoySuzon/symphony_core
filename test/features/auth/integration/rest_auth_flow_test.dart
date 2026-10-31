@@ -61,7 +61,8 @@ void main() {
 
   ResponseBody route(RequestOptions request) {
     final authorization = authorizationOf(request);
-    final authorized = authorization != null &&
+    final authorized =
+        authorization != null &&
         validAccessTokens.contains(authorization.replaceFirst('Bearer ', ''));
     switch ('${request.method} ${request.uri.path}') {
       case 'POST /auth/login':
@@ -128,7 +129,9 @@ void main() {
   }
 
   Future<void> signIn(ProviderContainer container) async {
-    final result = await container.read(authControllerProvider.notifier).login(
+    final result = await container
+        .read(authControllerProvider.notifier)
+        .login(
           AuthCredentials.emailPassword(
             email: 'admin@example.com',
             password: 'secret123',
@@ -146,25 +149,29 @@ void main() {
     backend = FakeBackend(route);
   });
 
-  test('signs in through a public call and authorizes later requests',
-      () async {
-    final container = createContainer();
+  test(
+    'signs in through a public call and authorizes later requests',
+    () async {
+      final container = createContainer();
 
-    await signIn(container);
-    final orders = await container.read(apiClientProvider).get<Object?>(
-          '/orders',
-        );
+      await signIn(container);
+      final orders = await container
+          .read(apiClientProvider)
+          .get<Object?>('/orders');
 
-    expect(orders.data, <Object?>['order-1']);
-    expect(authorizationOf(backend.requests.first), isNull);
-    expect(authorizationOf(backend.requests.last), 'Bearer a1');
-    expect(container.read(accessContextProvider).hasRole('admin'), isTrue);
-  });
+      expect(orders.data, <Object?>['order-1']);
+      expect(authorizationOf(backend.requests.first), isNull);
+      expect(authorizationOf(backend.requests.last), 'Bearer a1');
+      expect(container.read(accessContextProvider).hasRole('admin'), isTrue);
+    },
+  );
 
   test('wrong credentials surface as an AuthFailure', () async {
     final container = createContainer();
 
-    final result = await container.read(authControllerProvider.notifier).login(
+    final result = await container
+        .read(authControllerProvider.notifier)
+        .login(
           AuthCredentials.emailPassword(
             email: 'admin@example.com',
             password: 'nope',
@@ -175,8 +182,7 @@ void main() {
     expect(refreshCalls, 0);
   });
 
-  test(
-      'a bare 401 on sign-in reports invalid credentials even with a '
+  test('a bare 401 on sign-in reports invalid credentials even with a '
       'localized error mapper', () async {
     loginRejection = <String, Object?>{};
     final container = createContainer(
@@ -189,7 +195,9 @@ void main() {
       ],
     );
 
-    final result = await container.read(authControllerProvider.notifier).login(
+    final result = await container
+        .read(authControllerProvider.notifier)
+        .login(
           AuthCredentials.emailPassword(
             email: 'admin@example.com',
             password: 'nope',
@@ -211,9 +219,9 @@ void main() {
     await signIn(container);
     validAccessTokens.remove('a1');
 
-    final orders = await container.read(apiClientProvider).get<Object?>(
-          '/orders',
-        );
+    final orders = await container
+        .read(apiClientProvider)
+        .get<Object?>('/orders');
 
     expect(orders.data, <Object?>['order-1']);
     expect(refreshCalls, 1);
@@ -266,8 +274,9 @@ void main() {
     await restarted.read(authControllerProvider.notifier).restoreSession();
 
     expect(restarted.read(currentUserProvider)?.displayName, 'Ada');
-    final orders =
-        await restarted.read(apiClientProvider).get<Object?>('/orders');
+    final orders = await restarted
+        .read(apiClientProvider)
+        .get<Object?>('/orders');
     expect(orders.data, <Object?>['order-1']);
   });
 }

@@ -63,10 +63,7 @@ enum ApiCallStatusFilter {
 @immutable
 class ApiCallFilter {
   /// Creates a filter. The default instance matches every call.
-  const ApiCallFilter({
-    this.query = '',
-    this.status = ApiCallStatusFilter.all,
-  });
+  const ApiCallFilter({this.query = '', this.status = ApiCallStatusFilter.all});
 
   /// A filter matching every call.
   static const ApiCallFilter none = ApiCallFilter();
@@ -132,14 +129,15 @@ class ApiCallFilter {
   static bool _matchesTerms(ApiCallRecord record, List<String> terms) {
     if (terms.isEmpty) return true;
     final url = record.uri.toString();
-    final haystack = <String>[
-      record.method,
-      url,
-      _decode(url),
-      record.statusLabel,
-      record.statusMessage ?? '',
-      record.error ?? '',
-    ].join('\n').toLowerCase();
+    final haystack =
+        <String>[
+          record.method,
+          url,
+          _decode(url),
+          record.statusLabel,
+          record.statusMessage ?? '',
+          record.error ?? '',
+        ].join('\n').toLowerCase();
     return terms.every(haystack.contains);
   }
 

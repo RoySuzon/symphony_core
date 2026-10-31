@@ -49,7 +49,9 @@ void main() {
 
     test('uses the root path for empty or relative paths', () {
       expect(
-          SymphonyRedirectResolver.locationOf(u('https://example.com')), '/');
+        SymphonyRedirectResolver.locationOf(u('https://example.com')),
+        '/',
+      );
       expect(SymphonyRedirectResolver.locationOf(u('orders')), '/orders');
     });
   });
@@ -120,10 +122,12 @@ void main() {
       }
     });
 
-    test('accepts guest-only locations (they are valid for signed-out users)',
-        () {
-      expect(resolver.sanitizeTarget('/register'), '/register');
-    });
+    test(
+      'accepts guest-only locations (they are valid for signed-out users)',
+      () {
+        expect(resolver.sanitizeTarget('/register'), '/register');
+      },
+    );
   });
 
   group('redirectTargetOf', () {
@@ -135,7 +139,9 @@ void main() {
         isNull,
       );
       expect(
-          resolver.redirectTargetOf(u('/login?from=%2F%2Fevil.com')), isNull);
+        resolver.redirectTargetOf(u('/login?from=%2F%2Fevil.com')),
+        isNull,
+      );
     });
 
     test('returns null instead of throwing on malformed encoding', () {
@@ -262,10 +268,7 @@ void main() {
         resolver.resolveGlobal(signedIn, u('/splash?from=%2F%2Fevil.com')),
         '/',
       );
-      expect(
-        resolver.resolveGlobal(signedIn, u('/splash?from=%2Flogin')),
-        '/',
-      );
+      expect(resolver.resolveGlobal(signedIn, u('/splash?from=%2Flogin')), '/');
       expect(
         resolver.resolveGlobal(signedIn, u('/splash?from=%2Fregister')),
         '/',
@@ -331,10 +334,7 @@ void main() {
         resolver.resolveGlobal(signedIn, u('/login?from=%2Fregister')),
         '/',
       );
-      expect(
-        resolver.resolveGlobal(signedIn, u('/login?from=%2Flogin')),
-        '/',
-      );
+      expect(resolver.resolveGlobal(signedIn, u('/login?from=%2Flogin')), '/');
     });
 
     test('lets signed-out users through', () {
@@ -490,8 +490,11 @@ void main() {
         '/unauthorized',
       );
       expect(
-        resolver.resolveGuard(signedIn, u('/unauthorized'),
-            requirement: admins),
+        resolver.resolveGuard(
+          signedIn,
+          u('/unauthorized'),
+          requirement: admins,
+        ),
         '/',
       );
       const homeOnly = SymphonyRedirectResolver(
@@ -517,7 +520,9 @@ void main() {
         '/unauthorized',
       );
       expect(
-          resolver.resolveGuard(admin, u('/orders'), requirement: any), isNull);
+        resolver.resolveGuard(admin, u('/orders'), requirement: any),
+        isNull,
+      );
     });
 
     test('checks custom predicates', () {
@@ -643,8 +648,10 @@ void main() {
         secured.resolveGlobal(signedOut, u('/orders?page=2')),
         '/login?from=%2Forders%3Fpage%3D2',
       );
-      expect(secured.resolveGlobal(signedOut, u('/unknown')),
-          '/login?from=%2Funknown');
+      expect(
+        secured.resolveGlobal(signedOut, u('/unknown')),
+        '/login?from=%2Funknown',
+      );
       expect(secured.resolveGlobal(signedOut, u('/')), '/login');
     });
 
@@ -678,7 +685,7 @@ void main() {
         '/',
         '/orders',
         '/legalese',
-        '/unauthorized'
+        '/unauthorized',
       ]) {
         expect(secured.isDefaultAccessExempt(path), isFalse, reason: path);
       }
@@ -742,10 +749,7 @@ void main() {
         defaultAccess: AccessRequirement(roles: <String>{'staff'}),
       );
       expect(homeIsUnauthorized.resolveGlobal(signedIn, u('/')), '/login');
-      expect(
-        homeIsUnauthorized.resolveGlobal(signedIn, u('/orders')),
-        '/',
-      );
+      expect(homeIsUnauthorized.resolveGlobal(signedIn, u('/orders')), '/');
       const noUnauthorized = SymphonyRedirectResolver(
         paths: SymphonyRoutePaths(unauthorized: null),
         defaultAccess: AccessRequirement(roles: <String>{'staff'}),
@@ -762,9 +766,7 @@ void main() {
       const a = SymphonyRedirectResolver(
         defaultAccess: AccessRequirement.authenticated,
       );
-      const b = SymphonyRedirectResolver(
-        defaultAccess: AccessRequirement(),
-      );
+      const b = SymphonyRedirectResolver(defaultAccess: AccessRequirement());
       expect(a, b);
       expect(a.hashCode, b.hashCode);
       expect(a, isNot(const SymphonyRedirectResolver()));

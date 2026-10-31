@@ -15,16 +15,13 @@ final filesRepositoryProvider = Provider<FilesRepository>(
 );
 
 /// Files stored on the server.
-final remoteFilesProvider = FutureProvider<Result<List<RemoteFile>>>(
-  (ref) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<List<RemoteFile>>.failure(UnauthorizedFailure());
-    }
-    return ref.watch(filesRepositoryProvider).fetchFiles();
-  },
-  name: 'remoteFilesProvider',
-);
+final remoteFilesProvider = FutureProvider<Result<List<RemoteFile>>>((ref) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<List<RemoteFile>>.failure(UnauthorizedFailure());
+  }
+  return ref.watch(filesRepositoryProvider).fetchFiles();
+}, name: 'remoteFilesProvider');
 
 /// The local transfer history, kept in the package's `localDatabaseProvider`.
 final transferHistoryProvider = Provider<TransferHistory>(
@@ -128,11 +125,14 @@ class FileTransferController extends Notifier<FileTransferState> {
     final label = count == 1 ? files.single.filename! : '$count files';
     _progress(TransferDirection.upload, label, 0, count * sizeInBytes);
 
-    final result = await ref.read(filesRepositoryProvider).upload(
+    final result = await ref
+        .read(filesRepositoryProvider)
+        .upload(
           files,
           note: note == null || note.trim().isEmpty ? null : note.trim(),
-          onProgress: (sent, total) =>
-              _progress(TransferDirection.upload, label, sent, total),
+          onProgress:
+              (sent, total) =>
+                  _progress(TransferDirection.upload, label, sent, total),
         );
     switch (result) {
       case ResultSuccess<List<RemoteFile>>(:final value):
@@ -157,27 +157,32 @@ class FileTransferController extends Notifier<FileTransferState> {
   Future<void> download(RemoteFile file) async {
     if (isBusy) return;
     _progress(TransferDirection.download, file.name, 0, file.sizeInBytes);
-    final result = await ref.read(filesRepositoryProvider).download(
+    final result = await ref
+        .read(filesRepositoryProvider)
+        .download(
           file,
-          onProgress: (received, total) => _progress(
-            TransferDirection.download,
-            file.name,
-            received,
-            total > 0 ? total : file.sizeInBytes,
-          ),
+          onProgress:
+              (received, total) => _progress(
+                TransferDirection.download,
+                file.name,
+                received,
+                total > 0 ? total : file.sizeInBytes,
+              ),
         );
     switch (result) {
       case ResultSuccess(:final value):
         state = TransferSucceeded(
           direction: TransferDirection.download,
-          message: 'Downloaded ${file.name} '
+          message:
+              'Downloaded ${file.name} '
               '(${Formatters.bytes(value.length)}) into memory.',
-          preview: file.isText
-              ? utf8.decode(
-                  value.length > 600 ? value.sublist(0, 600) : value,
-                  allowMalformed: true,
-                )
-              : null,
+          preview:
+              file.isText
+                  ? utf8.decode(
+                    value.length > 600 ? value.sublist(0, 600) : value,
+                    allowMalformed: true,
+                  )
+                  : null,
         );
         await _record(TransferDirection.download, file.name, value.length);
       case ResultFailure(:final failure):
@@ -205,7 +210,9 @@ class FileTransferController extends Notifier<FileTransferState> {
   Future<void> _record(TransferDirection direction, String name, int size) {
     _sequence++;
     final now = DateTime.now();
-    return ref.read(transferHistoryProvider).add(
+    return ref
+        .read(transferHistoryProvider)
+        .add(
           TransferRecord(
             id: '${now.microsecondsSinceEpoch}-$_sequence',
             direction: direction,
@@ -220,6 +227,6 @@ class FileTransferController extends Notifier<FileTransferState> {
 /// The transfer controller.
 final fileTransferControllerProvider =
     NotifierProvider<FileTransferController, FileTransferState>(
-  FileTransferController.new,
-  name: 'fileTransferControllerProvider',
-);
+      FileTransferController.new,
+      name: 'fileTransferControllerProvider',
+    );

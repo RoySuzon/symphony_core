@@ -41,10 +41,7 @@ void main() {
 
     test('statusLabel describes pending, answered and failed calls', () {
       expect(record().statusLabel, '...');
-      expect(
-        record(endedAt: started, statusCode: 204).statusLabel,
-        '204',
-      );
+      expect(record(endedAt: started, statusCode: 204).statusLabel, '204');
       expect(record(endedAt: started, error: 'boom').statusLabel, 'ERR');
     });
 
@@ -67,18 +64,21 @@ void main() {
     test('durationLabel formats milliseconds, seconds and minutes', () {
       expect(record().durationLabel, isNull);
       expect(
-        record(endedAt: started.add(const Duration(milliseconds: 85)))
-            .durationLabel,
+        record(
+          endedAt: started.add(const Duration(milliseconds: 85)),
+        ).durationLabel,
         '85 ms',
       );
       expect(
-        record(endedAt: started.add(const Duration(milliseconds: 1240)))
-            .durationLabel,
+        record(
+          endedAt: started.add(const Duration(milliseconds: 1240)),
+        ).durationLabel,
         '1.24 s',
       );
       expect(
-        record(endedAt: started.add(const Duration(seconds: 125)))
-            .durationLabel,
+        record(
+          endedAt: started.add(const Duration(seconds: 125)),
+        ).durationLabel,
         '2 min 5 s',
       );
     });

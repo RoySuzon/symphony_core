@@ -45,10 +45,10 @@ class DemoTokenService {
     required DateTime Function() clock,
     required this.accessTokenLifetime,
     required this.refreshTokenLifetime,
-  })  : _clock = clock,
-        // Monotonic across app restarts: tokens persisted by a previous run
-        // always have a lower sequence than the tokens issued now.
-        _sequence = clock().millisecondsSinceEpoch * 1000;
+  }) : _clock = clock,
+       // Monotonic across app restarts: tokens persisted by a previous run
+       // always have a lower sequence than the tokens issued now.
+       _sequence = clock().millisecondsSinceEpoch * 1000;
 
   final DateTime Function() _clock;
 
@@ -167,8 +167,10 @@ class DemoTokenService {
       type: expectedType,
       id: id,
       sequence: sequence,
-      issuedAt:
-          DateTime.fromMillisecondsSinceEpoch(issuedAt * 1000, isUtc: true),
+      issuedAt: DateTime.fromMillisecondsSinceEpoch(
+        issuedAt * 1000,
+        isUtc: true,
+      ),
       expiresAt: DateTime.fromMillisecondsSinceEpoch(expiresAt, isUtc: true),
     );
   }

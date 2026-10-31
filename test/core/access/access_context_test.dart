@@ -61,9 +61,13 @@ void main() {
 
     test('satisfies delegates to the requirement', () {
       expect(
-          user.satisfies(const AccessRequirement(roles: {'editor'})), isTrue);
+        user.satisfies(const AccessRequirement(roles: {'editor'})),
+        isTrue,
+      );
       expect(
-          user.satisfies(const AccessRequirement(roles: {'admin'})), isFalse);
+        user.satisfies(const AccessRequirement(roles: {'admin'})),
+        isFalse,
+      );
     });
 
     test('copyWith replaces the given fields', () {

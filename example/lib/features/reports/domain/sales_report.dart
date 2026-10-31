@@ -83,9 +83,9 @@ class SalesReport {
 
   /// Highest weekly revenue (chart scale).
   int get bestWeekInCents => weeklyRevenue.fold(
-        0,
-        (best, week) => week.amountInCents > best ? week.amountInCents : best,
-      );
+    0,
+    (best, week) => week.amountInCents > best ? week.amountInCents : best,
+  );
 }
 
 /// A CSV export.

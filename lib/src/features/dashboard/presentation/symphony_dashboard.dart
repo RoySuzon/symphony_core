@@ -100,13 +100,13 @@ class SymphonyDashboard extends ConsumerStatefulWidget {
     this.emptyMessage,
     this.backLabel = 'Back',
     this.rootLabel = 'Home',
-  })  : assert(maxCrossAxisExtent > 0, 'maxCrossAxisExtent must be positive.'),
-        assert(
-          crossAxisCount == null || crossAxisCount > 0,
-          'crossAxisCount must be positive.',
-        ),
-        assert(childAspectRatio > 0, 'childAspectRatio must be positive.'),
-        assert(spacing >= 0, 'spacing must not be negative.');
+  }) : assert(maxCrossAxisExtent > 0, 'maxCrossAxisExtent must be positive.'),
+       assert(
+         crossAxisCount == null || crossAxisCount > 0,
+         'crossAxisCount must be positive.',
+       ),
+       assert(childAspectRatio > 0, 'childAspectRatio must be positive.'),
+       assert(spacing >= 0, 'spacing must not be negative.');
 
   /// The whole menu (top level, with nested children). Defaults to
   /// `dashboardItemsProvider`.
@@ -225,8 +225,9 @@ class _SymphonyDashboardState extends ConsumerState<SymphonyDashboard> {
   void didUpdateWidget(covariant SymphonyDashboard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
-      (oldWidget.controller ?? _internalController)
-          ?.removeListener(_handleControllerChanged);
+      (oldWidget.controller ?? _internalController)?.removeListener(
+        _handleControllerChanged,
+      );
       if (widget.controller == null) {
         _internalController ??= SymphonyDashboardController();
       } else {
@@ -260,15 +261,17 @@ class _SymphonyDashboardState extends ConsumerState<SymphonyDashboard> {
     final inline =
         widget.submenuPresentation == DashboardSubmenuPresentation.inline;
     final requestedPath = _controller.path;
-    final openPath = inline
-        ? DashboardMenu.resolveSubmenuPath(visible, requestedPath)
-        : const <DashboardItem>[];
+    final openPath =
+        inline
+            ? DashboardMenu.resolveSubmenuPath(visible, requestedPath)
+            : const <DashboardItem>[];
     _openPath = openPath;
     if (inline && openPath.length != requestedPath.length) {
       _scheduleControllerSync();
     }
 
-    final levelKey = 'symphony_dashboard:'
+    final levelKey =
+        'symphony_dashboard:'
         '${openPath.map((group) => group.id).join('\u001f')}';
     final Widget body = AnimatedSwitcher(
       duration: widget.transitionDuration,
@@ -399,8 +402,10 @@ class _SymphonyDashboardState extends ConsumerState<SymphonyDashboard> {
       _controllerSyncScheduled = false;
       if (!mounted) return;
       final controller = _controller;
-      final resolved =
-          DashboardMenu.resolveSubmenuPath(_visible, controller.path);
+      final resolved = DashboardMenu.resolveSubmenuPath(
+        _visible,
+        controller.path,
+      );
       if (resolved.length != controller.path.length) {
         controller.path = <String>[for (final group in resolved) group.id];
       }
@@ -425,11 +430,13 @@ class _SymphonyDashboardState extends ConsumerState<SymphonyDashboard> {
     if (mounted) {
       final config = _pageConfig;
       route = MaterialPageRoute<void>(
-        builder: (context) => ValueListenableBuilder<SymphonyDashboard>(
-          valueListenable: config,
-          builder: (context, dashboard, child) =>
-              _buildSubmenuPage(dashboard, groupPath),
-        ),
+        builder:
+            (context) => ValueListenableBuilder<SymphonyDashboard>(
+              valueListenable: config,
+              builder:
+                  (context, dashboard, child) =>
+                      _buildSubmenuPage(dashboard, groupPath),
+            ),
       );
     } else {
       // The dashboard is gone (a nested group was opened from a page that
@@ -505,34 +512,37 @@ class _SubmenuHeader extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Expanded(
-          child: !showBreadcrumbs
-              ? current
-              : Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: <Widget>[
-                    for (var depth = 0;
+          child:
+              !showBreadcrumbs
+                  ? current
+                  : Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: <Widget>[
+                      for (
+                        var depth = 0;
                         depth < path.length;
-                        depth++) ...<Widget>[
-                      TextButton(
-                        onPressed: () => onSelectDepth(depth),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        depth++
+                      ) ...<Widget>[
+                        TextButton(
+                          onPressed: () => onSelectDepth(depth),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: Text(
+                            depth == 0 ? rootLabel : path[depth - 1].label,
+                          ),
                         ),
-                        child: Text(
-                          depth == 0 ? rootLabel : path[depth - 1].label,
+                        ExcludeSemantics(
+                          child: Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                      ExcludeSemantics(
-                        child: Icon(
-                          Icons.chevron_right,
-                          size: 18,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      ],
+                      current,
                     ],
-                    current,
-                  ],
-                ),
+                  ),
         ),
       ],
     );

@@ -60,9 +60,10 @@ class DemoRequest {
   String get path => uri.path;
 
   /// Host the client believes it talks to (see `ApiClient.updateBaseUrl`).
-  String get host => uri.hasPort && !_isDefaultPort(uri)
-      ? '${uri.host}:${uri.port}'
-      : uri.host;
+  String get host =>
+      uri.hasPort && !_isDefaultPort(uri)
+          ? '${uri.host}:${uri.port}'
+          : uri.host;
 
   /// Header [name] (case-insensitive), or `null`.
   String? header(String name) => headers[name.toLowerCase()];
@@ -138,10 +139,10 @@ class DemoResponse {
   /// A successful response wrapped in the backend's envelope:
   /// `{"status": "ok", "result": ...}`.
   factory DemoResponse.ok(Object? result, {int statusCode = 200}) =>
-      DemoResponse.json(
-        statusCode,
-        <String, Object?>{'status': 'ok', 'result': result},
-      );
+      DemoResponse.json(statusCode, <String, Object?>{
+        'status': 'ok',
+        'result': result,
+      });
 
   /// An empty `204 No Content` response.
   factory DemoResponse.noContent() => DemoResponse(204, body: Uint8List(0));
@@ -195,26 +196,26 @@ class DemoHttpException implements Exception {
 
   /// `400 Bad Request`.
   const DemoHttpException.badRequest(String message)
-      : this(400, 'bad_request', message);
+    : this(400, 'bad_request', message);
 
   /// `401 Unauthorized` with a `WWW-Authenticate` challenge.
   const DemoHttpException.unauthorized(String code, String message)
-      : this(
-          401,
-          code,
-          message,
-          headers: const <String, String>{
-            'www-authenticate': 'Bearer realm="symphony-demo"',
-          },
-        );
+    : this(
+        401,
+        code,
+        message,
+        headers: const <String, String>{
+          'www-authenticate': 'Bearer realm="symphony-demo"',
+        },
+      );
 
   /// `403 Forbidden`.
   const DemoHttpException.forbidden(String message)
-      : this(403, 'forbidden', message);
+    : this(403, 'forbidden', message);
 
   /// `404 Not Found`.
   const DemoHttpException.notFound(String message)
-      : this(404, 'not_found', message);
+    : this(404, 'not_found', message);
 
   /// `422 Unprocessable Entity` with per-field messages.
   const DemoHttpException.validation(
@@ -240,15 +241,11 @@ class DemoHttpException implements Exception {
   /// The response sent to the client.
   DemoResponse toResponse() {
     final errors = fieldErrors;
-    return DemoResponse.json(
-      statusCode,
-      <String, Object?>{
-        'status': 'error',
-        'error': <String, Object?>{'code': code, 'message': message},
-        if (errors != null) 'errors': errors,
-      },
-      headers: headers,
-    );
+    return DemoResponse.json(statusCode, <String, Object?>{
+      'status': 'error',
+      'error': <String, Object?>{'code': code, 'message': message},
+      if (errors != null) 'errors': errors,
+    }, headers: headers);
   }
 
   @override
@@ -282,6 +279,7 @@ class DemoRequestRecord {
   final DateTime at;
 
   @override
-  String toString() => '$method $path → $statusCode'
+  String toString() =>
+      '$method $path → $statusCode'
       '${errorCode == null ? '' : ' ($errorCode)'}';
 }

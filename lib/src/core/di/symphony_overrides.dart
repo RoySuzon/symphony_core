@@ -9,8 +9,7 @@ import '../../features/storage/presentation/storage_providers.dart';
 import '../config/symphony_config.dart';
 import '../error/error_reporter.dart';
 import 'core_providers.dart';
-// Required on Riverpod 3; redundant (but harmless) on Riverpod 2.
-// ignore: unnecessary_import
+// Riverpod 3 exports Override/ProviderListenable from misc.dart only.
 import 'riverpod_compat.dart';
 
 /// Builds the provider overrides that configure `symphony_core`.
@@ -70,16 +69,11 @@ import 'riverpod_compat.dart';
 /// ## Overriding a built-in provider
 ///
 /// An override in [overrides] always wins over the built-in override of the
-/// same provider:
-/// * Riverpod 3 rejects two overrides of the same provider in one container
-///   (an `AssertionError` in debug builds). Overrides expose the provider
-///   they replace there, so the built-in override of every provider that
-///   [overrides] already overrides is left out of the result.
-/// * Riverpod 2 does not expose the provider an override replaces, so both
-///   overrides are kept. Riverpod 2 applies overrides in order and the last
-///   one — the application's — wins. A `ProviderScope` that is rebuilt with
-///   such a list may however assert in debug builds when both overrides are
-///   of a different kind (`overrideWith` vs `overrideWithValue`).
+/// same provider. Riverpod rejects two overrides of the same provider in one
+/// container (an `AssertionError` in debug builds); overrides expose the
+/// provider they replace (`Override.origin`), so the built-in override of
+/// every provider that [overrides] already overrides is left out of the
+/// result.
 ///
 /// Prefer the named parameters over overriding these providers yourself.
 List<Override> symphonyOverrides({
@@ -105,7 +99,7 @@ List<Override> symphonyOverrides({
     if (authAdapterBuilder != null)
       (
         authAdapterProvider,
-        authAdapterProvider.overrideWith(authAdapterBuilder)
+        authAdapterProvider.overrideWith(authAdapterBuilder),
       ),
     if (hasAuth)
       (
@@ -155,9 +149,9 @@ Set<Object> _overriddenTargets(List<Override> overrides) {
 /// Returns the provider replaced by [override], or `null` when it is not
 /// observable.
 ///
-/// Riverpod 3 overrides expose it as `origin`; Riverpod 2 keeps it private.
-/// The member is read dynamically because it does not exist (statically) on
-/// every supported version.
+/// Provider overrides expose it as `origin`. The member is read dynamically
+/// because `Override` itself only declares it from flutter_riverpod 3.3 on
+/// (3.0–3.2 declare it on the concrete override classes only).
 Object? _overriddenProvider(Override override) {
   try {
     final dynamic untyped = override;

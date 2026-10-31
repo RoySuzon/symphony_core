@@ -365,10 +365,11 @@ class AuthResponseMapping {
     final id = _firstValue(map, userId, _scalar) ?? email ?? username ?? '';
     var displayName = _firstValue(map, userDisplayName, _text);
     if (displayName == null) {
-      final parts = <String?>[
-        _firstValue(map, userFirstName, _text),
-        _firstValue(map, userLastName, _text),
-      ].whereType<String>();
+      final parts =
+          <String?>[
+            _firstValue(map, userFirstName, _text),
+            _firstValue(map, userLastName, _text),
+          ].whereType<String>();
       if (parts.isNotEmpty) displayName = parts.join(' ');
     }
     return AuthUser(
@@ -412,9 +413,10 @@ class AuthResponseMapping {
     if (value is Iterable) {
       final result = <String>{};
       for (final item in value) {
-        final name = item is Map
-            ? _firstValue(item, entryNameKeys, _scalar)
-            : _scalar(item);
+        final name =
+            item is Map
+                ? _firstValue(item, entryNameKeys, _scalar)
+                : _scalar(item);
         if (name != null) result.add(name);
       }
       return result;

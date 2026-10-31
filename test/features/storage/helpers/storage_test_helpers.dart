@@ -21,9 +21,9 @@ Map<String, String> backWithMap(
   String keyOf(Invocation invocation) =>
       invocation.namedArguments[#key]! as String;
 
-  when(() => mock.read(key: any(named: 'key'))).thenAnswer(
-    (invocation) async => values[keyOf(invocation)],
-  );
+  when(
+    () => mock.read(key: any(named: 'key')),
+  ).thenAnswer((invocation) async => values[keyOf(invocation)]);
   when(
     () => mock.write(key: any(named: 'key'), value: any(named: 'value')),
   ).thenAnswer((invocation) async {
@@ -34,17 +34,17 @@ Map<String, String> backWithMap(
       values[keyOf(invocation)] = value;
     }
   });
-  when(() => mock.delete(key: any(named: 'key'))).thenAnswer(
-    (invocation) async {
-      values.remove(keyOf(invocation));
-    },
-  );
-  when(() => mock.containsKey(key: any(named: 'key'))).thenAnswer(
-    (invocation) async => values.containsKey(keyOf(invocation)),
-  );
-  when(() => mock.readAll()).thenAnswer(
-    (_) async => Map<String, String>.of(values),
-  );
+  when(() => mock.delete(key: any(named: 'key'))).thenAnswer((
+    invocation,
+  ) async {
+    values.remove(keyOf(invocation));
+  });
+  when(
+    () => mock.containsKey(key: any(named: 'key')),
+  ).thenAnswer((invocation) async => values.containsKey(keyOf(invocation)));
+  when(
+    () => mock.readAll(),
+  ).thenAnswer((_) async => Map<String, String>.of(values));
   when(() => mock.deleteAll()).thenAnswer((_) async => values.clear());
   return values;
 }
@@ -83,14 +83,14 @@ class Todo {
   });
 
   factory Todo.fromJson(Map<String, Object?> json) => Todo(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        done: json['done'] as bool? ?? false,
-        tags: <String>[
-          for (final tag in json['tags'] as List<Object?>? ?? const <Object?>[])
-            tag as String,
-        ],
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    done: json['done'] as bool? ?? false,
+    tags: <String>[
+      for (final tag in json['tags'] as List<Object?>? ?? const <Object?>[])
+        tag as String,
+    ],
+  );
 
   final String id;
   final String title;
@@ -98,11 +98,11 @@ class Todo {
   final List<String> tags;
 
   Map<String, Object?> toJson() => <String, Object?>{
-        'id': id,
-        'title': title,
-        'done': done,
-        'tags': tags,
-      };
+    'id': id,
+    'title': title,
+    'done': done,
+    'tags': tags,
+  };
 
   @override
   bool operator ==(Object other) =>

@@ -45,7 +45,8 @@ class SymphonyLoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveColor = color ??
+    final effectiveColor =
+        color ??
         theme.progressIndicatorTheme.color ??
         theme.colorScheme.primary;
     final effectiveStrokeWidth =
@@ -55,17 +56,18 @@ class SymphonyLoadingIndicator extends StatelessWidget {
     // the text itself is excluded to avoid announcing it twice.
     final label = semanticsLabel ?? text ?? 'Loading';
 
-    final indicator = adaptive
-        ? CircularProgressIndicator.adaptive(
-            valueColor: AlwaysStoppedAnimation<Color>(effectiveColor),
-            strokeWidth: effectiveStrokeWidth,
-            semanticsLabel: label,
-          )
-        : CircularProgressIndicator(
-            color: effectiveColor,
-            strokeWidth: effectiveStrokeWidth,
-            semanticsLabel: label,
-          );
+    final indicator =
+        adaptive
+            ? CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation<Color>(effectiveColor),
+              strokeWidth: effectiveStrokeWidth,
+              semanticsLabel: label,
+            )
+            : CircularProgressIndicator(
+              color: effectiveColor,
+              strokeWidth: effectiveStrokeWidth,
+              semanticsLabel: label,
+            );
 
     return Center(
       child: Column(

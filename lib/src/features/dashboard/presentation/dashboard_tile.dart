@@ -160,17 +160,18 @@ class SymphonyDashboardTile extends StatelessWidget {
       glyph = Icon(data);
     } else {
       final initial = item.label.trim().characters.take(1).toUpperCase();
-      glyph = initial.isEmpty
-          ? const Icon(Icons.apps)
-          : Text(
-              initial.toString(),
-              style: TextStyle(
-                color: iconColor,
-                fontSize: iconSize * 0.8,
-                fontWeight: FontWeight.w600,
-                height: 1,
-              ),
-            );
+      glyph =
+          initial.isEmpty
+              ? const Icon(Icons.apps)
+              : Text(
+                initial.toString(),
+                style: TextStyle(
+                  color: iconColor,
+                  fontSize: iconSize * 0.8,
+                  fontWeight: FontWeight.w600,
+                  height: 1,
+                ),
+              );
     }
 
     Widget icon = DecoratedBox(
@@ -192,10 +193,7 @@ class SymphonyDashboardTile extends StatelessWidget {
 
     final badge = item.badge;
     if (badge != null) {
-      icon = Badge(
-        label: badge.isEmpty ? null : Text(badge),
-        child: icon,
-      );
+      icon = Badge(label: badge.isEmpty ? null : Text(badge), child: icon);
     }
     return icon;
   }

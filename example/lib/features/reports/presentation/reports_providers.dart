@@ -11,13 +11,10 @@ final reportsRepositoryProvider = Provider<ReportsRepository>(
 );
 
 /// The sales report of the signed-in user's organization.
-final salesReportProvider = FutureProvider<Result<SalesReport>>(
-  (ref) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<SalesReport>.failure(UnauthorizedFailure());
-    }
-    return ref.watch(reportsRepositoryProvider).fetchSummary();
-  },
-  name: 'salesReportProvider',
-);
+final salesReportProvider = FutureProvider<Result<SalesReport>>((ref) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<SalesReport>.failure(UnauthorizedFailure());
+  }
+  return ref.watch(reportsRepositoryProvider).fetchSummary();
+}, name: 'salesReportProvider');

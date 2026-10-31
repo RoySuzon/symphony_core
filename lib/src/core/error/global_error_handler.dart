@@ -113,24 +113,24 @@ abstract final class GlobalErrorHandler {
       );
       if (presentErrorsInDebug && kDebugMode) {
         _presentUncaughtError(
-            error, stackTrace, 'while running a guarded zone');
+          error,
+          stackTrace,
+          'while running a guarded zone',
+        );
       }
     }
 
-    runZonedGuarded<void>(
-      () {
-        unawaited(
-          Future<void>.sync(body).then<void>(
-            (_) => done.complete(),
-            onError: (Object error, StackTrace stackTrace) {
-              report(error, stackTrace);
-              done.complete();
-            },
-          ),
-        );
-      },
-      report,
-    );
+    runZonedGuarded<void>(() {
+      unawaited(
+        Future<void>.sync(body).then<void>(
+          (_) => done.complete(),
+          onError: (Object error, StackTrace stackTrace) {
+            report(error, stackTrace);
+            done.complete();
+          },
+        ),
+      );
+    }, report);
     return done.future;
   }
 
@@ -160,9 +160,9 @@ final class GlobalErrorHandlerRegistration {
     required ErrorReporter reporter,
     required SymphonyLogger? logger,
     required bool presentInDebug,
-  })  : _reporter = reporter,
-        _logger = logger,
-        _presentInDebug = presentInDebug;
+  }) : _reporter = reporter,
+       _logger = logger,
+       _presentInDebug = presentInDebug;
 
   static const String _tag = 'GlobalErrorHandler';
 
@@ -242,7 +242,8 @@ final class GlobalErrorHandlerRegistration {
 
   void _installFlutterHandler() {
     final previous = FlutterError.onError;
-    final previousPresents = previous != null &&
+    final previousPresents =
+        previous != null &&
         (previous == FlutterError.presentError ||
             previous == FlutterError.dumpErrorToConsole);
 

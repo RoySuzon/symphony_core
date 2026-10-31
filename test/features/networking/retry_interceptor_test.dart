@@ -30,10 +30,12 @@ void main() {
   }
 
   void failWithConnectionError() {
-    adapter.responder = (options, _) => throw DioException.connectionError(
-          requestOptions: options,
-          reason: 'offline',
-        );
+    adapter.responder =
+        (options, _) =>
+            throw DioException.connectionError(
+              requestOptions: options,
+              reason: 'offline',
+            );
   }
 
   test('retries GET on connection errors up to maxRetries', () async {
@@ -101,10 +103,11 @@ void main() {
 
     expect(response.data, <String, dynamic>{'ok': true});
     expect(failure, isA<ServerFailure>());
-    expect(
-      adapter.requests.map((request) => request.path),
-      <String>['/flaky', '/flaky', '/broken'],
-    );
+    expect(adapter.requests.map((request) => request.path), <String>[
+      '/flaky',
+      '/flaky',
+      '/broken',
+    ]);
   });
 
   test('honours per-request retry policies', () async {
@@ -112,8 +115,10 @@ void main() {
     final client = buildClient(config: testConfig());
 
     await _failureOf(
-      client.get<void>('/more',
-          options: const ApiRequestOptions(maxRetries: 1)),
+      client.get<void>(
+        '/more',
+        options: const ApiRequestOptions(maxRetries: 1),
+      ),
     );
     await _failureOf(
       client.get<void>(
@@ -122,10 +127,11 @@ void main() {
       ),
     );
 
-    expect(
-      adapter.requests.map((request) => request.path),
-      <String>['/more', '/more', '/none'],
-    );
+    expect(adapter.requests.map((request) => request.path), <String>[
+      '/more',
+      '/more',
+      '/none',
+    ]);
   });
 
   test('waits retryDelay multiplied by the attempt number', () async {
@@ -235,9 +241,9 @@ void main() {
       config: testConfig(maxRetries: 1),
     );
     DioException error(String method, DioExceptionType type) => DioException(
-          requestOptions: RequestOptions(path: '/x', method: method),
-          type: type,
-        );
+      requestOptions: RequestOptions(path: '/x', method: method),
+      type: type,
+    );
 
     expect(
       interceptor.shouldRetry(error('GET', DioExceptionType.connectionError)),

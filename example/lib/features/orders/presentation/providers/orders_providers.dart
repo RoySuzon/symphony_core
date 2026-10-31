@@ -30,53 +30,47 @@ class OrderFilterController extends Notifier<OrderFilter> {
 /// Criteria of the orders list.
 final orderFilterProvider =
     NotifierProvider<OrderFilterController, OrderFilter>(
-  OrderFilterController.new,
-  name: 'orderFilterProvider',
-);
+      OrderFilterController.new,
+      name: 'orderFilterProvider',
+    );
 
 /// The orders matching [orderFilterProvider].
 ///
 /// Scoped to the signed-in user: it refetches when another user signs in
 /// and sends no request while signed out.
-final ordersProvider = FutureProvider<Result<List<OrderSummary>>>(
-  (ref) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<List<OrderSummary>>.failure(UnauthorizedFailure());
-    }
-    final filter = ref.watch(orderFilterProvider);
-    return ref.watch(ordersRepositoryProvider).fetchOrders(filter: filter);
-  },
-  name: 'ordersProvider',
-);
+final ordersProvider = FutureProvider<Result<List<OrderSummary>>>((ref) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<List<OrderSummary>>.failure(UnauthorizedFailure());
+  }
+  final filter = ref.watch(orderFilterProvider);
+  return ref.watch(ordersRepositoryProvider).fetchOrders(filter: filter);
+}, name: 'ordersProvider');
 
 /// One order with its lines, by id.
-final orderDetailProvider = FutureProvider.family<Result<OrderDetail>, String>(
-  (ref, id) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<OrderDetail>.failure(UnauthorizedFailure());
-    }
-    return ref.watch(ordersRepositoryProvider).fetchOrder(id);
-  },
-  name: 'orderDetailProvider',
-);
+final orderDetailProvider = FutureProvider.family<Result<OrderDetail>, String>((
+  ref,
+  id,
+) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<OrderDetail>.failure(UnauthorizedFailure());
+  }
+  return ref.watch(ordersRepositoryProvider).fetchOrder(id);
+}, name: 'orderDetailProvider');
 
 /// Number of pending orders, shown as the dashboard badge of the Orders
 /// module. `null` when the user cannot read orders or the count failed.
-final pendingOrdersCountProvider = FutureProvider<int?>(
-  (ref) async {
-    final canRead = ref.watch(
-      accessContextProvider.select(
-        (access) => access.hasPermission('orders.read'),
-      ),
-    );
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (!canRead || userId == null) return null;
-    final result = await ref.watch(ordersRepositoryProvider).fetchOrders(
-          filter: const OrderFilter(status: OrderStatus.pending),
-        );
-    return result.valueOrNull?.length;
-  },
-  name: 'pendingOrdersCountProvider',
-);
+final pendingOrdersCountProvider = FutureProvider<int?>((ref) async {
+  final canRead = ref.watch(
+    accessContextProvider.select(
+      (access) => access.hasPermission('orders.read'),
+    ),
+  );
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (!canRead || userId == null) return null;
+  final result = await ref
+      .watch(ordersRepositoryProvider)
+      .fetchOrders(filter: const OrderFilter(status: OrderStatus.pending));
+  return result.valueOrNull?.length;
+}, name: 'pendingOrdersCountProvider');

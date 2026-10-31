@@ -5,8 +5,9 @@ import 'package:symphony_core/src/features/dashboard/dashboard.dart';
 
 import '../dashboard_test_utils.dart';
 
-List<String> ids(Iterable<DashboardItem> items) =>
-    <String>[for (final item in items) item.id];
+List<String> ids(Iterable<DashboardItem> items) => <String>[
+  for (final item in items) item.id,
+];
 
 void main() {
   test('dashboardItemsProvider defaults to an empty menu', () {
@@ -19,16 +20,18 @@ void main() {
   test('visibleDashboardItemsProvider filters for the current access', () {
     final container = createAccessContainer(menu: sampleMenu);
 
-    expect(
-      ids(container.read(visibleDashboardItemsProvider)),
-      <String>['orders', 'help'],
-    );
+    expect(ids(container.read(visibleDashboardItemsProvider)), <String>[
+      'orders',
+      'help',
+    ]);
 
     changeAccess(container, signedIn(roles: <String>{'admin'}));
-    expect(
-      ids(container.read(visibleDashboardItemsProvider)),
-      <String>['orders', 'sales', 'admin', 'help'],
-    );
+    expect(ids(container.read(visibleDashboardItemsProvider)), <String>[
+      'orders',
+      'sales',
+      'admin',
+      'help',
+    ]);
   });
 
   test('visibleDashboardItemsProvider notifies listeners on access change', () {

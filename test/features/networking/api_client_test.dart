@@ -92,10 +92,7 @@ void main() {
       expect(values, <String>['https://staging.example.com/v2', testBaseUrl]);
       expect(
         adapter.requests.map((request) => request.uri.toString()),
-        <String>[
-          'https://staging.example.com/v2/users',
-          '$testBaseUrl/users',
-        ],
+        <String>['https://staging.example.com/v2/users', '$testBaseUrl/users'],
       );
     });
 
@@ -112,35 +109,37 @@ void main() {
   });
 
   group('headers', () {
-    test('sends default, dynamic and per-request headers by precedence',
-        () async {
-      final client = buildClient(
-        config: testConfig(
-          defaultHeaders: <String, String>{
-            'X-App': 'symphony',
-            'Accept-Language': 'en',
-          },
-        ),
-        headerProviders: <HeaderProvider>[
-          () => <String, String>{'Accept-Language': 'fr', 'X-Version': '1'},
-          () async => <String, String>{'X-Async': 'yes'},
-        ],
-      );
-      client.setHeader('X-Tenant', 'acme');
+    test(
+      'sends default, dynamic and per-request headers by precedence',
+      () async {
+        final client = buildClient(
+          config: testConfig(
+            defaultHeaders: <String, String>{
+              'X-App': 'symphony',
+              'Accept-Language': 'en',
+            },
+          ),
+          headerProviders: <HeaderProvider>[
+            () => <String, String>{'Accept-Language': 'fr', 'X-Version': '1'},
+            () async => <String, String>{'X-Async': 'yes'},
+          ],
+        );
+        client.setHeader('X-Tenant', 'acme');
 
-      await client.get<void>(
-        '/me',
-        options: const ApiRequestOptions(
-          headers: <String, String>{'x-version': '2'},
-        ),
-      );
+        await client.get<void>(
+          '/me',
+          options: const ApiRequestOptions(
+            headers: <String, String>{'x-version': '2'},
+          ),
+        );
 
-      expect(adapter.headerOf(0, 'X-App'), 'symphony');
-      expect(adapter.headerOf(0, 'X-Tenant'), 'acme');
-      expect(adapter.headerOf(0, 'Accept-Language'), 'fr');
-      expect(adapter.headerOf(0, 'X-Async'), 'yes');
-      expect(adapter.headerOf(0, 'X-Version'), '2');
-    });
+        expect(adapter.headerOf(0, 'X-App'), 'symphony');
+        expect(adapter.headerOf(0, 'X-Tenant'), 'acme');
+        expect(adapter.headerOf(0, 'Accept-Language'), 'fr');
+        expect(adapter.headerOf(0, 'X-Async'), 'yes');
+        expect(adapter.headerOf(0, 'X-Version'), '2');
+      },
+    );
 
     test('setHeader updates and removes default headers', () async {
       final client = buildClient();
@@ -209,31 +208,34 @@ void main() {
       expect(request.sendTimeout, const Duration(seconds: 7));
     });
 
-    test('can be overridden per request, including the connect timeout',
-        () async {
-      final client = buildClient();
+    test(
+      'can be overridden per request, including the connect timeout',
+      () async {
+        final client = buildClient();
 
-      await client.post<void>(
-        '/a',
-        data: <String, Object?>{'x': 1},
-        options: const ApiRequestOptions(
-          connectTimeout: Duration(seconds: 1),
-          receiveTimeout: Duration(seconds: 2),
-          sendTimeout: Duration(seconds: 3),
-        ),
-      );
+        await client.post<void>(
+          '/a',
+          data: <String, Object?>{'x': 1},
+          options: const ApiRequestOptions(
+            connectTimeout: Duration(seconds: 1),
+            receiveTimeout: Duration(seconds: 2),
+            sendTimeout: Duration(seconds: 3),
+          ),
+        );
 
-      final request = adapter.requests.single;
-      expect(request.connectTimeout, const Duration(seconds: 1));
-      expect(request.receiveTimeout, const Duration(seconds: 2));
-      expect(request.sendTimeout, const Duration(seconds: 3));
-      expect(client.dio.options.connectTimeout, const Duration(seconds: 30));
-    });
+        final request = adapter.requests.single;
+        expect(request.connectTimeout, const Duration(seconds: 1));
+        expect(request.receiveTimeout, const Duration(seconds: 2));
+        expect(request.sendTimeout, const Duration(seconds: 3));
+        expect(client.dio.options.connectTimeout, const Duration(seconds: 30));
+      },
+    );
   });
 
   group('requests and responses', () {
     test('send the method, query, JSON body and per-request extras', () async {
-      adapter.responder = (options, body) => jsonBody(
+      adapter.responder =
+          (options, body) => jsonBody(
             <String, Object?>{'ok': true},
             statusCode: 201,
             headers: <String, List<String>>{
@@ -267,7 +269,9 @@ void main() {
       expect(response.headers['x-request-id'], <String>['42']);
       expect(response.header('X-REQUEST-ID'), '42');
       expect(
-          response.requestUri.toString(), '$testBaseUrl/users/1?expand=roles');
+        response.requestUri.toString(),
+        '$testBaseUrl/users/1?expand=roles',
+      );
     });
 
     test('every verb uses the expected HTTP method', () async {
@@ -280,15 +284,19 @@ void main() {
       await client.delete<void>('/r');
       await client.request<void>('/r', method: 'head');
 
-      expect(
-        adapter.requests.map((request) => request.method),
-        <String>['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'],
-      );
+      expect(adapter.requests.map((request) => request.method), <String>[
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'HEAD',
+      ]);
     });
 
     test('decodes the body with the decoder', () async {
       adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{'id': 7, 'name': 'Jane'});
+          (_, _) => jsonBody(<String, Object?>{'id': 7, 'name': 'Jane'});
       final client = buildClient();
 
       final response = await client.get<_User>('/me', decoder: _User.fromJson);
@@ -297,30 +305,34 @@ void main() {
       expect(response.data.name, 'Jane');
     });
 
-    test('a failing decoder throws a ParsingFailure keeping the cause',
-        () async {
-      adapter.responder = (_, __) => jsonBody(<String, Object?>{'id': 'x'});
-      final client = buildClient();
+    test(
+      'a failing decoder throws a ParsingFailure keeping the cause',
+      () async {
+        adapter.responder = (_, _) => jsonBody(<String, Object?>{'id': 'x'});
+        final client = buildClient();
 
-      final failure = await _failureOf(
-        client.get<_User>('/me', decoder: _User.fromJson),
-      );
+        final failure = await _failureOf(
+          client.get<_User>('/me', decoder: _User.fromJson),
+        );
 
-      expect(failure, isA<ParsingFailure>());
-      expect(failure.cause, isA<TypeError>());
-    });
+        expect(failure, isA<ParsingFailure>());
+        expect(failure.cause, isA<TypeError>());
+      },
+    );
 
-    test('a decoder throwing another error still yields a ParsingFailure',
-        () async {
-      final client = buildClient();
+    test(
+      'a decoder throwing another error still yields a ParsingFailure',
+      () async {
+        final client = buildClient();
 
-      final failure = await _failureOf(
-        client.get<int>('/me', decoder: (_) => throw StateError('boom')),
-      );
+        final failure = await _failureOf(
+          client.get<int>('/me', decoder: (_) => throw StateError('boom')),
+        );
 
-      expect(failure, isA<ParsingFailure>());
-      expect(failure.cause, isA<StateError>());
-    });
+        expect(failure, isA<ParsingFailure>());
+        expect(failure.cause, isA<StateError>());
+      },
+    );
 
     test('a decoder throwing a Failure propagates it unchanged', () async {
       final client = buildClient();
@@ -334,7 +346,7 @@ void main() {
     });
 
     test('a failed cast throws a ParsingFailure', () async {
-      adapter.responder = (_, __) => jsonBody(<String, Object?>{'a': 1});
+      adapter.responder = (_, _) => jsonBody(<String, Object?>{'a': 1});
       final client = buildClient();
 
       final failure = await _failureOf(client.get<List<dynamic>>('/list'));
@@ -343,7 +355,8 @@ void main() {
     });
 
     test('supports plain text responses', () async {
-      adapter.responder = (_, __) => ResponseBody.fromString(
+      adapter.responder =
+          (_, _) => ResponseBody.fromString(
             'pong',
             200,
             headers: <String, List<String>>{
@@ -363,20 +376,17 @@ void main() {
 
   group('errors', () {
     test('HTTP errors are mapped to failures', () async {
-      adapter.responder = (options, _) => switch (options.path) {
-            '/missing' => jsonBody(
-                <String, Object?>{'message': 'No such user'},
-                statusCode: 404,
-              ),
-            '/invalid' => jsonBody(
-                <String, Object?>{
-                  'message': 'Invalid data',
-                  'errors': <String, Object?>{
-                    'email': <String>['is invalid'],
-                  },
-                },
-                statusCode: 422,
-              ),
+      adapter.responder =
+          (options, _) => switch (options.path) {
+            '/missing' => jsonBody(<String, Object?>{
+              'message': 'No such user',
+            }, statusCode: 404),
+            '/invalid' => jsonBody(<String, Object?>{
+              'message': 'Invalid data',
+              'errors': <String, Object?>{
+                'email': <String>['is invalid'],
+              },
+            }, statusCode: 422),
             _ => jsonBody(<String, Object?>{}, statusCode: 503),
           };
       final client = buildClient();
@@ -395,10 +405,12 @@ void main() {
     });
 
     test('connection problems become a NetworkFailure', () async {
-      adapter.responder = (options, _) => throw DioException.connectionError(
-            requestOptions: options,
-            reason: 'offline',
-          );
+      adapter.responder =
+          (options, _) =>
+              throw DioException.connectionError(
+                requestOptions: options,
+                reason: 'offline',
+              );
       final client = buildClient();
 
       expect(await _failureOf(client.get<void>('/a')), isA<NetworkFailure>());
@@ -406,7 +418,7 @@ void main() {
 
     test('cancelled requests become a CancelledFailure', () async {
       final gate = Completer<ResponseBody>();
-      adapter.responder = (_, __) => gate.future;
+      adapter.responder = (_, _) => gate.future;
       final client = buildClient();
       final cancelToken = CancelToken();
 
@@ -422,7 +434,7 @@ void main() {
 
     test('a custom error mapper is used', () async {
       adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 500);
+          (_, _) => jsonBody(<String, Object?>{}, statusCode: 500);
       final client = ApiClient(
         config: testConfig(),
         httpClientAdapter: adapter,
@@ -433,8 +445,10 @@ void main() {
       final failure = await _failureOf(client.get<void>('/a'));
 
       expect(failure.message, 'teapot');
-      expect(client.mapError(StateError('x'), StackTrace.current).message,
-          'teapot');
+      expect(
+        client.mapError(StateError('x'), StackTrace.current).message,
+        'teapot',
+      );
     });
   });
 
@@ -532,7 +546,7 @@ void main() {
   group('download', () {
     test('downloadBytes returns the raw bytes', () async {
       adapter.responder =
-          (_, __) => ResponseBody.fromBytes(<int>[1, 2, 3, 4], 200);
+          (_, _) => ResponseBody.fromBytes(<int>[1, 2, 3, 4], 200);
       final client = buildClient();
 
       final response = await client.downloadBytes('/files/1');
@@ -543,7 +557,7 @@ void main() {
 
     test('download writes the body to a file', () async {
       adapter.responder =
-          (_, __) => ResponseBody.fromBytes(utf8.encode('hello file'), 200);
+          (_, _) => ResponseBody.fromBytes(utf8.encode('hello file'), 200);
       final directory = Directory.systemTemp.createTempSync('symphony_dl');
       addTearDown(() => directory.deleteSync(recursive: true));
       final savePath = '${directory.path}${Platform.pathSeparator}out.txt';
@@ -557,7 +571,7 @@ void main() {
 
     test('a failed download throws a Failure and removes the file', () async {
       adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 404);
+          (_, _) => jsonBody(<String, Object?>{}, statusCode: 404);
       final directory = Directory.systemTemp.createTempSync('symphony_dl');
       addTearDown(() => directory.deleteSync(recursive: true));
       final savePath = '${directory.path}${Platform.pathSeparator}out.txt';
@@ -587,8 +601,9 @@ void main() {
         (interceptor) => interceptor is SecureLoggingInterceptor,
       );
       final customIndex = types.indexOf(custom);
-      final headersIndex =
-          types.indexWhere((interceptor) => interceptor is HeadersInterceptor);
+      final headersIndex = types.indexWhere(
+        (interceptor) => interceptor is HeadersInterceptor,
+      );
       final authIndex = types.indexOf(client.authTokenInterceptor);
       final retryIndex = types.indexOf(client.retryInterceptor);
 
@@ -629,53 +644,59 @@ void main() {
       expect(loggers(buildClient(config: testConfig(enableLogging: true))), 1);
     });
 
-    test('custom interceptors run before token injection and can be removed',
-        () async {
-      final calls = <String>[];
-      final first = _RecordingInterceptor('first', calls);
-      final second = _RecordingInterceptor('second', calls);
-      final delegate = FakeTokenDelegate(token: 'abc');
-      String? authorizationSeenByCustom;
-      final probe = InterceptorsWrapper(
-        onRequest: (options, handler) {
-          authorizationSeenByCustom =
-              options.headers['Authorization'] as String?;
-          handler.next(options);
-        },
-      );
-      final client = buildClient(
-        delegate: delegate,
-        interceptors: <Interceptor>[first],
-      );
+    test(
+      'custom interceptors run before token injection and can be removed',
+      () async {
+        final calls = <String>[];
+        final first = _RecordingInterceptor('first', calls);
+        final second = _RecordingInterceptor('second', calls);
+        final delegate = FakeTokenDelegate(token: 'abc');
+        String? authorizationSeenByCustom;
+        final probe = InterceptorsWrapper(
+          onRequest: (options, handler) {
+            authorizationSeenByCustom =
+                options.headers['Authorization'] as String?;
+            handler.next(options);
+          },
+        );
+        final client = buildClient(
+          delegate: delegate,
+          interceptors: <Interceptor>[first],
+        );
 
-      client
-        ..addInterceptor(second)
-        ..addInterceptor(second)
-        ..addInterceptor(probe);
-      await client.get<void>('/a');
-      client.removeInterceptor(first);
-      await client.get<void>('/b');
+        client
+          ..addInterceptor(second)
+          ..addInterceptor(second)
+          ..addInterceptor(probe);
+        await client.get<void>('/a');
+        client.removeInterceptor(first);
+        await client.get<void>('/b');
 
-      expect(calls, <String>['first', 'second', 'second']);
-      expect(client.interceptors, <Interceptor>[second, probe]);
-      expect(authorizationSeenByCustom, isNull);
-      expect(adapter.headerOf(0, 'X-Interceptor-first'), 'seen');
-      expect(adapter.headerOf(0, 'Authorization'), 'Bearer abc');
-      final installed = client.dio.interceptors.toList();
-      expect(
-        installed.indexOf(probe),
-        lessThan(installed
-            .whereType<HeadersInterceptor>()
-            .map(installed.indexOf)
-            .single),
-      );
-    });
+        expect(calls, <String>['first', 'second', 'second']);
+        expect(client.interceptors, <Interceptor>[second, probe]);
+        expect(authorizationSeenByCustom, isNull);
+        expect(adapter.headerOf(0, 'X-Interceptor-first'), 'seen');
+        expect(adapter.headerOf(0, 'Authorization'), 'Bearer abc');
+        final installed = client.dio.interceptors.toList();
+        expect(
+          installed.indexOf(probe),
+          lessThan(
+            installed
+                .whereType<HeadersInterceptor>()
+                .map(installed.indexOf)
+                .single,
+          ),
+        );
+      },
+    );
   });
 
   group('close', () {
     test('is idempotent and rejects further calls with a Failure', () async {
-      final client =
-          ApiClient(config: testConfig(), httpClientAdapter: adapter);
+      final client = ApiClient(
+        config: testConfig(),
+        httpClientAdapter: adapter,
+      );
 
       client
         ..close()
@@ -686,14 +707,17 @@ void main() {
       expect(failure, isA<UnexpectedFailure>());
       expect(failure.cause, isA<StateError>());
       expect(adapter.requests, isEmpty);
-      expect(() => client.updateBaseUrl('https://other.example.com'),
-          returnsNormally);
+      expect(
+        () => client.updateBaseUrl('https://other.example.com'),
+        returnsNormally,
+      );
     });
 
     test('never closes an injected adapter but closes its own Dio', () {
-      final injected =
-          ApiClient(config: testConfig(), httpClientAdapter: adapter)
-            ..close(force: true);
+      final injected = ApiClient(
+        config: testConfig(),
+        httpClientAdapter: adapter,
+      )..close(force: true);
       final ownedAdapter = FakeHttpClientAdapter();
       final dio = Dio()..httpClientAdapter = ownedAdapter;
       final owned = ApiClient(config: testConfig(), dio: dio)..close();
@@ -704,24 +728,26 @@ void main() {
       expect(ownedAdapter.closed, isTrue);
     });
 
-    test('an injected Dio keeps its options and receives the configuration',
-        () async {
-      final dio = Dio(BaseOptions(headers: <String, dynamic>{'X-Own': '1'}))
-        ..httpClientAdapter = adapter;
-      final client = ApiClient(
-        config: testConfig(
-          defaultHeaders: const <String, String>{'X-Config': '2'},
-        ),
-        dio: dio,
-      );
-      addTearDown(client.close);
+    test(
+      'an injected Dio keeps its options and receives the configuration',
+      () async {
+        final dio = Dio(BaseOptions(headers: <String, dynamic>{'X-Own': '1'}))
+          ..httpClientAdapter = adapter;
+        final client = ApiClient(
+          config: testConfig(
+            defaultHeaders: const <String, String>{'X-Config': '2'},
+          ),
+          dio: dio,
+        );
+        addTearDown(client.close);
 
-      await client.get<void>('/a');
+        await client.get<void>('/a');
 
-      expect(adapter.headerOf(0, 'X-Own'), '1');
-      expect(adapter.headerOf(0, 'X-Config'), '2');
-      expect(dio.options.baseUrl, testBaseUrl);
-    });
+        expect(adapter.headerOf(0, 'X-Own'), '1');
+        expect(adapter.headerOf(0, 'X-Config'), '2');
+        expect(dio.options.baseUrl, testBaseUrl);
+      },
+    );
   });
 }
 

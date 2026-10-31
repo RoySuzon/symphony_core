@@ -22,8 +22,8 @@ class HeadersInterceptor extends Interceptor {
   HeadersInterceptor(
     Iterable<HeaderProvider> providers, {
     SymphonyLogger? logger,
-  })  : _providers = List<HeaderProvider>.of(providers),
-        _logger = logger ?? SymphonyLogger.disabled();
+  }) : _providers = List<HeaderProvider>.of(providers),
+       _logger = logger ?? SymphonyLogger.disabled();
 
   final List<HeaderProvider> _providers;
   final SymphonyLogger _logger;

@@ -57,72 +57,73 @@ class ReportsPage extends ConsumerWidget {
         value: ref.watch(salesReportProvider),
         loadingMessage: 'Computing the report…',
         onRetry: () => ref.invalidate(salesReportProvider),
-        builder: (context, report) => ListView(
-          children: <Widget>[
-            _KpiGrid(report: report),
-            const SizedBox(height: SymphonySpacing.lg),
-            SectionCard(
-              title: 'Weekly revenue',
-              subtitle: 'Last ${report.weeklyRevenue.length} weeks',
-              icon: Icons.bar_chart_rounded,
-              child: _RevenueChart(report: report),
+        builder:
+            (context, report) => ListView(
+              children: <Widget>[
+                _KpiGrid(report: report),
+                const SizedBox(height: SymphonySpacing.lg),
+                SectionCard(
+                  title: 'Weekly revenue',
+                  subtitle: 'Last ${report.weeklyRevenue.length} weeks',
+                  icon: Icons.bar_chart_rounded,
+                  child: _RevenueChart(report: report),
+                ),
+                const SizedBox(height: SymphonySpacing.lg),
+                ResponsiveBuilder(
+                  builder: (context, sizeClass, constraints) {
+                    final status = SectionCard(
+                      title: 'Orders by status',
+                      icon: Icons.donut_large_rounded,
+                      child: _StatusBreakdown(report: report),
+                    );
+                    final products = SectionCard(
+                      title: 'Best sellers',
+                      icon: Icons.emoji_events_outlined,
+                      child: _TopProducts(report: report),
+                    );
+                    if (sizeClass.isAtLeast(ScreenSizeClass.expanded)) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(child: status),
+                          const SizedBox(width: SymphonySpacing.lg),
+                          Expanded(child: products),
+                        ],
+                      );
+                    }
+                    return Column(
+                      children: <Widget>[
+                        status,
+                        const SizedBox(height: SymphonySpacing.lg),
+                        products,
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: SymphonySpacing.lg),
+                AccessGate(
+                  requirement: const AccessRequirement(
+                    permissions: <String>{'reports.export'},
+                  ),
+                  fallback: const Text(
+                    'Exports require the reports.export permission.',
+                    textAlign: TextAlign.center,
+                  ),
+                  child: SymphonyButton(
+                    label: 'Export orders (CSV)',
+                    icon: Icons.download_outlined,
+                    variant: SymphonyButtonVariant.secondary,
+                    onPressed: () => _export(context, ref),
+                  ),
+                ),
+                const SizedBox(height: SymphonySpacing.sm),
+                Text(
+                  'Generated ${Formatters.dateTime(report.generatedAt)}',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
             ),
-            const SizedBox(height: SymphonySpacing.lg),
-            ResponsiveBuilder(
-              builder: (context, sizeClass, constraints) {
-                final status = SectionCard(
-                  title: 'Orders by status',
-                  icon: Icons.donut_large_rounded,
-                  child: _StatusBreakdown(report: report),
-                );
-                final products = SectionCard(
-                  title: 'Best sellers',
-                  icon: Icons.emoji_events_outlined,
-                  child: _TopProducts(report: report),
-                );
-                if (sizeClass.isAtLeast(ScreenSizeClass.expanded)) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(child: status),
-                      const SizedBox(width: SymphonySpacing.lg),
-                      Expanded(child: products),
-                    ],
-                  );
-                }
-                return Column(
-                  children: <Widget>[
-                    status,
-                    const SizedBox(height: SymphonySpacing.lg),
-                    products,
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: SymphonySpacing.lg),
-            AccessGate(
-              requirement: const AccessRequirement(
-                permissions: <String>{'reports.export'},
-              ),
-              fallback: const Text(
-                'Exports require the reports.export permission.',
-                textAlign: TextAlign.center,
-              ),
-              child: SymphonyButton(
-                label: 'Export orders (CSV)',
-                icon: Icons.download_outlined,
-                variant: SymphonyButtonVariant.secondary,
-                onPressed: () => _export(context, ref),
-              ),
-            ),
-            const SizedBox(height: SymphonySpacing.sm),
-            Text(
-              'Generated ${Formatters.dateTime(report.generatedAt)}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -259,9 +260,11 @@ class _RevenueChart extends StatelessWidget {
                     ),
                     const SizedBox(height: SymphonySpacing.xs),
                     Container(
-                      height: best == 0
-                          ? 4
-                          : 4 + (chartHeight - 4) * week.amountInCents / best,
+                      height:
+                          best == 0
+                              ? 4
+                              : 4 +
+                                  (chartHeight - 4) * week.amountInCents / best,
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary,
                         borderRadius: const BorderRadius.vertical(
@@ -292,8 +295,9 @@ class _StatusBreakdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = report.orderCount == 0 ? 1 : report.orderCount;
-    final entries = report.ordersByStatus.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final entries =
+        report.ordersByStatus.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
     return Column(
       children: <Widget>[
         for (final entry in entries)
@@ -303,8 +307,7 @@ class _StatusBreakdown extends StatelessWidget {
               children: <Widget>[
                 SizedBox(width: 96, child: Text(entry.key.capitalize())),
                 Expanded(
-                  // LinearProgressIndicator.borderRadius does not exist on
-                  // Flutter 3.10: clip instead.
+                  // Rounded bar: clip the indicator.
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(

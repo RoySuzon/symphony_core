@@ -89,9 +89,10 @@ class CurlCommandBuilder {
     }
     for (final file in form.files) {
       final name = file.filename ?? file.field;
-      final reference = _safeFileName.hasMatch(name)
-          ? name
-          : '"${name.replaceAll(r'\', r'\\').replaceAll('"', r'\"')}"';
+      final reference =
+          _safeFileName.hasMatch(name)
+              ? name
+              : '"${name.replaceAll(r'\', r'\\').replaceAll('"', r'\"')}"';
       final type = file.contentType;
       final suffix = type == null || type.isEmpty ? '' : ';type=$type';
       yield '-F ${quote('${file.field}=@$reference$suffix')}';
@@ -108,9 +109,10 @@ class CurlCommandBuilder {
       final fields = _decodeObject(body);
       if (fields != null) {
         for (final entry in fields.entries) {
-          final values = entry.value is List<Object?>
-              ? entry.value as List<Object?>
-              : <Object?>[entry.value];
+          final values =
+              entry.value is List<Object?>
+                  ? entry.value as List<Object?>
+                  : <Object?>[entry.value];
           for (final value in values) {
             yield '--data-urlencode '
                 '${quote('${entry.key}=${_formValue(value)}')}';

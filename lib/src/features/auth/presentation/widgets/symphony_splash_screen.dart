@@ -14,11 +14,8 @@ import '../providers/auth_providers.dart';
 /// Builds a fully custom splash body. [error] is the error thrown by
 /// `SymphonySplashScreen.onInitialize` (or `null` while starting) and
 /// [retry] restarts the start-up sequence.
-typedef SymphonySplashBuilder = Widget Function(
-  BuildContext context,
-  Object? error,
-  VoidCallback retry,
-);
+typedef SymphonySplashBuilder =
+    Widget Function(BuildContext context, Object? error, VoidCallback retry);
 
 /// Start-up screen: runs the application's initialization tasks, restores
 /// the persisted session and stays visible for at least
@@ -270,10 +267,7 @@ class _SplashBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            if (logo != null) ...<Widget>[
-              logo,
-              const SizedBox(height: 24),
-            ],
+            if (logo != null) ...<Widget>[logo, const SizedBox(height: 24)],
             if (title != null)
               Text(
                 title,

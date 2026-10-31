@@ -30,11 +30,11 @@ class SymphonyPasswordStrengthMeter extends StatelessWidget {
   /// English labels used when [labels] does not provide one.
   static const Map<PasswordStrength, String> defaultLabels =
       <PasswordStrength, String>{
-    PasswordStrength.weak: 'Weak',
-    PasswordStrength.fair: 'Fair',
-    PasswordStrength.good: 'Good',
-    PasswordStrength.strong: 'Strong',
-  };
+        PasswordStrength.weak: 'Weak',
+        PasswordStrength.fair: 'Fair',
+        PasswordStrength.good: 'Good',
+        PasswordStrength.strong: 'Strong',
+      };
 
   /// The evaluation to display, or `null` when the password is empty.
   final PasswordStrengthResult? result;
@@ -55,7 +55,8 @@ class SymphonyPasswordStrengthMeter extends StatelessWidget {
 
   /// The colour representing [strength] in [theme].
   static Color colorFor(PasswordStrength strength, ThemeData theme) {
-    final colors = theme.extension<SymphonyColors>() ??
+    final colors =
+        theme.extension<SymphonyColors>() ??
         SymphonyColors.fallback(theme.brightness);
     return switch (strength) {
       PasswordStrength.weak => theme.colorScheme.error,
@@ -73,9 +74,10 @@ class SymphonyPasswordStrengthMeter extends StatelessWidget {
     final theme = Theme.of(context);
     final current = result;
     final activeSegments = current == null ? 0 : current.strength.index + 1;
-    final activeColor = current == null
-        ? theme.colorScheme.outlineVariant
-        : colorFor(current.strength, theme);
+    final activeColor =
+        current == null
+            ? theme.colorScheme.outlineVariant
+            : colorFor(current.strength, theme);
     final label = current == null ? null : labelFor(current.strength);
 
     final segments = Row(
@@ -87,9 +89,10 @@ class SymphonyPasswordStrengthMeter extends StatelessWidget {
               duration: _animationDuration,
               height: 4,
               decoration: BoxDecoration(
-                color: i < activeSegments
-                    ? activeColor
-                    : theme.colorScheme.outlineVariant,
+                color:
+                    i < activeSegments
+                        ? activeColor
+                        : theme.colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

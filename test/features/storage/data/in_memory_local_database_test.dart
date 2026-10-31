@@ -24,9 +24,7 @@ void main() {
         late InMemoryLocalStore<Todo> store;
 
         setUp(() {
-          store = InMemoryLocalStore<Todo>(
-            codec: withCodec ? todoCodec : null,
-          );
+          store = InMemoryLocalStore<Todo>(codec: withCodec ? todoCodec : null);
         });
 
         test('supports CRUD operations', () async {
@@ -44,11 +42,11 @@ void main() {
           final updated = Todo(id: '1', title: milk.title, done: true);
           await store.put('1', updated);
           expect(await store.get('1'), updated);
-          expect(
-            await store.getAll(),
-            <Todo>[updated, bread, call],
-            reason: 'updating a value keeps its position',
-          );
+          expect(await store.getAll(), <Todo>[
+            updated,
+            bread,
+            call,
+          ], reason: 'updating a value keeps its position');
 
           await store.delete('2');
           await store.delete('missing');
@@ -121,9 +119,11 @@ void main() {
       final store = InMemoryLocalStore<Todo>(
         codec: StorageCodec<Todo>.json(
           fromJson: Todo.fromJson,
-          toJson: (todo) => todo.id == '2'
-              ? <String, Object?>{'at': DateTime(2024)}
-              : todo.toJson(),
+          toJson:
+              (todo) =>
+                  todo.id == '2'
+                      ? <String, Object?>{'at': DateTime(2024)}
+                      : todo.toJson(),
         ),
       );
 
@@ -247,9 +247,9 @@ void main() {
         await broken.put('1', milk);
         final errors = <Object>[];
         final subscription = broken.watchAll().listen(
-              (_) {},
-              onError: errors.add,
-            );
+          (_) {},
+          onError: errors.add,
+        );
         addTearDown(() => subscription.cancel());
 
         await settle();
@@ -311,10 +311,7 @@ void main() {
     test('rejects an empty name or a different value type', () {
       database.store<Todo>('todos', todoCodec);
 
-      expect(
-        () => database.store<Todo>('', todoCodec),
-        throwsArgumentError,
-      );
+      expect(() => database.store<Todo>('', todoCodec), throwsArgumentError);
       expect(
         () => database.store<Map<String, Object?>>(
           'todos',
@@ -347,9 +344,9 @@ void main() {
       await todos.put('1', milk);
       var done = false;
       final subscription = todos.watchAll().listen(
-            (_) {},
-            onDone: () => done = true,
-          );
+        (_) {},
+        onDone: () => done = true,
+      );
       addTearDown(() => subscription.cancel());
       await settle();
 

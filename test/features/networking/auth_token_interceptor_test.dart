@@ -14,10 +14,7 @@ void main() {
     adapter = FakeHttpClientAdapter();
   });
 
-  ApiClient buildClient(
-    AuthTokenDelegate? delegate, {
-    SymphonyConfig? config,
-  }) {
+  ApiClient buildClient(AuthTokenDelegate? delegate, {SymphonyConfig? config}) {
     final client = ApiClient(
       config: config ?? testConfig(),
       httpClientAdapter: adapter,
@@ -30,12 +27,12 @@ void main() {
   /// Answers 200 for [validHeader] and 401 for anything else.
   void acceptOnly(String validHeader) {
     adapter.responder =
-        (options, _) => options.headers['Authorization'] == validHeader
-            ? jsonBody(<String, Object?>{'path': options.path})
-            : jsonBody(
-                <String, Object?>{'message': 'Token expired'},
-                statusCode: 401,
-              );
+        (options, _) =>
+            options.headers['Authorization'] == validHeader
+                ? jsonBody(<String, Object?>{'path': options.path})
+                : jsonBody(<String, Object?>{
+                  'message': 'Token expired',
+                }, statusCode: 401);
   }
 
   group('token injection', () {
@@ -61,7 +58,7 @@ void main() {
     test('keeps a header set by the caller and never refreshes it', () async {
       final delegate = FakeTokenDelegate(token: 'abc', refreshedToken: 'new');
       adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
+          (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
       final client = buildClient(delegate);
 
       final failure = await _failureOf(
@@ -80,25 +77,27 @@ void main() {
       expect(delegate.expiredCalls, 0);
     });
 
-    test('is skipped for unauthenticated requests, which never refresh',
-        () async {
-      final delegate = FakeTokenDelegate(token: 'abc', refreshedToken: 'new');
-      adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
-      final client = buildClient(delegate);
+    test(
+      'is skipped for unauthenticated requests, which never refresh',
+      () async {
+        final delegate = FakeTokenDelegate(token: 'abc', refreshedToken: 'new');
+        adapter.responder =
+            (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
+        final client = buildClient(delegate);
 
-      final failure = await _failureOf(
-        client.post<void>(
-          '/auth/login',
-          options: ApiRequestOptions.unauthenticated,
-        ),
-      );
+        final failure = await _failureOf(
+          client.post<void>(
+            '/auth/login',
+            options: ApiRequestOptions.unauthenticated,
+          ),
+        );
 
-      expect(failure, isA<UnauthorizedFailure>());
-      expect(adapter.headerOf(0, 'Authorization'), isNull);
-      expect(delegate.refreshCalls, 0);
-      expect(delegate.expiredCalls, 0);
-    });
+        expect(failure, isA<UnauthorizedFailure>());
+        expect(adapter.headerOf(0, 'Authorization'), isNull);
+        expect(delegate.refreshCalls, 0);
+        expect(delegate.expiredCalls, 0);
+      },
+    );
 
     test('sends no header without a delegate or a token', () async {
       await buildClient(null).get<void>('/a');
@@ -124,41 +123,47 @@ void main() {
   });
 
   group('token refresh', () {
-    test('refreshes once for concurrent 401s and replays every request',
-        () async {
-      final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');
-      acceptOnly('Bearer new');
-      final client = buildClient(delegate);
+    test(
+      'refreshes once for concurrent 401s and replays every request',
+      () async {
+        final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');
+        acceptOnly('Bearer new');
+        final client = buildClient(delegate);
 
-      final responses = await Future.wait(<Future<ApiResponse<Object?>>>[
-        client.get<Object?>('/a'),
-        client.get<Object?>('/b'),
-        client.get<Object?>('/c'),
-      ]);
+        final responses = await Future.wait(<Future<ApiResponse<Object?>>>[
+          client.get<Object?>('/a'),
+          client.get<Object?>('/b'),
+          client.get<Object?>('/c'),
+        ]);
 
-      expect(delegate.refreshCalls, 1);
-      expect(delegate.expiredCalls, 0);
-      expect(
-        responses.map((response) => (response.data! as Map)['path']),
-        <String>['/a', '/b', '/c'],
-      );
-      final sent = adapter.requests
-          .map((request) =>
-              '${request.path} ${request.headers['Authorization']}')
-          .toList();
-      expect(sent.where((line) => line.endsWith('Bearer old')), hasLength(3));
-      expect(sent.where((line) => line.endsWith('Bearer new')), hasLength(3));
-      expect(
-        adapter.requests
-            .where(
-                (request) => request.headers['Authorization'] == 'Bearer new')
-            .every(
-              (request) =>
-                  request.extra[SymphonyRequestExtras.authRetried] == true,
-            ),
-        isTrue,
-      );
-    });
+        expect(delegate.refreshCalls, 1);
+        expect(delegate.expiredCalls, 0);
+        expect(
+          responses.map((response) => (response.data! as Map)['path']),
+          <String>['/a', '/b', '/c'],
+        );
+        final sent =
+            adapter.requests
+                .map(
+                  (request) =>
+                      '${request.path} ${request.headers['Authorization']}',
+                )
+                .toList();
+        expect(sent.where((line) => line.endsWith('Bearer old')), hasLength(3));
+        expect(sent.where((line) => line.endsWith('Bearer new')), hasLength(3));
+        expect(
+          adapter.requests
+              .where(
+                (request) => request.headers['Authorization'] == 'Bearer new',
+              )
+              .every(
+                (request) =>
+                    request.extra[SymphonyRequestExtras.authRetried] == true,
+              ),
+          isTrue,
+        );
+      },
+    );
 
     test('requests started during a refresh wait for the new token', () async {
       final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new')
@@ -175,8 +180,9 @@ void main() {
       delegate.refreshGate!.complete();
       await Future.wait(<Future<Object?>>[first, second]);
 
-      final secondRequests =
-          adapter.requests.where((request) => request.path == '/second');
+      final secondRequests = adapter.requests.where(
+        (request) => request.path == '/second',
+      );
       expect(secondRequests, hasLength(1));
       expect(secondRequests.single.headers['Authorization'], 'Bearer new');
       expect(delegate.refreshCalls, 1);
@@ -243,28 +249,31 @@ void main() {
       expect(delegate.expiredCalls, 1);
     });
 
-    test('a replay rejected again expires the session once without looping',
-        () async {
-      final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');
-      adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
-      final client = buildClient(delegate);
+    test(
+      'a replay rejected again expires the session once without looping',
+      () async {
+        final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');
+        adapter.responder =
+            (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
+        final client = buildClient(delegate);
 
-      final failure = await _failureOf(client.get<void>('/a'));
+        final failure = await _failureOf(client.get<void>('/a'));
 
-      expect(failure, isA<UnauthorizedFailure>());
-      expect(delegate.refreshCalls, 1);
-      expect(delegate.expiredCalls, 1);
-      expect(adapter.requests, hasLength(2));
-      expect(adapter.headerOf(1, 'Authorization'), 'Bearer new');
-    });
+        expect(failure, isA<UnauthorizedFailure>());
+        expect(delegate.refreshCalls, 1);
+        expect(delegate.expiredCalls, 1);
+        expect(adapter.requests, hasLength(2));
+        expect(adapter.headerOf(1, 'Authorization'), 'Bearer new');
+      },
+    );
 
     test('honours refreshOnUnauthorized and custom status codes', () async {
       final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');
-      adapter.responder = (options, _) =>
-          options.headers['Authorization'] == 'Bearer new'
-              ? jsonBody(<String, Object?>{})
-              : jsonBody(<String, Object?>{}, statusCode: 419);
+      adapter.responder =
+          (options, _) =>
+              options.headers['Authorization'] == 'Bearer new'
+                  ? jsonBody(<String, Object?>{})
+                  : jsonBody(<String, Object?>{}, statusCode: 419);
       final client = buildClient(
         delegate,
         config: testConfig(refreshTokenStatusCodes: const <int>{401, 419}),
@@ -288,7 +297,7 @@ void main() {
     test('a request sent without credentials is not refreshed', () async {
       final delegate = FakeTokenDelegate(refreshedToken: 'new');
       adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
+          (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
       final client = buildClient(delegate);
 
       final failure = await _failureOf(client.get<void>('/a'));
@@ -298,57 +307,62 @@ void main() {
       expect(delegate.expiredCalls, 0);
     });
 
-    test('a request issued by the refresh itself cannot deadlock or loop',
-        () async {
-      late ApiClient client;
-      final delegate = FakeTokenDelegate(token: 'old');
-      // A misconfigured refresh call that is not marked unauthenticated.
-      delegate.onRefresh = () async {
-        final response =
-            await client.post<Map<String, dynamic>>('/auth/refresh');
-        return response.data['token'] as String?;
-      };
-      adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
-      client = buildClient(delegate);
+    test(
+      'a request issued by the refresh itself cannot deadlock or loop',
+      () async {
+        late ApiClient client;
+        final delegate = FakeTokenDelegate(token: 'old');
+        // A misconfigured refresh call that is not marked unauthenticated.
+        delegate.onRefresh = () async {
+          final response = await client.post<Map<String, dynamic>>(
+            '/auth/refresh',
+          );
+          return response.data['token'] as String?;
+        };
+        adapter.responder =
+            (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
+        client = buildClient(delegate);
 
-      final failure = await _failureOf(client.get<void>('/a')).timeout(
-        const Duration(seconds: 5),
-      );
+        final failure = await _failureOf(
+          client.get<void>('/a'),
+        ).timeout(const Duration(seconds: 5));
 
-      expect(failure, isA<UnauthorizedFailure>());
-      expect(delegate.refreshCalls, 1);
-      expect(delegate.expiredCalls, 1);
-      expect(
-        adapter.requests.map((request) => request.path),
-        <String>['/a', '/auth/refresh'],
-      );
-    });
+        expect(failure, isA<UnauthorizedFailure>());
+        expect(delegate.refreshCalls, 1);
+        expect(delegate.expiredCalls, 1);
+        expect(adapter.requests.map((request) => request.path), <String>[
+          '/a',
+          '/auth/refresh',
+        ]);
+      },
+    );
 
-    test('requests issued by onSessionExpired never trigger a refresh',
-        () async {
-      late ApiClient client;
-      final delegate = FakeTokenDelegate(token: 'old');
-      delegate.onExpired = () async {
-        delegate.token = 'old';
-        await _failureOf(client.post<void>('/auth/logout'));
-      };
-      adapter.responder =
-          (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
-      client = buildClient(delegate);
+    test(
+      'requests issued by onSessionExpired never trigger a refresh',
+      () async {
+        late ApiClient client;
+        final delegate = FakeTokenDelegate(token: 'old');
+        delegate.onExpired = () async {
+          delegate.token = 'old';
+          await _failureOf(client.post<void>('/auth/logout'));
+        };
+        adapter.responder =
+            (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
+        client = buildClient(delegate);
 
-      final failure = await _failureOf(client.get<void>('/a')).timeout(
-        const Duration(seconds: 5),
-      );
+        final failure = await _failureOf(
+          client.get<void>('/a'),
+        ).timeout(const Duration(seconds: 5));
 
-      expect(failure, isA<UnauthorizedFailure>());
-      expect(delegate.refreshCalls, 1);
-      expect(delegate.expiredCalls, 1);
-      expect(adapter.requests.map((request) => request.path), <String>[
-        '/a',
-        '/auth/logout',
-      ]);
-    });
+        expect(failure, isA<UnauthorizedFailure>());
+        expect(delegate.refreshCalls, 1);
+        expect(delegate.expiredCalls, 1);
+        expect(adapter.requests.map((request) => request.path), <String>[
+          '/a',
+          '/auth/logout',
+        ]);
+      },
+    );
 
     test('a multipart upload is replayed with a fresh body', () async {
       final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new');

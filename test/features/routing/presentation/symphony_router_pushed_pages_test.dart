@@ -10,36 +10,36 @@ import '../routing_test_helpers.dart';
 
 /// Routes whose pages are opened with `GoRouter.push` in these tests.
 List<RouteBase> pushRoutes() => <RouteBase>[
-      GoRoute(path: '/splash', builder: testPage('splash')),
-      GuestRoute(path: '/login', builder: testPage('login')),
-      GoRoute(path: '/unauthorized', builder: testPage('unauthorized')),
-      GoRoute(path: '/catalog', builder: testPage('catalog')),
-      GuardedRoute(path: '/', builder: testPage('home')),
-      GuardedRoute(path: '/orders', builder: testPage('orders')),
+  GoRoute(path: '/splash', builder: testPage('splash')),
+  GuestRoute(path: '/login', builder: testPage('login')),
+  GoRoute(path: '/unauthorized', builder: testPage('unauthorized')),
+  GoRoute(path: '/catalog', builder: testPage('catalog')),
+  GuardedRoute(path: '/', builder: testPage('home')),
+  GuardedRoute(path: '/orders', builder: testPage('orders')),
+  GuardedRoute(
+    path: '/admin',
+    access: const AccessRequirement(roles: <String>{'admin'}),
+    builder: testPage('admin'),
+    routes: <RouteBase>[
+      GoRoute(path: 'users', builder: testPage('admin-users')),
+    ],
+  ),
+  GuardedRoute(
+    path: '/reports',
+    access: const AccessRequirement(permissions: <String>{'reports.read'}),
+    builder: testPage('reports'),
+    routes: <RouteBase>[
       GuardedRoute(
-        path: '/admin',
-        access: const AccessRequirement(roles: <String>{'admin'}),
-        builder: testPage('admin'),
-        routes: <RouteBase>[
-          GoRoute(path: 'users', builder: testPage('admin-users')),
-        ],
+        path: 'export',
+        access: const AccessRequirement(
+          permissions: <String>{'reports.read', 'reports.export'},
+        ),
+        deniedRedirect: '/reports',
+        builder: testPage('reports-export'),
       ),
-      GuardedRoute(
-        path: '/reports',
-        access: const AccessRequirement(permissions: <String>{'reports.read'}),
-        builder: testPage('reports'),
-        routes: <RouteBase>[
-          GuardedRoute(
-            path: 'export',
-            access: const AccessRequirement(
-              permissions: <String>{'reports.read', 'reports.export'},
-            ),
-            deniedRedirect: '/reports',
-            builder: testPage('reports-export'),
-          ),
-        ],
-      ),
-    ];
+    ],
+  ),
+];
 
 /// Finds the test page [name], including pages covered by other routes.
 Finder anyPage(String name) => find.text('page:$name', skipOffstage: false);
@@ -55,8 +55,9 @@ void main() {
   // below the pushed pages when the router refreshes: without the check of
   // the pushed pages, they stayed displayed after the user lost access.
   group('pages opened with push', () {
-    testWidgets('are closed by a sign-out, which remembers them',
-        (tester) async {
+    testWidgets('are closed by a sign-out, which remembers them', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: pushRoutes(),
@@ -78,8 +79,9 @@ void main() {
       expect(findPage('orders'), findsOneWidget);
     });
 
-    testWidgets('are closed when a role of a parent guard is revoked',
-        (tester) async {
+    testWidgets('are closed when a role of a parent guard is revoked', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: pushRoutes(),
@@ -97,8 +99,9 @@ void main() {
       expect(anyPage('orders'), findsNothing);
     });
 
-    testWidgets('are closed when the denied redirect is the page below',
-        (tester) async {
+    testWidgets('are closed when the denied redirect is the page below', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: pushRoutes(),
@@ -143,8 +146,11 @@ void main() {
           GoRoute(path: '/splash', builder: testPage('splash')),
           GuestRoute(path: '/login', builder: testPage('login')),
           ShellRoute(
-            builder: (context, state, child) => Scaffold(
-                appBar: AppBar(title: const Text('shell')), body: child),
+            builder:
+                (context, state, child) => Scaffold(
+                  appBar: AppBar(title: const Text('shell')),
+                  body: child,
+                ),
             routes: <RouteBase>[
               GoRoute(path: '/catalog', builder: testPage('catalog')),
               GuardedRoute(path: '/orders', builder: testPage('orders')),

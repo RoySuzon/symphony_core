@@ -78,8 +78,9 @@ void main() {
     );
   });
 
-  testWidgets('shows the success message when no session is returned',
-      (tester) async {
+  testWidgets('shows the success message when no session is returned', (
+    tester,
+  ) async {
     final container = createAuthContainer(
       adapter: InMemoryAuthAdapter(
         accounts: demoAccounts,

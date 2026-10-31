@@ -45,18 +45,21 @@ void main() {
       expect(await createDelegate().getAccessToken(), isNull);
     });
 
-    test('refreshes, notifies the new session and returns the new token',
-        () async {
-      final renewed = testSession(tokens: testTokens(access: 'access-2'));
-      when(() => repository.refreshTokens())
-          .thenAnswer((_) async => renewed.tokens);
-      when(() => repository.currentSession).thenReturn(renewed);
+    test(
+      'refreshes, notifies the new session and returns the new token',
+      () async {
+        final renewed = testSession(tokens: testTokens(access: 'access-2'));
+        when(
+          () => repository.refreshTokens(),
+        ).thenAnswer((_) async => renewed.tokens);
+        when(() => repository.currentSession).thenReturn(renewed);
 
-      final token = await createDelegate().refreshAccessToken();
+        final token = await createDelegate().refreshAccessToken();
 
-      expect(token, 'access-2');
-      expect(refreshed, <AuthSession>[renewed]);
-    });
+        expect(token, 'access-2');
+        expect(refreshed, <AuthSession>[renewed]);
+      },
+    );
 
     test('returns null when refreshing is impossible', () async {
       when(() => repository.refreshTokens()).thenAnswer((_) async => null);
@@ -82,8 +85,9 @@ void main() {
     });
 
     test('a failing listener does not break the refresh', () async {
-      when(() => repository.refreshTokens())
-          .thenAnswer((_) async => testTokens());
+      when(
+        () => repository.refreshTokens(),
+      ).thenAnswer((_) async => testTokens());
       when(() => repository.currentSession).thenReturn(testSession());
       final delegate = SessionTokenDelegate(
         repository: () => repository,
@@ -108,9 +112,9 @@ void main() {
 
       expect(await delegate.refreshAccessToken(), isNull);
       // The user signed in again before the networking layer gave up.
-      when(() => repository.currentSession).thenReturn(
-        testSession(tokens: testTokens(access: 'new-login')),
-      );
+      when(
+        () => repository.currentSession,
+      ).thenReturn(testSession(tokens: testTokens(access: 'new-login')));
       await delegate.onSessionExpired();
 
       expect(expired, isEmpty);
@@ -146,8 +150,9 @@ void main() {
     test('is wired to the repository and the controller', () async {
       final storage = InMemoryKeyValueStorage();
       final container = createAuthContainer(adapter: adapter, storage: storage);
-      final AuthTokenDelegate delegate =
-          container.read(sessionTokenDelegateProvider);
+      final AuthTokenDelegate delegate = container.read(
+        sessionTokenDelegateProvider,
+      );
       final controller = container.read(authControllerProvider.notifier);
 
       expect(await delegate.getAccessToken(), isNull);

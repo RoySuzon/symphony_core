@@ -71,9 +71,9 @@ class AppPreferencesController extends Notifier<AppPreferences> {
 /// User preferences.
 final appPreferencesProvider =
     NotifierProvider<AppPreferencesController, AppPreferences>(
-  AppPreferencesController.new,
-  name: 'appPreferencesProvider',
-);
+      AppPreferencesController.new,
+      name: 'appPreferencesProvider',
+    );
 
 /// The [ThemeMode] of the app.
 final themeModeProvider = Provider<ThemeMode>(
@@ -86,23 +86,17 @@ final themeModeProvider = Provider<ThemeMode>(
 );
 
 /// The selected server environment.
-final selectedEnvironmentProvider = Provider<ServerEnvironment>(
-  (ref) {
-    final id = ref.watch(appPreferencesProvider.select((p) => p.environmentId));
-    return ServerEnvironment.byId(id) ?? serverEnvironments.first;
-  },
-  name: 'selectedEnvironmentProvider',
-);
+final selectedEnvironmentProvider = Provider<ServerEnvironment>((ref) {
+  final id = ref.watch(appPreferencesProvider.select((p) => p.environmentId));
+  return ServerEnvironment.byId(id) ?? serverEnvironments.first;
+}, name: 'selectedEnvironmentProvider');
 
 /// Result of the last backend health check (refetched when the environment
 /// changes).
-final serverStatusProvider = FutureProvider<Result<ServerStatus>>(
-  (ref) {
-    ref.watch(selectedEnvironmentProvider);
-    return ref.watch(serverStatusRepositoryProvider).check();
-  },
-  name: 'serverStatusProvider',
-);
+final serverStatusProvider = FutureProvider<Result<ServerStatus>>((ref) {
+  ref.watch(selectedEnvironmentProvider);
+  return ref.watch(serverStatusRepositoryProvider).check();
+}, name: 'serverStatusProvider');
 
 /// Developer switch simulating a network outage of the demo backend.
 class DemoOfflineController extends Notifier<bool> {

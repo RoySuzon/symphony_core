@@ -139,12 +139,12 @@ class ApiRequestOptions {
 
   /// The values stored in Dio's `RequestOptions.extra` for this request.
   Map<String, Object?> toExtra() => <String, Object?>{
-        ...extra,
-        SymphonyRequestExtras.requiresAuth: requiresAuth,
-        SymphonyRequestExtras.refreshOnUnauthorized: refreshOnUnauthorized,
-        SymphonyRequestExtras.retry: retry,
-        if (maxRetries != null) SymphonyRequestExtras.maxRetries: maxRetries,
-        SymphonyRequestExtras.inspect: inspect,
-        SymphonyRequestExtras.log: log,
-      };
+    ...extra,
+    SymphonyRequestExtras.requiresAuth: requiresAuth,
+    SymphonyRequestExtras.refreshOnUnauthorized: refreshOnUnauthorized,
+    SymphonyRequestExtras.retry: retry,
+    if (maxRetries != null) SymphonyRequestExtras.maxRetries: maxRetries,
+    SymphonyRequestExtras.inspect: inspect,
+    SymphonyRequestExtras.log: log,
+  };
 }

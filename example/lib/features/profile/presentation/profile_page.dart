@@ -27,8 +27,10 @@ class ProfilePage extends ConsumerWidget {
       );
     }
     final department = JsonReader.asString(user.data['department']);
-    final memberSince =
-        JsonReader.asDateTime(user.data['member_since'], isUtc: true);
+    final memberSince = JsonReader.asDateTime(
+      user.data['member_since'],
+      isUtc: true,
+    );
     final expiresAt = session?.tokens.expiresAt;
     // `ref.watchCanAccess` is the imperative counterpart of AccessGate.
     final canManageUsers = ref.watchCanAccess(
@@ -43,9 +45,10 @@ class ProfilePage extends ConsumerWidget {
         IconButton(
           tooltip: 'Reload the profile (GET /auth/me)',
           icon: const Icon(Icons.refresh),
-          onPressed: () => ref
-              .read(authControllerProvider.notifier)
-              .restoreSession(force: true),
+          onPressed:
+              () => ref
+                  .read(authControllerProvider.notifier)
+                  .restoreSession(force: true),
         ),
       ],
       body: Column(
@@ -136,23 +139,26 @@ class ProfilePage extends ConsumerWidget {
                 _GateExample(
                   rule: 'predicate: department == "Operations"',
                   requirement: AccessRequirement(
-                    predicate: (context) =>
-                        context.attributes['department'] == 'Operations',
+                    predicate:
+                        (context) =>
+                            context.attributes['department'] == 'Operations',
                   ),
                 ),
                 const SizedBox(height: SymphonySpacing.md),
                 SymphonyButton(
-                  label: canManageUsers
-                      ? 'Manage users'
-                      : 'Manage users (needs users.manage)',
+                  label:
+                      canManageUsers
+                          ? 'Manage users'
+                          : 'Manage users (needs users.manage)',
                   icon: Icons.manage_accounts_outlined,
                   variant: SymphonyButtonVariant.outlined,
-                  onPressed: canManageUsers
-                      ? () => SymphonySnackbar.info(
+                  onPressed:
+                      canManageUsers
+                          ? () => SymphonySnackbar.info(
                             context,
                             'ref.watchCanAccess enabled this button.',
                           )
-                      : null,
+                          : null,
                 ),
               ],
             ),
@@ -176,14 +182,16 @@ class ProfilePage extends ConsumerWidget {
                 if (expiresAt != null)
                   InfoRow(
                     label: 'Access token expires',
-                    value: '${Formatters.dateTime(expiresAt)} '
+                    value:
+                        '${Formatters.dateTime(expiresAt)} '
                         '(${Formatters.countdown(expiresAt.difference(DateTime.now()))})',
                   ),
                 InfoRow(
                   label: 'Refresh token',
-                  value: session?.tokens.canRefresh ?? false
-                      ? 'Available (masked)'
-                      : 'None',
+                  value:
+                      session?.tokens.canRefresh ?? false
+                          ? 'Available (masked)'
+                          : 'None',
                 ),
               ],
             ),

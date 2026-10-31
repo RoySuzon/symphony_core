@@ -156,8 +156,9 @@ void main() {
 
     test('errors (not only exceptions) are wrapped too', () async {
       when(() => plugin.readAll()).thenThrow(UnsupportedError('platform'));
-      when(() => plugin.containsKey(key: any(named: 'key')))
-          .thenThrow(MissingPluginException());
+      when(
+        () => plugin.containsKey(key: any(named: 'key')),
+      ).thenThrow(MissingPluginException());
 
       await expectLater(
         storage.readAll(),
@@ -180,10 +181,12 @@ void main() {
     });
 
     test('delete and clear failures carry their own codes', () async {
-      when(() => plugin.delete(key: any(named: 'key')))
-          .thenThrow(platformError);
-      when(() => plugin.readAll())
-          .thenAnswer((_) async => <String, String>{'app.a': '1'});
+      when(
+        () => plugin.delete(key: any(named: 'key')),
+      ).thenThrow(platformError);
+      when(
+        () => plugin.readAll(),
+      ).thenAnswer((_) async => <String, String>{'app.a': '1'});
       when(() => plugin.deleteAll()).thenThrow(platformError);
 
       await expectLater(

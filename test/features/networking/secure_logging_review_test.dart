@@ -15,9 +15,9 @@ class _LoginRequest {
   final String password;
 
   Map<String, Object?> toJson() => <String, Object?>{
-        'email': email,
-        'password': password,
-      };
+    'email': email,
+    'password': password,
+  };
 
   @override
   String toString() => 'LoginRequest(email: $email, password: $password)';
@@ -73,15 +73,17 @@ void main() {
     final inspector = ApiInspector();
     addTearDown(inspector.dispose);
     var calls = 0;
-    adapter.responder = (_, __) => calls++ == 0
-        ? jsonBody(<String, Object?>{}, statusCode: 503)
-        : jsonBody(
-            <String, Object?>{'ok': true},
-            // Some APIs hand out tokens in the same header.
-            headers: <String, List<String>>{
-              'x-auth': <String>['response-header-secret'],
-            },
-          );
+    adapter.responder =
+        (_, _) =>
+            calls++ == 0
+                ? jsonBody(<String, Object?>{}, statusCode: 503)
+                : jsonBody(
+                  <String, Object?>{'ok': true},
+                  // Some APIs hand out tokens in the same header.
+                  headers: <String, List<String>>{
+                    'x-auth': <String>['response-header-secret'],
+                  },
+                );
     final client = ApiClient(
       config: testConfig(
         enableLogging: true,

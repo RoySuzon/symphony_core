@@ -29,9 +29,10 @@ class AuthTokens {
       refreshToken: json['refreshToken'] as String?,
       tokenType: json['tokenType'] as String?,
       expiresAt: expiresAt is String ? DateTime.tryParse(expiresAt) : null,
-      extra: extra is Map
-          ? Map<String, Object?>.from(extra)
-          : const <String, Object?>{},
+      extra:
+          extra is Map
+              ? Map<String, Object?>.from(extra)
+              : const <String, Object?>{},
     );
   }
 
@@ -65,12 +66,12 @@ class AuthTokens {
 
   /// Serializes the tokens (for secure storage only).
   Map<String, Object?> toJson() => <String, Object?>{
-        'accessToken': accessToken,
-        if (refreshToken != null) 'refreshToken': refreshToken,
-        if (tokenType != null) 'tokenType': tokenType,
-        if (expiresAt != null) 'expiresAt': expiresAt!.toIso8601String(),
-        if (extra.isNotEmpty) 'extra': extra,
-      };
+    'accessToken': accessToken,
+    if (refreshToken != null) 'refreshToken': refreshToken,
+    if (tokenType != null) 'tokenType': tokenType,
+    if (expiresAt != null) 'expiresAt': expiresAt!.toIso8601String(),
+    if (extra.isNotEmpty) 'extra': extra,
+  };
 
   /// Returns a copy with the given fields replaced.
   AuthTokens copyWith({
@@ -105,7 +106,8 @@ class AuthTokens {
 
   /// Never prints the token values.
   @override
-  String toString() => 'AuthTokens(accessToken: ***, '
+  String toString() =>
+      'AuthTokens(accessToken: ***, '
       'refreshToken: ${refreshToken == null ? 'null' : '***'}, '
       'expiresAt: $expiresAt)';
 }

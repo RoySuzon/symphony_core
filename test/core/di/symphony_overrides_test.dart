@@ -10,8 +10,8 @@ import 'package:symphony_core/src/features/storage/presentation/storage_provider
 
 import '../helpers/core_test_helpers.dart';
 
-/// Matches the error thrown when reading an unconfigured provider. Riverpod 3
-/// wraps it in a `ProviderException`, Riverpod 2 rethrows it as is.
+/// Matches the error thrown when reading an unconfigured provider (Riverpod
+/// wraps it in a `ProviderException`, so only its description is matched).
 Matcher throwsMentioning(String text) =>
     throwsA(predicate((Object? error) => '$error'.contains(text)));
 
@@ -62,9 +62,10 @@ void main() {
       ProviderContainer(
         overrides: symphonyOverrides(
           config: testConfig,
-          authAdapterBuilder: (ref) => FakeAuthAdapter(
-            user: AuthUser(id: ref.watch(symphonyConfigProvider).appName),
-          ),
+          authAdapterBuilder:
+              (ref) => FakeAuthAdapter(
+                user: AuthUser(id: ref.watch(symphonyConfigProvider).appName),
+              ),
           overrides: [sessionTokenDelegateProvider.overrideWithValue(delegate)],
         ),
       ),

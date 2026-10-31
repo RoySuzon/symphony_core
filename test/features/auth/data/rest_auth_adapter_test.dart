@@ -113,7 +113,8 @@ void main() {
     });
 
     test('posts the credentials as an unauthenticated request', () async {
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'access_token': 'a1',
             'refresh_token': 'r1',
             'user': <String, Object?>{'id': 1},
@@ -130,17 +131,19 @@ void main() {
     });
 
     test('uses the loginBody hook', () async {
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'token': 'a1',
             'user': <String, Object?>{'id': 1},
           };
 
       await createAdapter(
-        loginBody: (c) => <String, Object?>{
-          'username': c['email'],
-          'pwd': c['password'],
-          'device': 'mobile',
-        },
+        loginBody:
+            (c) => <String, Object?>{
+              'username': c['email'],
+              'pwd': c['password'],
+              'device': 'mobile',
+            },
       ).login(credentials);
 
       expect(captured().single.data, <String, Object?>{
@@ -151,7 +154,8 @@ void main() {
     });
 
     test('maps a flat OAuth-like response', () async {
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'access_token': 'a1',
             'refresh_token': 'r1',
             'token_type': 'Bearer',
@@ -184,7 +188,8 @@ void main() {
     });
 
     test('maps a nested data envelope with a single role string', () async {
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'data': <String, Object?>{
               'accessToken': 'a1',
               'refreshToken': 'r1',
@@ -206,10 +211,10 @@ void main() {
       expect(session.user?.id, 'u-1');
       expect(session.user?.displayName, 'Grace Hopper');
       expect(session.user?.roles, <String>{'editor'});
-      expect(
-        session.user?.permissions,
-        <String>{'orders.read', 'orders.write'},
-      );
+      expect(session.user?.permissions, <String>{
+        'orders.read',
+        'orders.write',
+      });
     });
 
     test('reads the expiry of a JWT access token', () async {
@@ -217,7 +222,8 @@ void main() {
       final payload = base64Url
           .encode(utf8.encode(jsonEncode(<String, Object?>{'exp': exp})))
           .replaceAll('=', '');
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'token': 'header.$payload.signature',
             'user': <String, Object?>{'id': 1},
           };
@@ -228,7 +234,8 @@ void main() {
     });
 
     test('supports custom mappings', () async {
-      responses['/auth/login'] = () => <String, Object?>{
+      responses['/auth/login'] =
+          () => <String, Object?>{
             'result': <String, Object?>{
               'jwt': 'a1',
               'account': <String, Object?>{
@@ -259,10 +266,11 @@ void main() {
       responses['/auth/login'] = () => <String, Object?>{'k': 'custom'};
 
       final session = await createAdapter(
-        parseSession: (data) => AuthSession(
-          tokens: AuthTokens(accessToken: '${(data! as Map)['k']}'),
-          user: plainUser,
-        ),
+        parseSession:
+            (data) => AuthSession(
+              tokens: AuthTokens(accessToken: '${(data! as Map)['k']}'),
+              user: plainUser,
+            ),
       ).login(credentials);
 
       expect(session.tokens.accessToken, 'custom');
@@ -290,8 +298,8 @@ void main() {
 
       await expectLater(
         createAdapter(
-          parseSession: (_) =>
-              const AuthSession(tokens: AuthTokens(accessToken: ' ')),
+          parseSession:
+              (_) => const AuthSession(tokens: AuthTokens(accessToken: ' ')),
         ).login(credentials),
         throwsA(isA<AuthFailure>()),
       );
@@ -307,9 +315,9 @@ void main() {
       responses['/auth/login'] = () => 'not json';
 
       await expectLater(
-        createAdapter(parseSession: (data) => throw TypeError()).login(
-          credentials,
-        ),
+        createAdapter(
+          parseSession: (data) => throw TypeError(),
+        ).login(credentials),
         throwsA(isA<ParsingFailure>()),
       );
     });
@@ -336,33 +344,37 @@ void main() {
       );
     });
 
-    test('loads the user with the new token when the response has none',
-        () async {
-      responses['/auth/login'] = () => <String, Object?>{'token': 'a1'};
-      responses['/me'] = () => <String, Object?>{
-            'data': <String, Object?>{'id': 5, 'email': 'me@example.com'},
-          };
+    test(
+      'loads the user with the new token when the response has none',
+      () async {
+        responses['/auth/login'] = () => <String, Object?>{'token': 'a1'};
+        responses['/me'] =
+            () => <String, Object?>{
+              'data': <String, Object?>{'id': 5, 'email': 'me@example.com'},
+            };
 
-      final session = await createAdapter().login(credentials);
+        final session = await createAdapter().login(credentials);
 
-      expect(session.user?.id, '5');
-      final requests = captured();
-      expect(requests, hasLength(2));
-      final me = requests.last;
-      expect(me.path, '/me');
-      expect(me.method, 'GET');
-      expect(me.options.requiresAuth, isFalse);
-      expect(me.options.refreshOnUnauthorized, isFalse);
-      expect(me.options.headers, <String, String>{
-        'Authorization': 'Bearer a1',
-      });
-    });
+        expect(session.user?.id, '5');
+        final requests = captured();
+        expect(requests, hasLength(2));
+        final me = requests.last;
+        expect(me.path, '/me');
+        expect(me.method, 'GET');
+        expect(me.options.requiresAuth, isFalse);
+        expect(me.options.refreshOnUnauthorized, isFalse);
+        expect(me.options.headers, <String, String>{
+          'Authorization': 'Bearer a1',
+        });
+      },
+    );
 
     test('skips the user lookup when disabled', () async {
       responses['/auth/login'] = () => <String, Object?>{'token': 'a1'};
 
-      final session =
-          await createAdapter(fetchUserAfterLogin: false).login(credentials);
+      final session = await createAdapter(
+        fetchUserAfterLogin: false,
+      ).login(credentials);
 
       expect(session.user, isNull);
       expect(captured(), hasLength(1));
@@ -383,7 +395,8 @@ void main() {
     final current = testTokens();
 
     test('posts the refresh token as an unauthenticated request', () async {
-      responses['/auth/refresh'] = () => <String, Object?>{
+      responses['/auth/refresh'] =
+          () => <String, Object?>{
             'access_token': 'a2',
             'refresh_token': 'r2',
             'expires_in': '60',
@@ -415,13 +428,13 @@ void main() {
 
       await createAdapter(refreshTokenField: 'refresh').refresh(current);
       await createAdapter(
-        refreshBody: (t) => <String, Object?>{
-          'grant_type': 'refresh_token',
-          'token': t.refreshToken,
-        },
-        refreshHeaders: (t) => <String, String>{
-          'X-Refresh-Token': t.refreshToken!,
-        },
+        refreshBody:
+            (t) => <String, Object?>{
+              'grant_type': 'refresh_token',
+              'token': t.refreshToken,
+            },
+        refreshHeaders:
+            (t) => <String, String>{'X-Refresh-Token': t.refreshToken!},
       ).refresh(current);
 
       final requests = captured();
@@ -430,10 +443,9 @@ void main() {
         'grant_type': 'refresh_token',
         'token': 'refresh-1',
       });
-      expect(
-        requests[1].options.headers,
-        <String, String>{'X-Refresh-Token': 'refresh-1'},
-      );
+      expect(requests[1].options.headers, <String, String>{
+        'X-Refresh-Token': 'refresh-1',
+      });
       expect(requests[1].options.requiresAuth, isFalse);
     });
 
@@ -441,9 +453,9 @@ void main() {
       responses['/auth/refresh'] = () => <String, Object?>{'x': 'a2'};
 
       final tokens = await createAdapter(
-        parseRefresh: (data, previous) => previous.copyWith(
-          accessToken: '${(data! as Map)['x']}',
-        ),
+        parseRefresh:
+            (data, previous) =>
+                previous.copyWith(accessToken: '${(data! as Map)['x']}'),
       ).refresh(current);
 
       expect(tokens.accessToken, 'a2');
@@ -452,8 +464,9 @@ void main() {
 
     test('is unauthorized without endpoint or refresh token', () async {
       await expectLater(
-        createAdapter(endpoints: const RestAuthEndpoints(login: '/login'))
-            .refresh(current),
+        createAdapter(
+          endpoints: const RestAuthEndpoints(login: '/login'),
+        ).refresh(current),
         throwsA(isA<UnauthorizedFailure>()),
       );
       await expectLater(
@@ -485,9 +498,8 @@ void main() {
       responses['/auth/logout'] = () => null;
 
       await createAdapter(
-        logoutBody: (s) => <String, Object?>{
-          'refresh_token': s.tokens.refreshToken,
-        },
+        logoutBody:
+            (s) => <String, Object?>{'refresh_token': s.tokens.refreshToken},
       ).logout(testSession());
 
       final request = captured().single;
@@ -495,10 +507,9 @@ void main() {
       expect(request.method, 'POST');
       expect(request.data, <String, Object?>{'refresh_token': 'refresh-1'});
       expect(request.options.refreshOnUnauthorized, isFalse);
-      expect(
-        request.options.headers,
-        <String, String>{'Authorization': 'Bearer access-1'},
-      );
+      expect(request.options.headers, <String, String>{
+        'Authorization': 'Bearer access-1',
+      });
     });
 
     test('uses the configured header name and prefix', () async {
@@ -509,15 +520,15 @@ void main() {
 
       await createAdapter().logout(testSession());
 
-      expect(
-        captured().single.options.headers,
-        <String, String>{'X-Auth': 'access-1'},
-      );
+      expect(captured().single.options.headers, <String, String>{
+        'X-Auth': 'access-1',
+      });
     });
 
     test('does nothing without a logout endpoint', () async {
-      await createAdapter(endpoints: const RestAuthEndpoints(login: '/login'))
-          .logout(testSession());
+      await createAdapter(
+        endpoints: const RestAuthEndpoints(login: '/login'),
+      ).logout(testSession());
 
       verifyNever(
         () => client.request<Object?>(
@@ -532,7 +543,8 @@ void main() {
 
   group('fetchCurrentUser', () {
     test('uses a regular authenticated request', () async {
-      responses['/me'] = () => <String, Object?>{
+      responses['/me'] =
+          () => <String, Object?>{
             'id': 9,
             'username': 'grace',
             'avatar_url': 'https://example.com/a.png',
@@ -555,8 +567,9 @@ void main() {
     test('uses the parseUser hook', () async {
       responses['/me'] = () => <String, Object?>{'whatever': true};
 
-      final user = await createAdapter(parseUser: (_) => plainUser)
-          .fetchCurrentUser(testSession());
+      final user = await createAdapter(
+        parseUser: (_) => plainUser,
+      ).fetchCurrentUser(testSession());
 
       expect(user, plainUser);
     });
@@ -578,7 +591,8 @@ void main() {
     });
 
     test('returns a session when the response contains tokens', () async {
-      responses['/auth/register'] = () => <String, Object?>{
+      responses['/auth/register'] =
+          () => <String, Object?>{
             'access_token': 'a1',
             'user': <String, Object?>{'id': 3, 'email': 'new@example.com'},
           };
@@ -594,9 +608,8 @@ void main() {
     });
 
     test('returns null when the user is not signed in', () async {
-      responses['/auth/register'] = () => <String, Object?>{
-            'message': 'Check your inbox',
-          };
+      responses['/auth/register'] =
+          () => <String, Object?>{'message': 'Check your inbox'};
 
       expect(await createAdapter().register(data), isNull);
     });
@@ -634,23 +647,25 @@ void main() {
       'password': 'newSecret1',
     });
 
-    test('sends unauthenticated requests to the configured endpoints',
-        () async {
-      responses['/auth/password/forgot'] = () => null;
-      responses['/auth/password/reset'] = () => null;
-      final adapter = createAdapter();
+    test(
+      'sends unauthenticated requests to the configured endpoints',
+      () async {
+        responses['/auth/password/forgot'] = () => null;
+        responses['/auth/password/reset'] = () => null;
+        final adapter = createAdapter();
 
-      await adapter.requestPasswordReset(request);
-      await adapter.confirmPasswordReset(confirm);
+        await adapter.requestPasswordReset(request);
+        await adapter.confirmPasswordReset(confirm);
 
-      final requests = captured();
-      expect(requests[0].path, '/auth/password/forgot');
-      expect(requests[0].data, request.fields);
-      expect(requests[0].options.requiresAuth, isFalse);
-      expect(requests[1].path, '/auth/password/reset');
-      expect(requests[1].data, confirm.fields);
-      expect(requests[1].options.requiresAuth, isFalse);
-    });
+        final requests = captured();
+        expect(requests[0].path, '/auth/password/forgot');
+        expect(requests[0].data, request.fields);
+        expect(requests[0].options.requiresAuth, isFalse);
+        expect(requests[1].path, '/auth/password/reset');
+        expect(requests[1].data, confirm.fields);
+        expect(requests[1].options.requiresAuth, isFalse);
+      },
+    );
 
     test('is unsupported without endpoints', () async {
       final adapter = createAdapter(
@@ -671,8 +686,9 @@ void main() {
 
   test('derives the supported features from the endpoints', () {
     final full = createAdapter();
-    final minimal =
-        createAdapter(endpoints: const RestAuthEndpoints(login: '/login'));
+    final minimal = createAdapter(
+      endpoints: const RestAuthEndpoints(login: '/login'),
+    );
 
     expect(full.supportsRegistration, isTrue);
     expect(full.supportsPasswordRecovery, isTrue);
@@ -698,7 +714,8 @@ void main() {
 
   test('resolves the ApiClient lazily', () async {
     var resolutions = 0;
-    responses['/auth/login'] = () => <String, Object?>{
+    responses['/auth/login'] =
+        () => <String, Object?>{
           'token': 'a1',
           'user': <String, Object?>{'id': 1},
         };

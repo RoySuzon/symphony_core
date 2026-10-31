@@ -19,13 +19,14 @@ extension UploadFileMultipartConversion on UploadFile {
     // `Headers.jsonMimeType` is a media type instance available in every
     // supported Dio version; `change` derives the requested type from it
     // without depending on `package:http_parser` directly.
-    final mediaType = parsed == null
-        ? null
-        : Headers.jsonMimeType.change(
-            mimeType: parsed.$1,
-            parameters: parsed.$2,
-            clearParameters: true,
-          );
+    final mediaType =
+        parsed == null
+            ? null
+            : Headers.jsonMimeType.change(
+              mimeType: parsed.$1,
+              parameters: parsed.$2,
+              clearParameters: true,
+            );
 
     final content = bytes;
     if (content != null) {

@@ -71,9 +71,9 @@ class SymphonyTextField extends StatelessWidget {
     this.helperMaxLines = 2,
     this.restorationId,
   }) : assert(
-          initialValue == null || controller == null,
-          'Provide either a controller or an initialValue, not both.',
-        );
+         initialValue == null || controller == null,
+         'Provide either a controller or an initialValue, not both.',
+       );
 
   /// Controls the text. Do not combine with [initialValue].
   final TextEditingController? controller;

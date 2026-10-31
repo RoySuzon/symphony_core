@@ -54,56 +54,49 @@ class SecureKeyValueStorage extends KeyValueStorage {
   String _prefixed(String key) => '$keyPrefix$key';
 
   @override
-  Future<String?> read(String key) => _guard(
-        StorageFailureCodes.read,
-        () => storage.read(key: _prefixed(key)),
-      );
+  Future<String?> read(String key) =>
+      _guard(StorageFailureCodes.read, () => storage.read(key: _prefixed(key)));
 
   @override
   Future<void> write(String key, String value) => _guard(
-        StorageFailureCodes.write,
-        () => storage.write(key: _prefixed(key), value: value),
-      );
+    StorageFailureCodes.write,
+    () => storage.write(key: _prefixed(key), value: value),
+  );
 
   @override
   Future<void> delete(String key) => _guard(
-        StorageFailureCodes.delete,
-        () => storage.delete(key: _prefixed(key)),
-      );
+    StorageFailureCodes.delete,
+    () => storage.delete(key: _prefixed(key)),
+  );
 
   @override
   Future<bool> containsKey(String key) => _guard(
-        StorageFailureCodes.read,
-        () => storage.containsKey(key: _prefixed(key)),
-      );
+    StorageFailureCodes.read,
+    () => storage.containsKey(key: _prefixed(key)),
+  );
 
   @override
-  Future<Map<String, String>> readAll() => _guard(
-        StorageFailureCodes.read,
-        () async {
-          final entries = await storage.readAll();
-          return Map<String, String>.unmodifiable(<String, String>{
-            for (final entry in entries.entries)
-              if (entry.key.startsWith(keyPrefix))
-                entry.key.substring(keyPrefix.length): entry.value,
-          });
-        },
-      );
+  Future<Map<String, String>> readAll() =>
+      _guard(StorageFailureCodes.read, () async {
+        final entries = await storage.readAll();
+        return Map<String, String>.unmodifiable(<String, String>{
+          for (final entry in entries.entries)
+            if (entry.key.startsWith(keyPrefix))
+              entry.key.substring(keyPrefix.length): entry.value,
+        });
+      });
 
   @override
-  Future<void> clear() => _guard(
-        StorageFailureCodes.clear,
-        () async {
-          if (keyPrefix.isEmpty) {
-            await storage.deleteAll();
-            return;
-          }
-          final entries = await storage.readAll();
-          for (final key in entries.keys) {
-            if (key.startsWith(keyPrefix)) await storage.delete(key: key);
-          }
-        },
-      );
+  Future<void> clear() => _guard(StorageFailureCodes.clear, () async {
+    if (keyPrefix.isEmpty) {
+      await storage.deleteAll();
+      return;
+    }
+    final entries = await storage.readAll();
+    for (final key in entries.keys) {
+      if (key.startsWith(keyPrefix)) await storage.delete(key: key);
+    }
+  });
 
   Future<T> _guard<T>(String code, Future<T> Function() body) =>
       guardStorage(body, message: failureMessage, code: code);

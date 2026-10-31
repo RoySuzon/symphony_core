@@ -92,15 +92,17 @@ class SymphonyRouteErrorScreen extends StatelessWidget {
           Text(
             locationLabel,
             textAlign: TextAlign.center,
-            style: theme.textTheme.labelMedium
-                ?.copyWith(color: scheme.onSurfaceVariant),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             failedLocation,
             textAlign: TextAlign.center,
-            style:
-                theme.textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontFamily: 'monospace',
+            ),
           ),
         ],
         if (showErrorDetails && details != null) ...<Widget>[

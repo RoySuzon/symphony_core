@@ -9,8 +9,7 @@ import 'package:flutter/foundation.dart';
 /// after the next frame, so listeners always end up with the displayed level.
 ///
 /// Use it to open submenus programmatically, to keep an app bar title in sync
-/// or to let the platform back button close submenus (the example uses
-/// `PopScope`, available in the Flutter versions that provide it):
+/// or to let the platform back button close submenus with `PopScope`:
 ///
 /// ```dart
 /// final controller = SymphonyDashboardController();
@@ -34,7 +33,7 @@ class SymphonyDashboardController extends ChangeNotifier {
   /// Creates a controller, optionally starting inside the submenu described
   /// by [initialPath].
   SymphonyDashboardController({List<String> initialPath = const <String>[]})
-      : _path = List<String>.unmodifiable(initialPath);
+    : _path = List<String>.unmodifiable(initialPath);
 
   List<String> _path;
 

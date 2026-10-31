@@ -32,7 +32,8 @@ class ResilientKeyValueStorage extends KeyValueStorage {
   bool get isUsingFallback => _usingFallback;
 
   Future<T> _run<T>(
-      Future<T> Function(KeyValueStorage storage) operation) async {
+    Future<T> Function(KeyValueStorage storage) operation,
+  ) async {
     if (!_usingFallback) {
       try {
         return await operation(primary);

@@ -84,9 +84,9 @@ void main() {
   test('propagates the errors of the decorated storage unchanged', () async {
     final failing = MockKeyValueStorage();
     const failure = StorageFailure('boom', code: StorageFailureCodes.read);
-    when(() => failing.read(any())).thenAnswer(
-      (_) => Future<String?>.error(failure),
-    );
+    when(
+      () => failing.read(any()),
+    ).thenAnswer((_) => Future<String?>.error(failure));
 
     await expectLater(
       PrefixedKeyValueStorage(failing, 'p.').read('key'),

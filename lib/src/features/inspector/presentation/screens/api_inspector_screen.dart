@@ -34,12 +34,13 @@ Future<void> showApiInspector(
   final resolved = inspector ?? InspectorScopeBinding.read(context);
   return Navigator.of(context, rootNavigator: rootNavigator).push<void>(
     MaterialPageRoute<void>(
-      builder: (_) => ApiInspectorScreen(
-        inspector: resolved,
-        title: title,
-        strings: strings,
-        curlBuilder: curlBuilder,
-      ),
+      builder:
+          (_) => ApiInspectorScreen(
+            inspector: resolved,
+            title: title,
+            strings: strings,
+            curlBuilder: curlBuilder,
+          ),
     ),
   );
 }
@@ -83,20 +84,24 @@ class ApiInspectorScreen extends StatefulWidget {
   final VoidCallback? onClose;
 
   /// Key of the search field.
-  static const Key searchFieldKey =
-      ValueKey<String>('symphony.inspector.search');
+  static const Key searchFieldKey = ValueKey<String>(
+    'symphony.inspector.search',
+  );
 
   /// Key of the clear-all button.
-  static const Key clearAllButtonKey =
-      ValueKey<String>('symphony.inspector.clearAll');
+  static const Key clearAllButtonKey = ValueKey<String>(
+    'symphony.inspector.clearAll',
+  );
 
   /// Key of the pause/resume recording button.
-  static const Key recordingButtonKey =
-      ValueKey<String>('symphony.inspector.recording');
+  static const Key recordingButtonKey = ValueKey<String>(
+    'symphony.inspector.recording',
+  );
 
   /// Key of the close button (present when [onClose] is set).
-  static const Key closeButtonKey =
-      ValueKey<String>('symphony.inspector.close');
+  static const Key closeButtonKey = ValueKey<String>(
+    'symphony.inspector.close',
+  );
 
   /// Key of the chip filtering on [status].
   static Key filterChipKey(ApiCallStatusFilter status) =>
@@ -107,8 +112,9 @@ class ApiInspectorScreen extends StatefulWidget {
 }
 
 class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
-  late final InspectorScopeBinding _binding =
-      InspectorScopeBinding(onChanged: _onBindingChanged);
+  late final InspectorScopeBinding _binding = InspectorScopeBinding(
+    onChanged: _onBindingChanged,
+  );
   final TextEditingController _searchController = TextEditingController();
   ApiCallFilter _filter = ApiCallFilter.none;
 
@@ -160,20 +166,21 @@ class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       useRootNavigator: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(strings.clearAllTitle),
-        content: Text(strings.clearAllMessage),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(strings.cancel),
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text(strings.clearAllTitle),
+            content: Text(strings.clearAllMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(strings.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(strings.clearAllConfirm),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(strings.clearAllConfirm),
-          ),
-        ],
-      ),
     );
     if (confirmed ?? false) inspector.clear();
   }
@@ -181,12 +188,13 @@ class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
   void _openDetails(ApiInspector inspector, ApiCallRecord record) {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => ApiCallDetailScreen(
-          record: record,
-          inspector: inspector,
-          strings: widget.strings,
-          curlBuilder: widget.curlBuilder,
-        ),
+        builder:
+            (_) => ApiCallDetailScreen(
+              record: record,
+              inspector: inspector,
+              strings: widget.strings,
+              curlBuilder: widget.curlBuilder,
+            ),
       ),
     );
   }
@@ -239,9 +247,10 @@ class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
                   ? Icons.pause_circle_outline
                   : Icons.play_circle_outline,
             ),
-            tooltip: inspector.enabled
-                ? strings.pauseRecordingTooltip
-                : strings.resumeRecordingTooltip,
+            tooltip:
+                inspector.enabled
+                    ? strings.pauseRecordingTooltip
+                    : strings.resumeRecordingTooltip,
             onPressed: () => inspector.enabled = !inspector.enabled,
           ),
           IconButton(
@@ -273,9 +282,7 @@ class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
               strings: strings,
               onResume: () => inspector.enabled = true,
             ),
-          Expanded(
-            child: _buildList(context, inspector, calls, visible),
-          ),
+          Expanded(child: _buildList(context, inspector, calls, visible)),
         ],
       ),
     );
@@ -306,7 +313,7 @@ class _ApiInspectorScreenState extends State<ApiInspectorScreen> {
     }
     return ListView.separated(
       itemCount: visible.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final record = visible[index];
         return ApiCallTile(
@@ -337,34 +344,36 @@ class _SearchField extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
-        builder: (context, value, _) => TextField(
-          key: ApiInspectorScreen.searchFieldKey,
-          controller: controller,
-          onChanged: onChanged,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            isDense: true,
-            hintText: strings.searchHint,
-            prefixIcon: const Icon(Icons.search),
-            suffixIcon: value.text.isEmpty
-                ? null
-                : IconButton(
-                    icon: const Icon(Icons.clear),
-                    tooltip: strings.clearSearchTooltip,
-                    onPressed: () {
-                      controller.clear();
-                      onChanged('');
-                    },
-                  ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
+        builder:
+            (context, value, _) => TextField(
+              key: ApiInspectorScreen.searchFieldKey,
+              controller: controller,
+              onChanged: onChanged,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: strings.searchHint,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon:
+                    value.text.isEmpty
+                        ? null
+                        : IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: strings.clearSearchTooltip,
+                          onPressed: () {
+                            controller.clear();
+                            onChanged('');
+                          },
+                        ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -436,7 +445,9 @@ class _PausedBanner extends StatelessWidget {
               ),
             ),
             TextButton(
-                onPressed: onResume, child: Text(strings.resumeRecording)),
+              onPressed: onResume,
+              child: Text(strings.resumeRecording),
+            ),
           ],
         ),
       ),

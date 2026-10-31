@@ -136,9 +136,10 @@ class AppNavigationDrawer extends ConsumerWidget {
       ref,
       items: ref.watch(dashboardModulesProvider),
     );
-    final entries = DashboardMenu.flatten(visible)
-        .where((item) => item.isLeaf && item.hasAction)
-        .toList();
+    final entries =
+        DashboardMenu.flatten(
+          visible,
+        ).where((item) => item.isLeaf && item.hasAction).toList();
     final theme = Theme.of(context);
     return Drawer(
       child: SafeArea(
@@ -165,9 +166,10 @@ class AppNavigationDrawer extends ConsumerWidget {
             const Divider(),
             for (final item in entries)
               ListTile(
-                leading: item.icon == null
-                    ? const Icon(Icons.extension_outlined)
-                    : Icon(item.icon),
+                leading:
+                    item.icon == null
+                        ? const Icon(Icons.extension_outlined)
+                        : Icon(item.icon),
                 title: Text(item.label),
                 subtitle:
                     item.description == null ? null : Text(item.description!),

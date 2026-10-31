@@ -38,8 +38,9 @@ class ApiCallDetailScreen extends StatelessWidget {
   final CurlCommandBuilder curlBuilder;
 
   /// Key of the app bar button copying the call as cURL.
-  static const Key copyCurlButtonKey =
-      ValueKey<String>('symphony.inspector.detail.copyCurl');
+  static const Key copyCurlButtonKey = ValueKey<String>(
+    'symphony.inspector.detail.copyCurl',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +48,9 @@ class ApiCallDetailScreen extends StatelessWidget {
     if (source == null) return _buildContent(context, record);
     return ListenableBuilder(
       listenable: source,
-      builder: (context, _) =>
-          _buildContent(context, source.byId(record.id) ?? record),
+      builder:
+          (context, _) =>
+              _buildContent(context, source.byId(record.id) ?? record),
     );
   }
 
@@ -76,8 +78,8 @@ class ApiCallDetailScreen extends StatelessWidget {
               key: copyCurlButtonKey,
               icon: const Icon(Icons.terminal),
               tooltip: strings.copyCurlTooltip,
-              onPressed: () =>
-                  _copyText(context, curlBuilder.build(call), strings),
+              onPressed:
+                  () => _copyText(context, curlBuilder.build(call), strings),
             ),
           ],
           bottom: TabBar(
@@ -351,9 +353,9 @@ class _InfoRow extends StatelessWidget {
           Expanded(
             child: SelectableText(
               value,
-              style: inspectorMonospaceStyle(context).copyWith(
-                color: valueColor,
-              ),
+              style: inspectorMonospaceStyle(
+                context,
+              ).copyWith(color: valueColor),
             ),
           ),
           if (copyable)
@@ -395,9 +397,7 @@ class _CodeSection extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Expanded(
-                child: Text(title, style: theme.textTheme.titleSmall),
-              ),
+              Expanded(child: Text(title, style: theme.textTheme.titleSmall)),
               if (!empty)
                 IconButton(
                   visualDensity: VisualDensity.compact,
@@ -416,15 +416,19 @@ class _CodeSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: scheme.outlineVariant),
             ),
-            child: empty
-                ? Text(
-                    placeholder ?? '',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
+            child:
+                empty
+                    ? Text(
+                      placeholder ?? '',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    )
+                    : SelectableText(
+                      text,
+                      style: inspectorMonospaceStyle(context),
                     ),
-                  )
-                : SelectableText(text, style: inspectorMonospaceStyle(context)),
           ),
         ],
       ),
@@ -477,9 +481,9 @@ class _ErrorCard extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8),
             child: SelectableText(
               error,
-              style: inspectorMonospaceStyle(context).copyWith(
-                color: scheme.onErrorContainer,
-              ),
+              style: inspectorMonospaceStyle(
+                context,
+              ).copyWith(color: scheme.onErrorContainer),
             ),
           ),
         ],

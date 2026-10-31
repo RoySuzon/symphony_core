@@ -78,12 +78,14 @@ class SymphonyInspectorOverlay extends StatefulWidget {
   final EdgeInsets margin;
 
   /// Key of the floating button.
-  static const Key buttonKey =
-      ValueKey<String>('symphony.inspector.overlay.button');
+  static const Key buttonKey = ValueKey<String>(
+    'symphony.inspector.overlay.button',
+  );
 
   /// Key of the full-screen inspector panel.
-  static const Key panelKey =
-      ValueKey<String>('symphony.inspector.overlay.panel');
+  static const Key panelKey = ValueKey<String>(
+    'symphony.inspector.overlay.panel',
+  );
 
   @override
   State<SymphonyInspectorOverlay> createState() =>
@@ -119,8 +121,10 @@ class _SymphonyInspectorOverlayState extends State<SymphonyInspectorOverlay>
     );
     _panelOpacity = _panelController.drive(CurveTween(curve: Curves.easeOut));
     _panelOffset = _panelController.drive(
-      Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
-          .chain(CurveTween(curve: Curves.easeOutCubic)),
+      Tween<Offset>(
+        begin: const Offset(0, 0.04),
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
     );
     // Registered before the application's router (built below this widget),
     // so the back button reaches the open panel first.
@@ -243,18 +247,20 @@ class _SymphonyInspectorOverlayState extends State<SymphonyInspectorOverlay>
                 child: HeroControllerScope.none(
                   child: Navigator(
                     key: _navigatorKey,
-                    onGenerateRoute: (settings) => MaterialPageRoute<void>(
-                      settings: settings,
-                      // Without an explicit inspector the screen follows
-                      // apiInspectorProvider itself (even if it is rebuilt).
-                      builder: (_) => ApiInspectorScreen(
-                        inspector: widget.inspector,
-                        title: widget.title,
-                        strings: widget.strings,
-                        curlBuilder: widget.curlBuilder,
-                        onClose: _closePanel,
-                      ),
-                    ),
+                    onGenerateRoute:
+                        (settings) => MaterialPageRoute<void>(
+                          settings: settings,
+                          // Without an explicit inspector the screen follows
+                          // apiInspectorProvider itself (even if it is rebuilt).
+                          builder:
+                              (_) => ApiInspectorScreen(
+                                inspector: widget.inspector,
+                                title: widget.title,
+                                strings: widget.strings,
+                                curlBuilder: widget.curlBuilder,
+                                onClose: _closePanel,
+                              ),
+                        ),
                   ),
                 ),
               ),
@@ -275,24 +281,32 @@ class _SymphonyInspectorOverlayState extends State<SymphonyInspectorOverlay>
           return Stack(
             children: <Widget>[
               AnimatedPositioned(
-                duration: _dragging
-                    ? Duration.zero
-                    : const Duration(milliseconds: 200),
+                duration:
+                    _dragging
+                        ? Duration.zero
+                        : const Duration(milliseconds: 200),
                 curve: Curves.easeOutCubic,
                 left: left,
                 top: top,
                 child: GestureDetector(
                   onPanStart: (_) => setState(() => _dragging = true),
-                  onPanUpdate: (details) => setState(
-                    () => _alignment = _moved(_alignment, details.delta, area),
-                  ),
-                  onPanEnd: (_) => setState(() {
-                    _dragging = false;
-                    _alignment = Alignment(
-                      _alignment.x < 0 ? -1.0 : 1.0,
-                      _alignment.y,
-                    );
-                  }),
+                  onPanUpdate:
+                      (details) => setState(
+                        () =>
+                            _alignment = _moved(
+                              _alignment,
+                              details.delta,
+                              area,
+                            ),
+                      ),
+                  onPanEnd:
+                      (_) => setState(() {
+                        _dragging = false;
+                        _alignment = Alignment(
+                          _alignment.x < 0 ? -1.0 : 1.0,
+                          _alignment.y,
+                        );
+                      }),
                   onPanCancel: () => setState(() => _dragging = false),
                   child: _InspectorButton(
                     key: SymphonyInspectorOverlay.buttonKey,
@@ -413,8 +427,11 @@ class _InspectorButton extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Icon(Icons.http,
-                              size: size * 0.42, color: foreground),
+                          Icon(
+                            Icons.http,
+                            size: size * 0.42,
+                            color: foreground,
+                          ),
                           Text(
                             _count(total),
                             maxLines: 1,
@@ -436,8 +453,10 @@ class _InspectorButton extends StatelessWidget {
                     right: -4,
                     child: IgnorePointer(
                       child: Container(
-                        constraints:
-                            const BoxConstraints(minWidth: 20, minHeight: 20),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(

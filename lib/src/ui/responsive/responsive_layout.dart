@@ -44,11 +44,11 @@ class ResponsiveLayout extends StatelessWidget {
 
   /// The layout displayed for [sizeClass], applying the fallback rules.
   Widget layoutFor(ScreenSizeClass sizeClass) => switch (sizeClass) {
-        ScreenSizeClass.compact => compact,
-        ScreenSizeClass.medium => medium ?? compact,
-        ScreenSizeClass.expanded => expanded ?? medium ?? compact,
-        ScreenSizeClass.large => large ?? expanded ?? medium ?? compact,
-      };
+    ScreenSizeClass.compact => compact,
+    ScreenSizeClass.medium => medium ?? compact,
+    ScreenSizeClass.expanded => expanded ?? medium ?? compact,
+    ScreenSizeClass.large => large ?? expanded ?? medium ?? compact,
+  };
 
   @override
   Widget build(BuildContext context) {

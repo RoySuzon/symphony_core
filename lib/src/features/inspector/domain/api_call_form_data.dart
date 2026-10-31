@@ -145,11 +145,11 @@ class ApiCallFormData {
 
   @override
   int get hashCode => Object.hash(
-        Object.hashAll(<Object>[
-          for (final field in fields) Object.hash(field.key, field.value),
-        ]),
-        Object.hashAll(files),
-      );
+    Object.hashAll(<Object>[
+      for (final field in fields) Object.hash(field.key, field.value),
+    ]),
+    Object.hashAll(files),
+  );
 
   @override
   String toString() =>

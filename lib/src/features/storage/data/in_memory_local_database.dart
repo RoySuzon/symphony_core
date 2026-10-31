@@ -120,13 +120,13 @@ class InMemoryLocalStore<T> extends LocalStore<T> {
 
   @override
   Stream<List<T>> watchAll() => _watchers.watch((controller) {
-        _markUsed();
-        try {
-          _watchers.start(controller, _snapshot());
-        } on Object catch (error, stackTrace) {
-          _watchers.startWithError(controller, error, stackTrace);
-        }
-      });
+    _markUsed();
+    try {
+      _watchers.start(controller, _snapshot());
+    } on Object catch (error, stackTrace) {
+      _watchers.startWithError(controller, error, stackTrace);
+    }
+  });
 
   /// Stores of a database open it on first use (see [LocalDatabase]).
   void _markUsed() {

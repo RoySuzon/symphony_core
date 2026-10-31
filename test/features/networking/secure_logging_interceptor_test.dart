@@ -35,7 +35,8 @@ void main() {
   }
 
   test('logs requests and responses with secrets redacted', () async {
-    adapter.responder = (_, __) => jsonBody(
+    adapter.responder =
+        (_, _) => jsonBody(
           <String, Object?>{
             'access_token': 'at-secret-1',
             'user': <String, Object?>{'name': 'Jane Doe'},
@@ -117,66 +118,76 @@ void main() {
     );
 
     final text = sink.text;
-    expect(text,
-        contains('FormData(fields: [password], files: [file: avatar.png'));
+    expect(
+      text,
+      contains('FormData(fields: [password], files: [file: avatar.png'),
+    );
     expect(text, contains('[binary 5 bytes]'));
     expect(text, contains('grant_type'));
     expect(text, isNot(contains('multipart-secret')));
     expect(text, isNot(contains('form-secret')));
   });
 
-  test('logs errors with their type and status, never their raw cause',
-      () async {
-    adapter.responder = (options, _) {
-      if (options.path == '/offline') {
-        throw const FakeSocketException('cause-secret');
-      }
-      return jsonBody(
-        <String, Object?>{'message': 'Expired', 'token': 'error-secret'},
-        statusCode: 401,
+  test(
+    'logs errors with their type and status, never their raw cause',
+    () async {
+      adapter.responder = (options, _) {
+        if (options.path == '/offline') {
+          throw const FakeSocketException('cause-secret');
+        }
+        return jsonBody(<String, Object?>{
+          'message': 'Expired',
+          'token': 'error-secret',
+        }, statusCode: 401);
+      };
+      final client = buildClient();
+
+      await expectLater(
+        client.get<void>('/expired'),
+        throwsA(isA<UnauthorizedFailure>()),
       );
-    };
-    final client = buildClient();
+      await expectLater(
+        client.get<void>('/offline'),
+        throwsA(isA<NetworkFailure>()),
+      );
 
-    await expectLater(
-      client.get<void>('/expired'),
-      throwsA(isA<UnauthorizedFailure>()),
-    );
-    await expectLater(
-      client.get<void>('/offline'),
-      throwsA(isA<NetworkFailure>()),
-    );
-
-    final errors =
-        sink.entries.where((entry) => entry.level == LogLevel.warning);
-    final text = errors.map((entry) => entry.message).join('\n');
-    expect(text, contains('<-- 401 GET https://api.example.com/expired'));
-    expect(text, contains('[badResponse]'));
-    expect(text, contains('Expired'));
-    expect(text, contains('<-- ERROR GET https://api.example.com/offline'));
-    expect(text, contains('[unknown]'));
-    expect(text, contains('cause: FakeSocketException'));
-    expect(sink.text, isNot(contains('error-secret')));
-    expect(sink.text, isNot(contains('cause-secret')));
-  });
+      final errors = sink.entries.where(
+        (entry) => entry.level == LogLevel.warning,
+      );
+      final text = errors.map((entry) => entry.message).join('\n');
+      expect(text, contains('<-- 401 GET https://api.example.com/expired'));
+      expect(text, contains('[badResponse]'));
+      expect(text, contains('Expired'));
+      expect(text, contains('<-- ERROR GET https://api.example.com/offline'));
+      expect(text, contains('[unknown]'));
+      expect(text, contains('cause: FakeSocketException'));
+      expect(sink.text, isNot(contains('error-secret')));
+      expect(sink.text, isNot(contains('cause-secret')));
+    },
+  );
 
   test('masks credentials embedded in URLs', () async {
     final client = buildClient();
 
     client.updateBaseUrl('https://jane:url-secret@api.example.com');
-    await client.get<void>('/a', queryParameters: <String, dynamic>{
-      'access_token': 'query-token-secret',
-    });
+    await client.get<void>(
+      '/a',
+      queryParameters: <String, dynamic>{'access_token': 'query-token-secret'},
+    );
 
     expect(
-        sink.text, contains('https://***@api.example.com/a?access_token=***'));
+      sink.text,
+      contains('https://***@api.example.com/a?access_token=***'),
+    );
     expect(sink.text, isNot(contains('url-secret')));
     expect(sink.text, isNot(contains('query-token-secret')));
   });
 
   test('truncates long bodies', () async {
-    adapter.responder = (_, __) => jsonBody(
-        <String, Object?>{'text': List<String>.filled(200, 'x').join()});
+    adapter.responder =
+        (_, _) => jsonBody(<String, Object?>{
+          'text': List<String>.filled(200, 'x').join(),
+        });
     final client = buildClient(maxLoggedBodyLength: 50);
 
     await client.get<void>('/long');
@@ -197,9 +208,10 @@ void main() {
 
   test('marks retries in the request line', () async {
     final interceptor = SecureLoggingInterceptor(logger: capturingLogger(sink));
-    final dio = Dio(BaseOptions(baseUrl: testBaseUrl))
-      ..httpClientAdapter = adapter
-      ..interceptors.add(interceptor);
+    final dio =
+        Dio(BaseOptions(baseUrl: testBaseUrl))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(interceptor);
 
     await dio.get<dynamic>(
       '/again',

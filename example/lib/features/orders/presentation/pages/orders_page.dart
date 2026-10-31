@@ -24,8 +24,9 @@ class OrdersPage extends ConsumerStatefulWidget {
 
 class _OrdersPageState extends ConsumerState<OrdersPage> {
   final Debouncer _debouncer = Debouncer(const Duration(milliseconds: 350));
-  late final TextEditingController _search =
-      TextEditingController(text: ref.read(orderFilterProvider).query);
+  late final TextEditingController _search = TextEditingController(
+    text: ref.read(orderFilterProvider).query,
+  );
 
   @override
   void dispose() {
@@ -85,31 +86,36 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               loadingMessage: 'Loading orders…',
               onRetry: () => ref.invalidate(ordersProvider),
               isEmpty: (items) => items.isEmpty,
-              emptyBuilder: (context) => SymphonyEmptyState(
-                icon: Icons.receipt_long_outlined,
-                title: 'No orders found',
-                message: filter.isActive
-                    ? 'No order matches these filters.'
-                    : 'New orders will appear here.',
-                actionLabel: filter.isActive ? 'Clear filters' : null,
-                onAction: filter.isActive ? _clearFilters : null,
-              ),
-              builder: (context, items) => RefreshIndicator(
-                onRefresh: _refresh,
-                child: ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: items.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: SymphonySpacing.sm),
-                  itemBuilder: (context, index) {
-                    final order = items[index];
-                    return OrderTile(
-                      order: order,
-                      onTap: () => context.go(AppRoutes.orderDetail(order.id)),
-                    );
-                  },
-                ),
-              ),
+              emptyBuilder:
+                  (context) => SymphonyEmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: 'No orders found',
+                    message:
+                        filter.isActive
+                            ? 'No order matches these filters.'
+                            : 'New orders will appear here.',
+                    actionLabel: filter.isActive ? 'Clear filters' : null,
+                    onAction: filter.isActive ? _clearFilters : null,
+                  ),
+              builder:
+                  (context, items) => RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: items.length,
+                      separatorBuilder:
+                          (context, index) =>
+                              const SizedBox(height: SymphonySpacing.sm),
+                      itemBuilder: (context, index) {
+                        final order = items[index];
+                        return OrderTile(
+                          order: order,
+                          onTap:
+                              () => context.go(AppRoutes.orderDetail(order.id)),
+                        );
+                      },
+                    ),
+                  ),
             ),
           ),
         ],

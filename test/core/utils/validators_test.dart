@@ -44,8 +44,11 @@ void main() {
         'ada @example.com',
         'ada@@example.com',
       ]) {
-        expect(validator(value), 'Enter a valid e-mail address.',
-            reason: value);
+        expect(
+          validator(value),
+          'Enter a valid e-mail address.',
+          reason: value,
+        );
       }
       expect(SymphonyValidators.email(message: 'Bad')('x'), 'Bad');
     });
@@ -59,8 +62,11 @@ void main() {
         'ada@example..com',
         'ada@example.com.',
       ]) {
-        expect(validator(value), 'Enter a valid e-mail address.',
-            reason: value);
+        expect(
+          validator(value),
+          'Enter a valid e-mail address.',
+          reason: value,
+        );
       }
     });
 

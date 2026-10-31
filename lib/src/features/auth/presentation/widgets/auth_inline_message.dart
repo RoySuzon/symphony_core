@@ -36,20 +36,20 @@ class AuthInlineMessage extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final (Color background, Color foreground, IconData icon) = switch (tone) {
       AuthMessageTone.error => (
-          colors.errorContainer,
-          colors.onErrorContainer,
-          Icons.error_outline,
-        ),
+        colors.errorContainer,
+        colors.onErrorContainer,
+        Icons.error_outline,
+      ),
       AuthMessageTone.success => (
-          colors.primaryContainer,
-          colors.onPrimaryContainer,
-          Icons.check_circle_outline,
-        ),
+        colors.primaryContainer,
+        colors.onPrimaryContainer,
+        Icons.check_circle_outline,
+      ),
       AuthMessageTone.info => (
-          colors.secondaryContainer,
-          colors.onSecondaryContainer,
-          Icons.info_outline,
-        ),
+        colors.secondaryContainer,
+        colors.onSecondaryContainer,
+        Icons.info_outline,
+      ),
     };
     return Semantics(
       liveRegion: true,
@@ -68,10 +68,9 @@ class AuthInlineMessage extends StatelessWidget {
               Expanded(
                 child: Text(
                   message,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: foreground),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: foreground),
                 ),
               ),
             ],

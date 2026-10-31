@@ -19,8 +19,9 @@ const List<String> _allModules = <String>[
 ];
 
 void main() {
-  testWidgets('starts on the splash screen, then shows the login screen',
-      (tester) async {
+  testWidgets('starts on the splash screen, then shows the login screen', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
 
     expect(find.byType(SymphonySplashScreen), findsOneWidget);
@@ -39,8 +40,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('admin signs in with the form and sees every module',
-      (tester) async {
+  testWidgets('admin signs in with the form and sees every module', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
 
     await app.signInAndOpenDashboard('admin@example.com');
@@ -53,10 +55,7 @@ void main() {
     await app.pumpUntilFound(find.text('3'));
     expect(
       app.requests,
-      containsAllInOrder(<String>[
-        'POST /auth/login 200',
-        'GET /orders 200',
-      ]),
+      containsAllInOrder(<String>['POST /auth/login 200', 'GET /orders 200']),
     );
 
     // Admin is a group: it opens a nested submenu.
@@ -90,8 +89,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('staff opening /admin lands on the unauthorized screen',
-      (tester) async {
+  testWidgets('staff opening /admin lands on the unauthorized screen', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
 
     await app.signInAndOpenDashboard('staff@example.com');
@@ -110,8 +110,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('a signed-out deep link goes to the login screen and resumes',
-      (tester) async {
+  testWidgets('a signed-out deep link goes to the login screen and resumes', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.pumpUntilFound(find.byType(SymphonyLoginScreen));
 
@@ -126,8 +127,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('orders load from the demo backend and open their details',
-      (tester) async {
+  testWidgets('orders load from the demo backend and open their details', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.signInAndOpenDashboard('staff@example.com');
 
@@ -157,8 +159,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('expired tokens refresh silently; a revoked session signs out',
-      (tester) async {
+  testWidgets('expired tokens refresh silently; a revoked session signs out', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.signInAndOpenDashboard('staff@example.com');
     await tester.tap(find.text('Orders'));
@@ -198,8 +201,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('signing out from the settings returns to the login screen',
-      (tester) async {
+  testWidgets('signing out from the settings returns to the login screen', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.signInAndOpenDashboard('viewer@example.com');
 

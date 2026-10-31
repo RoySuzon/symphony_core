@@ -131,8 +131,8 @@ class InMemoryAuthAdapter extends AuthAdapter {
     this.invalidResetCodeMessage = 'The code is invalid or has expired.',
     DateTime Function()? clock,
     Random? random,
-  })  : _clock = clock ?? DateTime.now,
-        _random = random ?? Random() {
+  }) : _clock = clock ?? DateTime.now,
+       _random = random ?? Random() {
     for (final account in accounts) {
       _accounts[_normalize(account.identifier)] = account;
     }
@@ -419,10 +419,14 @@ class InMemoryAuthAdapter extends AuthAdapter {
     final expiresAt = now.add(tokenLifetime);
     return AuthTokens(
       accessToken: _encode('access', account.identifier, expiresAt),
-      refreshToken: refreshEnabled
-          ? _encode(
-              'refresh', account.identifier, now.add(refreshTokenLifetime))
-          : null,
+      refreshToken:
+          refreshEnabled
+              ? _encode(
+                'refresh',
+                account.identifier,
+                now.add(refreshTokenLifetime),
+              )
+              : null,
       tokenType: 'Bearer',
       expiresAt: expiresAt,
     );
@@ -475,7 +479,8 @@ class InMemoryAuthAdapter extends AuthAdapter {
     return account;
   }
 
-  String _randomHex(int bytes) => List<String>.generate(
+  String _randomHex(int bytes) =>
+      List<String>.generate(
         bytes,
         (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),
       ).join();

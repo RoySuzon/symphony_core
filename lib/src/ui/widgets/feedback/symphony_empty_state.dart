@@ -62,37 +62,37 @@ class SymphonyEmptyState extends StatelessWidget {
     final description = message;
     final label = actionLabel;
     final callback = onAction;
-    final Widget? effectiveAction = action ??
+    final Widget? effectiveAction =
+        action ??
         (label != null && callback != null
             ? SymphonyButton(
-                label: label,
-                icon: actionIcon,
-                onPressed: callback,
-                variant: compact
-                    ? SymphonyButtonVariant.text
-                    : SymphonyButtonVariant.primary,
-                size: compact
-                    ? SymphonyButtonSize.small
-                    : SymphonyButtonSize.medium,
-              )
+              label: label,
+              icon: actionIcon,
+              onPressed: callback,
+              variant:
+                  compact
+                      ? SymphonyButtonVariant.text
+                      : SymphonyButtonVariant.primary,
+              size:
+                  compact
+                      ? SymphonyButtonSize.small
+                      : SymphonyButtonSize.medium,
+            )
             : null);
 
-    final Widget illustration = compact
-        ? Icon(icon, size: 32, color: scheme.onSurfaceVariant)
-        : DecoratedBox(
-            decoration: BoxDecoration(
-              color: scheme.secondaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Padding(
-              padding: SymphonySpacing.allLg,
-              child: Icon(
-                icon,
-                size: 40,
-                color: scheme.onSecondaryContainer,
+    final Widget illustration =
+        compact
+            ? Icon(icon, size: 32, color: scheme.onSurfaceVariant)
+            : DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.secondaryContainer,
+                shape: BoxShape.circle,
               ),
-            ),
-          );
+              child: Padding(
+                padding: SymphonySpacing.allLg,
+                child: Icon(icon, size: 40, color: scheme.onSecondaryContainer),
+              ),
+            );
 
     return Center(
       child: SingleChildScrollView(
@@ -111,9 +111,10 @@ class SymphonyEmptyState extends StatelessWidget {
                 child: Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: compact
-                      ? theme.textTheme.titleSmall
-                      : theme.textTheme.titleLarge,
+                  style:
+                      compact
+                          ? theme.textTheme.titleSmall
+                          : theme.textTheme.titleLarge,
                 ),
               ),
               if (description != null && description.isNotEmpty) ...<Widget>[

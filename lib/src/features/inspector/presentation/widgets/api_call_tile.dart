@@ -56,10 +56,10 @@ class ApiCallMethodBadge extends StatelessWidget {
         method.toUpperCase(),
         textAlign: TextAlign.center,
         maxLines: 1,
-        style: inspectorMonospaceStyle(context, fontSize: 11.5).copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+        style: inspectorMonospaceStyle(
+          context,
+          fontSize: 11.5,
+        ).copyWith(color: color, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -123,10 +123,10 @@ class ApiCallStatusBadge extends StatelessWidget {
       child: Text(
         code == null ? strings.failedStatus : '$code',
         maxLines: 1,
-        style: inspectorMonospaceStyle(context, fontSize: 12).copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+        style: inspectorMonospaceStyle(
+          context,
+          fontSize: 12,
+        ).copyWith(color: color, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -156,8 +156,9 @@ class ApiCallTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final secondary =
-        theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
+    final secondary = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
     final details = <String>[
       record.timeLabel,
       record.durationLabel ?? strings.pendingStatus,
@@ -216,8 +217,9 @@ class ApiCallTile extends StatelessWidget {
                       error,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: scheme.error),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.error,
+                      ),
                     ),
                   ],
                 ],

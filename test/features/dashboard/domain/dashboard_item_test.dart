@@ -112,8 +112,11 @@ void main() {
 
     test('routeLocation merges query parameters into the route', () {
       expect(
-        const DashboardItem(id: 'a', label: 'A', route: '/orders')
-            .routeLocation,
+        const DashboardItem(
+          id: 'a',
+          label: 'A',
+          route: '/orders',
+        ).routeLocation,
         '/orders',
       );
       expect(
@@ -153,8 +156,11 @@ void main() {
         'DashboardItem(sales, label: Sales, children: 1, disabled)',
       );
       expect(
-        const DashboardItem(id: 'o', label: 'O', routeName: 'orders')
-            .toString(),
+        const DashboardItem(
+          id: 'o',
+          label: 'O',
+          routeName: 'orders',
+        ).toString(),
         'DashboardItem(o, label: O, destination: orders)',
       );
     });

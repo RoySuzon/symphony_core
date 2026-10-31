@@ -59,12 +59,13 @@ void main() {
           items: sampleMenu,
           submenuPresentation: DashboardSubmenuPresentation.page,
           onItemSelected: (item) => selected.add(item.id),
-          tileBuilder: (context, item, onTap) => Material(
-            child: InkWell(
-              onTap: onTap,
-              child: Center(child: Text('Tile ${item.label}')),
-            ),
-          ),
+          tileBuilder:
+              (context, item, onTap) => Material(
+                child: InkWell(
+                  onTap: onTap,
+                  child: Center(child: Text('Tile ${item.label}')),
+                ),
+              ),
         ),
       );
 
@@ -75,8 +76,9 @@ void main() {
       expect(selected, <String>['sales.invoices']);
     });
 
-    testWidgets('pages refresh their tiles when the access changes',
-        (tester) async {
+    testWidgets('pages refresh their tiles when the access changes', (
+      tester,
+    ) async {
       final container = createAccessContainer(access: salesUser);
       await pumpInApp(
         tester,
@@ -103,8 +105,9 @@ void main() {
       expect(tile('Monthly'), findsOneWidget);
     });
 
-    testWidgets('pages close when their group becomes unavailable',
-        (tester) async {
+    testWidgets('pages close when their group becomes unavailable', (
+      tester,
+    ) async {
       final container = createAccessContainer(access: salesUser);
       await pumpInApp(
         tester,
@@ -134,8 +137,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('closes every page whose ancestor group disappears',
-        (tester) async {
+    testWidgets('closes every page whose ancestor group disappears', (
+      tester,
+    ) async {
       final container = createAccessContainer(access: salesUser);
       await pumpInApp(
         tester,
@@ -155,8 +159,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('pages follow the explicit configuration of the dashboard',
-        (tester) async {
+    testWidgets('pages follow the explicit configuration of the dashboard', (
+      tester,
+    ) async {
       final access = ValueNotifier<AccessContext>(salesUser);
       addTearDown(access.dispose);
       await pumpInApp(
@@ -164,11 +169,12 @@ void main() {
         createAccessContainer(),
         ValueListenableBuilder<AccessContext>(
           valueListenable: access,
-          builder: (context, value, child) => SymphonyDashboard(
-            items: sampleMenu,
-            accessContext: value,
-            submenuPresentation: DashboardSubmenuPresentation.page,
-          ),
+          builder:
+              (context, value, child) => SymphonyDashboard(
+                items: sampleMenu,
+                accessContext: value,
+                submenuPresentation: DashboardSubmenuPresentation.page,
+              ),
         ),
       );
       await tapAndSettle(tester, tile('Sales'));
@@ -243,8 +249,9 @@ void main() {
       expect(allPages, findsOneWidget);
     });
 
-    testWidgets('shows the empty state when it cannot close itself',
-        (tester) async {
+    testWidgets('shows the empty state when it cannot close itself', (
+      tester,
+    ) async {
       final container = createAccessContainer(access: salesUser);
       await pumpPage(
         tester,

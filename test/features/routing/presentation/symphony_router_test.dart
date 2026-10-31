@@ -9,52 +9,53 @@ import '../routing_test_helpers.dart';
 
 /// Application routes shared by the tests.
 List<RouteBase> appRoutes({GoRouterRedirect? ordersRedirect}) => <RouteBase>[
-      GoRoute(path: '/splash', builder: testPage('splash')),
-      GuestRoute(path: '/login', builder: testPage('login')),
-      GuestRoute(path: '/register', builder: testPage('register')),
-      GoRoute(
-        path: '/unauthorized',
-        builder: (context, state) => const SymphonyUnauthorizedScreen(),
-      ),
-      GoRoute(path: '/public', builder: testPage('public')),
-      GoRoute(path: '/catalog', builder: testPage('catalog')),
-      GoRoute(path: '/maintenance', builder: testPage('maintenance')),
-      GuardedRoute(path: '/', builder: testPage('home')),
+  GoRoute(path: '/splash', builder: testPage('splash')),
+  GuestRoute(path: '/login', builder: testPage('login')),
+  GuestRoute(path: '/register', builder: testPage('register')),
+  GoRoute(
+    path: '/unauthorized',
+    builder: (context, state) => const SymphonyUnauthorizedScreen(),
+  ),
+  GoRoute(path: '/public', builder: testPage('public')),
+  GoRoute(path: '/catalog', builder: testPage('catalog')),
+  GoRoute(path: '/maintenance', builder: testPage('maintenance')),
+  GuardedRoute(path: '/', builder: testPage('home')),
+  GuardedRoute(
+    path: '/orders',
+    builder: testPage('orders'),
+    redirect: ordersRedirect,
+  ),
+  GuardedRoute(
+    path: '/admin',
+    access: const AccessRequirement(roles: <String>{'admin'}),
+    builder: testPage('admin'),
+    routes: <RouteBase>[
+      GoRoute(path: 'users', builder: testPage('admin-users')),
+    ],
+  ),
+  GuardedRoute(
+    path: '/reports',
+    access: const AccessRequirement(permissions: <String>{'reports.read'}),
+    builder: testPage('reports'),
+    routes: <RouteBase>[
+      GoRoute(path: 'monthly', builder: testPage('reports-monthly')),
       GuardedRoute(
-        path: '/orders',
-        builder: testPage('orders'),
-        redirect: ordersRedirect,
+        path: 'export',
+        access: const AccessRequirement(
+          permissions: <String>{'reports.read', 'reports.export'},
+        ),
+        deniedRedirect: '/reports',
+        builder: testPage('reports-export'),
       ),
-      GuardedRoute(
-        path: '/admin',
-        access: const AccessRequirement(roles: <String>{'admin'}),
-        builder: testPage('admin'),
-        routes: <RouteBase>[
-          GoRoute(path: 'users', builder: testPage('admin-users')),
-        ],
-      ),
-      GuardedRoute(
-        path: '/reports',
-        access: const AccessRequirement(permissions: <String>{'reports.read'}),
-        builder: testPage('reports'),
-        routes: <RouteBase>[
-          GoRoute(path: 'monthly', builder: testPage('reports-monthly')),
-          GuardedRoute(
-            path: 'export',
-            access: const AccessRequirement(
-              permissions: <String>{'reports.read', 'reports.export'},
-            ),
-            deniedRedirect: '/reports',
-            builder: testPage('reports-export'),
-          ),
-        ],
-      ),
-    ];
+    ],
+  ),
+];
 
 void main() {
   group('session restoration (unknown status)', () {
-    testWidgets('sends the requested location to the splash route',
-        (tester) async {
+    testWidgets('sends the requested location to the splash route', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -65,8 +66,9 @@ void main() {
       expect(findPage('splash'), findsOneWidget);
     });
 
-    testWidgets('returns to the requested location once signed in',
-        (tester) async {
+    testWidgets('returns to the requested location once signed in', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -79,8 +81,9 @@ void main() {
       expect(findPage('orders'), findsOneWidget);
     });
 
-    testWidgets('sends signed-out users to login, then back after sign-in',
-        (tester) async {
+    testWidgets('sends signed-out users to login, then back after sign-in', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -96,8 +99,9 @@ void main() {
       expect(findPage('orders'), findsOneWidget);
     });
 
-    testWidgets('keeps guest-only deep links for signed-out users',
-        (tester) async {
+    testWidgets('keeps guest-only deep links for signed-out users', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -157,8 +161,9 @@ void main() {
   });
 
   group('authentication guards', () {
-    testWidgets('redirect signed-out users to login with the location',
-        (tester) async {
+    testWidgets('redirect signed-out users to login with the location', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -172,8 +177,9 @@ void main() {
       expect(findPage('login'), findsOneWidget);
     });
 
-    testWidgets('send signed-in users away from the login page',
-        (tester) async {
+    testWidgets('send signed-in users away from the login page', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -301,15 +307,17 @@ void main() {
   });
 
   group('application redirects', () {
-    testWidgets('compose the global redirect after the built-in rules',
-        (tester) async {
+    testWidgets('compose the global redirect after the built-in rules', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
         initialAccess: signedIn(),
         initialLocation: '/catalog',
-        redirect: (context, state) =>
-            state.uri.path == '/legacy-orders' ? '/orders' : null,
+        redirect:
+            (context, state) =>
+                state.uri.path == '/legacy-orders' ? '/orders' : null,
       );
 
       await app.go('/legacy-orders');
@@ -318,8 +326,9 @@ void main() {
       expect(findPage('orders'), findsOneWidget);
     });
 
-    testWidgets('evaluate route redirects only once the guard passed',
-        (tester) async {
+    testWidgets('evaluate route redirects only once the guard passed', (
+      tester,
+    ) async {
       var calls = 0;
       final app = await pumpSymphonyRouter(
         tester,
@@ -353,10 +362,11 @@ void main() {
         initialAccess: signedIn(),
         initialLocation: '/orders',
         refreshListenable: maintenance,
-        redirect: (context, state) =>
-            maintenance.value && state.uri.path != '/maintenance'
-                ? '/maintenance'
-                : null,
+        redirect:
+            (context, state) =>
+                maintenance.value && state.uri.path != '/maintenance'
+                    ? '/maintenance'
+                    : null,
       );
       expect(findPage('orders'), findsOneWidget);
 
@@ -371,8 +381,9 @@ void main() {
     const paths = SymphonyRoutePaths(guestOnlyPaths: <String>{'/register'});
     const publicPaths = <String>{'/public'};
 
-    testWidgets('protects plain routes and returns to them after sign-in',
-        (tester) async {
+    testWidgets('protects plain routes and returns to them after sign-in', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -414,8 +425,9 @@ void main() {
       expect(app.location, '/login?from=%2Fmaintenance');
     });
 
-    testWidgets('resolves the splash straight to the sign-in page',
-        (tester) async {
+    testWidgets('resolves the splash straight to the sign-in page', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -430,8 +442,9 @@ void main() {
       expect(findPage('catalog'), findsNothing);
     });
 
-    testWidgets('sends users lacking a required role to unauthorized',
-        (tester) async {
+    testWidgets('sends users lacking a required role to unauthorized', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -451,8 +464,9 @@ void main() {
       expect(app.location, '/unauthorized');
     });
 
-    testWidgets('applies to the location returned by the app redirect',
-        (tester) async {
+    testWidgets('applies to the location returned by the app redirect', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: appRoutes(),
@@ -461,8 +475,9 @@ void main() {
         defaultAccess: AccessRequirement.authenticated,
         initialAccess: signedOut,
         initialLocation: '/public',
-        redirect: (context, state) =>
-            state.uri.queryParameters['legacy'] == '1' ? '/catalog' : null,
+        redirect:
+            (context, state) =>
+                state.uri.queryParameters['legacy'] == '1' ? '/catalog' : null,
       );
 
       await app.go('/public?legacy=1');
@@ -493,8 +508,9 @@ void main() {
       expect(findPage('home'), findsOneWidget);
     });
 
-    testWidgets('use the configured home for the error screen button',
-        (tester) async {
+    testWidgets('use the configured home for the error screen button', (
+      tester,
+    ) async {
       final app = await pumpSymphonyRouter(
         tester,
         routes: <RouteBase>[
@@ -528,11 +544,14 @@ void main() {
       await tester.pump();
 
       expect(
-          () => router.routerDelegate.addListener(() {}), throwsFlutterError);
+        () => router.routerDelegate.addListener(() {}),
+        throwsFlutterError,
+      );
     });
 
-    testWidgets('creates the router once and refreshes it on access changes',
-        (tester) async {
+    testWidgets('creates the router once and refreshes it on access changes', (
+      tester,
+    ) async {
       var builds = 0;
       final routerProvider = Provider<GoRouter>((ref) {
         builds++;
@@ -545,8 +564,9 @@ void main() {
       await tester.pumpWidget(
         routingTestScope(
           child: Consumer(
-            builder: (context, ref, child) =>
-                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+            builder:
+                (context, ref, child) =>
+                    MaterialApp.router(routerConfig: ref.watch(routerProvider)),
           ),
         ),
       );

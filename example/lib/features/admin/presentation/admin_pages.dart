@@ -22,10 +22,11 @@ class AdminPage extends ConsumerWidget {
     final audit = ref.watch(auditLogProvider);
     String count<T>(AsyncValue<Result<List<T>>> value, String noun) =>
         value.when(
-          data: (result) => result.when(
-            success: (items) => '${items.length} $noun',
-            failure: (failure) => failure.message,
-          ),
+          data:
+              (result) => result.when(
+                success: (items) => '${items.length} $noun',
+                failure: (failure) => failure.message,
+              ),
           loading: () => 'Loading…',
           error: (error, stackTrace) => 'Unavailable',
         );
@@ -130,23 +131,26 @@ class AdminUsersPage extends ConsumerWidget {
         value: ref.watch(managedUsersProvider),
         onRetry: () => ref.invalidate(managedUsersProvider),
         isEmpty: (users) => users.isEmpty,
-        emptyBuilder: (context) => const SymphonyEmptyState(
-          title: 'No users',
-          icon: Icons.person_off_outlined,
-        ),
-        builder: (context, users) => RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(managedUsersProvider);
-            await ref.read(managedUsersProvider.future);
-          },
-          child: ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: users.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: SymphonySpacing.sm),
-            itemBuilder: (context, index) => _UserCard(user: users[index]),
-          ),
-        ),
+        emptyBuilder:
+            (context) => const SymphonyEmptyState(
+              title: 'No users',
+              icon: Icons.person_off_outlined,
+            ),
+        builder:
+            (context, users) => RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(managedUsersProvider);
+                await ref.read(managedUsersProvider.future);
+              },
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: users.length,
+                separatorBuilder:
+                    (context, index) =>
+                        const SizedBox(height: SymphonySpacing.sm),
+                itemBuilder: (context, index) => _UserCard(user: users[index]),
+              ),
+            ),
       ),
     );
   }
@@ -218,13 +222,13 @@ class AuditLogPage extends ConsumerWidget {
   const AuditLogPage({super.key});
 
   static IconData _iconFor(AuditEntry entry) => switch (entry.category) {
-        'auth' => Icons.login,
-        'files' => Icons.upload_file,
-        'orders' => Icons.receipt_long_outlined,
-        'reports' => Icons.bar_chart,
-        'users' => Icons.manage_accounts_outlined,
-        _ => Icons.info_outline,
-      };
+    'auth' => Icons.login,
+    'files' => Icons.upload_file,
+    'orders' => Icons.receipt_long_outlined,
+    'reports' => Icons.bar_chart,
+    'users' => Icons.manage_accounts_outlined,
+    _ => Icons.info_outline,
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -241,23 +245,25 @@ class AuditLogPage extends ConsumerWidget {
         value: ref.watch(auditLogProvider),
         onRetry: () => ref.invalidate(auditLogProvider),
         isEmpty: (entries) => entries.isEmpty,
-        emptyBuilder: (context) => const SymphonyEmptyState(
-          title: 'Nothing happened yet',
-          icon: Icons.history_toggle_off,
-        ),
-        builder: (context, entries) => ListView.separated(
-          itemCount: entries.length,
-          separatorBuilder: (context, index) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final entry = entries[index];
-            return ListTile(
-              leading: Icon(_iconFor(entry)),
-              title: Text(entry.summary),
-              subtitle: Text('${entry.actor} · ${entry.action}'),
-              trailing: Text(Formatters.dateTime(entry.at)),
-            );
-          },
-        ),
+        emptyBuilder:
+            (context) => const SymphonyEmptyState(
+              title: 'Nothing happened yet',
+              icon: Icons.history_toggle_off,
+            ),
+        builder:
+            (context, entries) => ListView.separated(
+              itemCount: entries.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final entry = entries[index];
+                return ListTile(
+                  leading: Icon(_iconFor(entry)),
+                  title: Text(entry.summary),
+                  subtitle: Text('${entry.actor} · ${entry.action}'),
+                  trailing: Text(Formatters.dateTime(entry.at)),
+                );
+              },
+            ),
       ),
     );
   }

@@ -6,9 +6,9 @@ import 'package:symphony_core/src/ui/ui.dart';
 import '../../ui_test_utils.dart';
 
 Widget _app(Widget field, {ThemeData? theme}) => buildTestApp(
-      Padding(padding: const EdgeInsets.all(16), child: field),
-      theme: theme,
-    );
+  Padding(padding: const EdgeInsets.all(16), child: field),
+  theme: theme,
+);
 
 void main() {
   group('SymphonyTextField', () {
@@ -103,8 +103,8 @@ void main() {
             key: formKey,
             child: SymphonyTextField(
               label: 'Name',
-              validator: (value) =>
-                  value == null || value.isEmpty ? 'Required' : null,
+              validator:
+                  (value) => value == null || value.isEmpty ? 'Required' : null,
               onSaved: (value) => saved = value,
             ),
           ),
@@ -138,11 +138,13 @@ void main() {
       expect(controller.text, 'typed');
     });
 
-    testWidgets('obscured text is single line without suggestions',
-        (tester) async {
+    testWidgets('obscured text is single line without suggestions', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        _app(const SymphonyTextField(
-            obscureText: true, maxLines: 4, minLines: 2)),
+        _app(
+          const SymphonyTextField(obscureText: true, maxLines: 4, minLines: 2),
+        ),
       );
       final editable = tester.widget<EditableText>(find.byType(EditableText));
 

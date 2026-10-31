@@ -68,25 +68,25 @@ class SymphonyErrorView extends StatelessWidget {
 
   /// The default icon representing [failure].
   static IconData iconFor(Failure? failure) => switch (failure) {
-        NetworkFailure() => Icons.wifi_off,
-        TimeoutFailure() => Icons.timer_off,
-        UnauthorizedFailure() => Icons.lock_outline,
-        ForbiddenFailure() => Icons.block,
-        NotFoundFailure() => Icons.search_off,
-        ValidationFailure() => Icons.rule,
-        _ => Icons.error_outline,
-      };
+    NetworkFailure() => Icons.wifi_off,
+    TimeoutFailure() => Icons.timer_off,
+    UnauthorizedFailure() => Icons.lock_outline,
+    ForbiddenFailure() => Icons.block,
+    NotFoundFailure() => Icons.search_off,
+    ValidationFailure() => Icons.rule,
+    _ => Icons.error_outline,
+  };
 
   /// The default (English) title describing [failure].
   static String titleFor(Failure? failure) => switch (failure) {
-        NetworkFailure() => 'No internet connection',
-        TimeoutFailure() => 'Request timed out',
-        UnauthorizedFailure() => 'Session expired',
-        ForbiddenFailure() => 'Access denied',
-        NotFoundFailure() => 'Not found',
-        ValidationFailure() => 'Invalid input',
-        _ => 'Something went wrong',
-      };
+    NetworkFailure() => 'No internet connection',
+    TimeoutFailure() => 'Request timed out',
+    UnauthorizedFailure() => 'Session expired',
+    ForbiddenFailure() => 'Access denied',
+    NotFoundFailure() => 'Not found',
+    ValidationFailure() => 'Invalid input',
+    _ => 'Something went wrong',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +96,20 @@ class SymphonyErrorView extends StatelessWidget {
     return Semantics(
       container: true,
       liveRegion: true,
-      child: compact
-          ? _buildCompact(
-              context, effectiveTitle, effectiveMessage, effectiveIcon)
-          : _buildFull(
-              context, effectiveTitle, effectiveMessage, effectiveIcon),
+      child:
+          compact
+              ? _buildCompact(
+                context,
+                effectiveTitle,
+                effectiveMessage,
+                effectiveIcon,
+              )
+              : _buildFull(
+                context,
+                effectiveTitle,
+                effectiveMessage,
+                effectiveIcon,
+              ),
     );
   }
 

@@ -136,35 +136,34 @@ class SymphonyButton extends StatelessWidget {
 
     Widget button = switch (variant) {
       SymphonyButtonVariant.primary ||
-      SymphonyButtonVariant.danger =>
-        FilledButton(
-          onPressed: effectiveOnPressed,
-          style: effectiveStyle,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          child: content,
-        ),
+      SymphonyButtonVariant.danger => FilledButton(
+        onPressed: effectiveOnPressed,
+        style: effectiveStyle,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        child: content,
+      ),
       SymphonyButtonVariant.secondary => FilledButton.tonal(
-          onPressed: effectiveOnPressed,
-          style: effectiveStyle,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          child: content,
-        ),
+        onPressed: effectiveOnPressed,
+        style: effectiveStyle,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        child: content,
+      ),
       SymphonyButtonVariant.outlined => OutlinedButton(
-          onPressed: effectiveOnPressed,
-          style: effectiveStyle,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          child: content,
-        ),
+        onPressed: effectiveOnPressed,
+        style: effectiveStyle,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        child: content,
+      ),
       SymphonyButtonVariant.text => TextButton(
-          onPressed: effectiveOnPressed,
-          style: effectiveStyle,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          child: content,
-        ),
+        onPressed: effectiveOnPressed,
+        style: effectiveStyle,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        child: content,
+      ),
     };
 
     // The wrappers are always present so that toggling [isLoading] keeps the
@@ -198,37 +197,37 @@ class SymphonyButton extends StatelessWidget {
     };
     final minimumSize = Size(metrics.minWidth, size.minHeight);
     final padding = EdgeInsets.symmetric(
-      horizontal: variant == SymphonyButtonVariant.text
-          ? metrics.textHorizontalPadding
-          : metrics.horizontalPadding,
+      horizontal:
+          variant == SymphonyButtonVariant.text
+              ? metrics.textHorizontalPadding
+              : metrics.horizontalPadding,
       vertical: metrics.verticalPadding,
     );
 
     return switch (variant) {
       SymphonyButtonVariant.primary ||
-      SymphonyButtonVariant.secondary =>
-        FilledButton.styleFrom(
-          minimumSize: minimumSize,
-          padding: padding,
-          textStyle: textStyle,
-        ),
+      SymphonyButtonVariant.secondary => FilledButton.styleFrom(
+        minimumSize: minimumSize,
+        padding: padding,
+        textStyle: textStyle,
+      ),
       SymphonyButtonVariant.danger => FilledButton.styleFrom(
-          backgroundColor: theme.colorScheme.error,
-          foregroundColor: theme.colorScheme.onError,
-          minimumSize: minimumSize,
-          padding: padding,
-          textStyle: textStyle,
-        ),
+        backgroundColor: theme.colorScheme.error,
+        foregroundColor: theme.colorScheme.onError,
+        minimumSize: minimumSize,
+        padding: padding,
+        textStyle: textStyle,
+      ),
       SymphonyButtonVariant.outlined => OutlinedButton.styleFrom(
-          minimumSize: minimumSize,
-          padding: padding,
-          textStyle: textStyle,
-        ),
+        minimumSize: minimumSize,
+        padding: padding,
+        textStyle: textStyle,
+      ),
       SymphonyButtonVariant.text => TextButton.styleFrom(
-          minimumSize: minimumSize,
-          padding: padding,
-          textStyle: textStyle,
-        ),
+        minimumSize: minimumSize,
+        padding: padding,
+        textStyle: textStyle,
+      ),
     };
   }
 
@@ -261,22 +260,23 @@ class _ButtonContent extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,
     );
-    final Widget content = leading == null && trailing == null
-        ? text
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              if (leading != null) ...<Widget>[
-                Icon(leading, size: metrics.iconSize),
-                SizedBox(width: metrics.gap),
+    final Widget content =
+        leading == null && trailing == null
+            ? text
+            : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (leading != null) ...<Widget>[
+                  Icon(leading, size: metrics.iconSize),
+                  SizedBox(width: metrics.gap),
+                ],
+                Flexible(child: text),
+                if (trailing != null) ...<Widget>[
+                  SizedBox(width: metrics.gap),
+                  Icon(trailing, size: metrics.iconSize),
+                ],
               ],
-              Flexible(child: text),
-              if (trailing != null) ...<Widget>[
-                SizedBox(width: metrics.gap),
-                Icon(trailing, size: metrics.iconSize),
-              ],
-            ],
-          );
+            );
     if (!isLoading) return content;
 
     // The invisible content keeps the button width stable while loading.
@@ -290,9 +290,10 @@ class _ButtonContent extends StatelessWidget {
           dimension: metrics.iconSize,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor: foreground == null
-                ? null
-                : AlwaysStoppedAnimation<Color>(foreground),
+            valueColor:
+                foreground == null
+                    ? null
+                    : AlwaysStoppedAnimation<Color>(foreground),
           ),
         ),
       ],
@@ -312,31 +313,31 @@ class _ButtonMetrics {
   });
 
   static _ButtonMetrics of(SymphonyButtonSize size) => switch (size) {
-        SymphonyButtonSize.small => const _ButtonMetrics(
-            minWidth: 48,
-            horizontalPadding: 12,
-            textHorizontalPadding: 8,
-            verticalPadding: 6,
-            iconSize: 16,
-            gap: 6,
-          ),
-        SymphonyButtonSize.medium => const _ButtonMetrics(
-            minWidth: 64,
-            horizontalPadding: 20,
-            textHorizontalPadding: 12,
-            verticalPadding: 10,
-            iconSize: 18,
-            gap: 8,
-          ),
-        SymphonyButtonSize.large => const _ButtonMetrics(
-            minWidth: 72,
-            horizontalPadding: 28,
-            textHorizontalPadding: 16,
-            verticalPadding: 14,
-            iconSize: 20,
-            gap: 8,
-          ),
-      };
+    SymphonyButtonSize.small => const _ButtonMetrics(
+      minWidth: 48,
+      horizontalPadding: 12,
+      textHorizontalPadding: 8,
+      verticalPadding: 6,
+      iconSize: 16,
+      gap: 6,
+    ),
+    SymphonyButtonSize.medium => const _ButtonMetrics(
+      minWidth: 64,
+      horizontalPadding: 20,
+      textHorizontalPadding: 12,
+      verticalPadding: 10,
+      iconSize: 18,
+      gap: 8,
+    ),
+    SymphonyButtonSize.large => const _ButtonMetrics(
+      minWidth: 72,
+      horizontalPadding: 28,
+      textHorizontalPadding: 16,
+      verticalPadding: 14,
+      iconSize: 20,
+      gap: 8,
+    ),
+  };
 
   final double minWidth;
   final double horizontalPadding;

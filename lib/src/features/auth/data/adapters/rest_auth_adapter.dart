@@ -84,13 +84,13 @@ class RestAuthAdapter extends AuthAdapter {
     this.invalidResponseMessage = 'Invalid authentication response',
     this.invalidCredentialsMessage = 'Invalid credentials. Please try again.',
     DateTime Function()? clock,
-  })  : assert(
-          apiClient != null || apiClientResolver != null,
-          'RestAuthAdapter needs an apiClient or an apiClientResolver.',
-        ),
-        _apiClient = apiClient,
-        _apiClientResolver = apiClientResolver,
-        _clock = clock ?? DateTime.now;
+  }) : assert(
+         apiClient != null || apiClientResolver != null,
+         'RestAuthAdapter needs an apiClient or an apiClientResolver.',
+       ),
+       _apiClient = apiClient,
+       _apiClientResolver = apiClientResolver,
+       _clock = clock ?? DateTime.now;
 
   final ApiClient? _apiClient;
   final ApiClient Function()? _apiClientResolver;
@@ -207,9 +207,10 @@ class RestAuthAdapter extends AuthAdapter {
       throw _invalidCredentials(failure);
     }
     final session = _parse(
-      () => parseSession != null
-          ? parseSession!(response.data)
-          : _requireSession(response.data),
+      () =>
+          parseSession != null
+              ? parseSession!(response.data)
+              : _requireSession(response.data),
     );
     _requireAccessToken(session.tokens);
     return _completeUser(session);
@@ -225,18 +226,21 @@ class RestAuthAdapter extends AuthAdapter {
     final response = await _send(
       path,
       method: endpoints.refreshMethod,
-      data: refreshBody != null
-          ? refreshBody!(current)
-          : <String, Object?>{refreshTokenField: current.refreshToken},
-      options: headers == null || headers.isEmpty
-          ? ApiRequestOptions.unauthenticated
-          : ApiRequestOptions.unauthenticated.copyWith(headers: headers),
+      data:
+          refreshBody != null
+              ? refreshBody!(current)
+              : <String, Object?>{refreshTokenField: current.refreshToken},
+      options:
+          headers == null || headers.isEmpty
+              ? ApiRequestOptions.unauthenticated
+              : ApiRequestOptions.unauthenticated.copyWith(headers: headers),
     );
     final tokens = _parse(
-      () => parseRefresh != null
-          ? parseRefresh!(response.data, current)
-          : mapping.readTokens(response.data, now: _clock()) ??
-              (throw AuthFailure(invalidResponseMessage)),
+      () =>
+          parseRefresh != null
+              ? parseRefresh!(response.data, current)
+              : mapping.readTokens(response.data, now: _clock()) ??
+                  (throw AuthFailure(invalidResponseMessage)),
     );
     _requireAccessToken(tokens);
     return tokens.canRefresh
@@ -283,9 +287,10 @@ class RestAuthAdapter extends AuthAdapter {
       options: ApiRequestOptions.unauthenticated,
     );
     final session = _parse(
-      () => parseRegistration != null
-          ? parseRegistration!(response.data)
-          : mapping.readSession(response.data, now: _clock()),
+      () =>
+          parseRegistration != null
+              ? parseRegistration!(response.data)
+              : mapping.readSession(response.data, now: _clock()),
     );
     if (session == null) return null;
     _requireAccessToken(session.tokens);
@@ -299,9 +304,10 @@ class RestAuthAdapter extends AuthAdapter {
     await _send(
       path,
       method: endpoints.requestPasswordResetMethod,
-      data: requestPasswordResetBody != null
-          ? requestPasswordResetBody!(data)
-          : data.fields,
+      data:
+          requestPasswordResetBody != null
+              ? requestPasswordResetBody!(data)
+              : data.fields,
       options: ApiRequestOptions.unauthenticated,
     );
   }
@@ -313,9 +319,10 @@ class RestAuthAdapter extends AuthAdapter {
     await _send(
       path,
       method: endpoints.confirmPasswordResetMethod,
-      data: confirmPasswordResetBody != null
-          ? confirmPasswordResetBody!(data)
-          : data.fields,
+      data:
+          confirmPasswordResetBody != null
+              ? confirmPasswordResetBody!(data)
+              : data.fields,
       options: ApiRequestOptions.unauthenticated,
     );
   }
@@ -354,18 +361,20 @@ class RestAuthAdapter extends AuthAdapter {
     final response = await _send(
       endpoints.currentUser!,
       method: endpoints.currentUserMethod,
-      options: explicitToken
-          ? ApiRequestOptions(
-              requiresAuth: false,
-              refreshOnUnauthorized: false,
-              headers: _authorizationHeader(tokens),
-            )
-          : const ApiRequestOptions(),
+      options:
+          explicitToken
+              ? ApiRequestOptions(
+                requiresAuth: false,
+                refreshOnUnauthorized: false,
+                headers: _authorizationHeader(tokens),
+              )
+              : const ApiRequestOptions(),
     );
     return _parse(
-      () => parseUser != null
-          ? parseUser!(response.data)
-          : mapping.readCurrentUser(response.data),
+      () =>
+          parseUser != null
+              ? parseUser!(response.data)
+              : mapping.readCurrentUser(response.data),
     );
   }
 
@@ -392,9 +401,10 @@ class RestAuthAdapter extends AuthAdapter {
   }
 
   AuthFailure _invalidCredentials(UnauthorizedFailure failure) {
-    final message = _isGenericUnauthorizedMessage(failure.message)
-        ? invalidCredentialsMessage
-        : failure.message;
+    final message =
+        _isGenericUnauthorizedMessage(failure.message)
+            ? invalidCredentialsMessage
+            : failure.message;
     return AuthFailure(
       message,
       code: failure.code,

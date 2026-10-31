@@ -46,10 +46,10 @@ class ApiInspector extends ChangeNotifier {
     this.captureResponseBodies = true,
     bool enabled = true,
     DateTime Function()? clock,
-  })  : assert(maxEntries > 0, 'maxEntries must be > 0'),
-        _enabled = enabled,
-        _clock = clock ?? DateTime.now,
-        _text = _TextRedactor(redactor);
+  }) : assert(maxEntries > 0, 'maxEntries must be > 0'),
+       _enabled = enabled,
+       _clock = clock ?? DateTime.now,
+       _text = _TextRedactor(redactor);
 
   /// Maximum number of calls kept (oldest are dropped first).
   final int maxEntries;
@@ -125,9 +125,10 @@ class ApiInspector extends ChangeNotifier {
     if (!_enabled || _disposed) return null;
     final id = _nextId++;
     final trimmedMethod = method.trim();
-    final formData = captureRequestBodies && body is ApiCallFormData
-        ? _storedFormData(body)
-        : null;
+    final formData =
+        captureRequestBodies && body is ApiCallFormData
+            ? _storedFormData(body)
+            : null;
     _calls.insert(
       0,
       ApiCallRecord(
@@ -136,9 +137,10 @@ class ApiInspector extends ChangeNotifier {
         uri: _redactUri(uri),
         startedAt: _clock(),
         requestHeaders: _redactHeaders(headers),
-        requestBody: captureRequestBodies
-            ? _renderBody(formData?.toSummary() ?? body)
-            : null,
+        requestBody:
+            captureRequestBodies
+                ? _renderBody(formData?.toSummary() ?? body)
+                : null,
         requestFormData: formData,
       ),
     );
@@ -174,9 +176,10 @@ class ApiInspector extends ChangeNotifier {
         method: call.method,
         uri: uri == null ? call.uri : _redactUri(uri),
         startedAt: call.startedAt,
-        requestHeaders: requestHeaders == null
-            ? call.requestHeaders
-            : _redactHeaders(requestHeaders),
+        requestHeaders:
+            requestHeaders == null
+                ? call.requestHeaders
+                : _redactHeaders(requestHeaders),
         requestBody: call.requestBody,
         requestFormData: call.requestFormData,
         endedAt: _clock(),
@@ -214,17 +217,19 @@ class ApiInspector extends ChangeNotifier {
         method: call.method,
         uri: uri == null ? call.uri : _redactUri(uri),
         startedAt: call.startedAt,
-        requestHeaders: requestHeaders == null
-            ? call.requestHeaders
-            : _redactHeaders(requestHeaders),
+        requestHeaders:
+            requestHeaders == null
+                ? call.requestHeaders
+                : _redactHeaders(requestHeaders),
         requestBody: call.requestBody,
         requestFormData: call.requestFormData,
         endedAt: _clock(),
         statusCode: statusCode,
         statusMessage: statusMessage,
-        responseHeaders: headers == null
-            ? const <String, String>{}
-            : _redactHeaders(headers),
+        responseHeaders:
+            headers == null
+                ? const <String, String>{}
+                : _redactHeaders(headers),
         responseBody: captureResponseBodies ? _renderBody(body) : null,
         error: _text.redact(error, maxLength: maxBodyLength),
       ),
@@ -358,8 +363,9 @@ class _TextRedactor {
 
   final LogRedactor redactor;
 
-  static final RegExp _url =
-      RegExp(r'''\b[A-Za-z][A-Za-z0-9+.\-]*://[^\s'"<>`]+''');
+  static final RegExp _url = RegExp(
+    r'''\b[A-Za-z][A-Za-z0-9+.\-]*://[^\s'"<>`]+''',
+  );
   // Credentials are long opaque strings; the minimum length keeps ordinary
   // prose such as "Basic auth" readable.
   static final RegExp _credentials = RegExp(
@@ -392,9 +398,10 @@ class _TextRedactor {
       final key = match[2]!;
       if (!redactor.isSensitive(key)) return match[0]!;
       final value = match[4]!;
-      final quote = value.startsWith('"')
-          ? '"'
-          : value.startsWith("'")
+      final quote =
+          value.startsWith('"')
+              ? '"'
+              : value.startsWith("'")
               ? "'"
               : '';
       final keyQuote = match[1]!;

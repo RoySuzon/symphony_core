@@ -77,8 +77,9 @@ void main() {
       expect(router.canPop(), isFalse);
     });
 
-    testWidgets('push stacks the destination over the dashboard',
-        (tester) async {
+    testWidgets('push stacks the destination over the dashboard', (
+      tester,
+    ) async {
       final router = await pumpWithRouter(
         tester,
         const SymphonyDashboard(
@@ -104,8 +105,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('goNamed builds the location from path and query parameters',
-        (tester) async {
+    testWidgets('goNamed builds the location from path and query parameters', (
+      tester,
+    ) async {
       final router = await pumpWithRouter(
         tester,
         const SymphonyDashboard(
@@ -125,7 +127,9 @@ void main() {
       await tapAndSettle(tester, tile('Order 42'));
 
       expect(
-          find.text('location: /orders/42?tab=items&page=2'), findsOneWidget);
+        find.text('location: /orders/42?tab=items&page=2'),
+        findsOneWidget,
+      );
       expect(find.text('extra: payload'), findsOneWidget);
       expect(router.canPop(), isFalse);
     });
@@ -174,8 +178,9 @@ void main() {
       expect(find.text('location: /invoices'), findsOneWidget);
     });
 
-    testWidgets('route query parameters are merged into the location',
-        (tester) async {
+    testWidgets('route query parameters are merged into the location', (
+      tester,
+    ) async {
       await pumpWithRouter(
         tester,
         const SymphonyDashboard(
@@ -227,8 +232,9 @@ void main() {
       expect(tile('Orders'), findsOneWidget);
     });
 
-    testWidgets('pushed modules close when the user loses access to them',
-        (tester) async {
+    testWidgets('pushed modules close when the user loses access to them', (
+      tester,
+    ) async {
       final container = createAccessContainer(
         access: signedIn(roles: <String>{'admin'}),
       );
@@ -242,19 +248,20 @@ void main() {
             GoRoute(path: '/unauthorized', builder: _destination),
             GuardedRoute(
               path: '/',
-              builder: (context, state) => const Scaffold(
-                body: SymphonyDashboard(
-                  items: <DashboardItem>[
-                    DashboardItem(
-                      id: 'admin',
-                      label: 'Admin',
-                      route: '/admin',
-                      navigation: DashboardNavigation.push,
-                      access: AccessRequirement(roles: <String>{'admin'}),
+              builder:
+                  (context, state) => const Scaffold(
+                    body: SymphonyDashboard(
+                      items: <DashboardItem>[
+                        DashboardItem(
+                          id: 'admin',
+                          label: 'Admin',
+                          route: '/admin',
+                          navigation: DashboardNavigation.push,
+                          access: AccessRequirement(roles: <String>{'admin'}),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
             ),
             GuardedRoute(
               path: '/admin',
@@ -268,8 +275,9 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: Consumer(
-            builder: (context, ref, child) =>
-                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+            builder:
+                (context, ref, child) =>
+                    MaterialApp.router(routerConfig: ref.watch(routerProvider)),
           ),
         ),
       );
@@ -281,15 +289,13 @@ void main() {
       changeAccess(container, signedIn());
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('location: /admin', skipOffstage: false),
-        findsNothing,
-      );
+      expect(find.text('location: /admin', skipOffstage: false), findsNothing);
       expect(find.text('location: /unauthorized'), findsOneWidget);
     });
 
-    testWidgets('pages pushed for submenus support go and push',
-        (tester) async {
+    testWidgets('pages pushed for submenus support go and push', (
+      tester,
+    ) async {
       final router = await pumpWithRouter(
         tester,
         const SymphonyDashboard(
@@ -361,12 +367,14 @@ void main() {
                 ],
               ),
             ),
-            onGenerateRoute: (settings) => MaterialPageRoute<void>(
-              settings: settings,
-              builder: (context) => Text(
-                'route ${settings.name} with ${settings.arguments}',
-              ),
-            ),
+            onGenerateRoute:
+                (settings) => MaterialPageRoute<void>(
+                  settings: settings,
+                  builder:
+                      (context) => Text(
+                        'route ${settings.name} with ${settings.arguments}',
+                      ),
+                ),
           ),
         ),
       );
@@ -376,8 +384,9 @@ void main() {
       expect(find.text('route /orders?page=2 with args'), findsOneWidget);
     });
 
-    testWidgets('reports items that cannot be opened instead of crashing',
-        (tester) async {
+    testWidgets('reports items that cannot be opened instead of crashing', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -406,40 +415,42 @@ void main() {
       expect(tile('Named'), findsOneWidget);
     });
 
-    testWidgets('reports a route the Navigator cannot open instead of throwing',
-        (tester) async {
-      const item = DashboardItem(
-        id: 'orders',
-        label: 'Orders',
-        route: '/orders',
-      );
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            accessContextProvider.overrideWithValue(
-              AccessContext.unauthenticated,
-            ),
-          ],
-          // No routes, onGenerateRoute or onUnknownRoute handle '/orders'.
-          child: const MaterialApp(
-            home: Scaffold(
-              body: SymphonyDashboard(items: <DashboardItem>[item]),
+    testWidgets(
+      'reports a route the Navigator cannot open instead of throwing',
+      (tester) async {
+        const item = DashboardItem(
+          id: 'orders',
+          label: 'Orders',
+          route: '/orders',
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              accessContextProvider.overrideWithValue(
+                AccessContext.unauthenticated,
+              ),
+            ],
+            // No routes, onGenerateRoute or onUnknownRoute handle '/orders'.
+            child: const MaterialApp(
+              home: Scaffold(
+                body: SymphonyDashboard(items: <DashboardItem>[item]),
+              ),
             ),
           ),
-        ),
-      );
-      final context = tester.element(find.byType(SymphonyDashboard));
+        );
+        final context = tester.element(find.byType(SymphonyDashboard));
 
-      expect(navigateToDashboardItem(context, item), isFalse);
-      final error = tester.takeException();
-      expect(error, isA<FlutterError>());
-      expect('$error', contains('Cannot open the destination'));
-      expect('$error', contains('"/orders"'));
+        expect(navigateToDashboardItem(context, item), isFalse);
+        final error = tester.takeException();
+        expect(error, isA<FlutterError>());
+        expect('$error', contains('Cannot open the destination'));
+        expect('$error', contains('"/orders"'));
 
-      await tapAndSettle(tester, tile('Orders'));
-      expect('${tester.takeException()}', contains('Cannot open'));
-      expect(tile('Orders'), findsOneWidget);
-    });
+        await tapAndSettle(tester, tile('Orders'));
+        expect('${tester.takeException()}', contains('Cannot open'));
+        expect(tile('Orders'), findsOneWidget);
+      },
+    );
 
     testWidgets('reports a missing Navigator', (tester) async {
       await tester.pumpWidget(
@@ -470,8 +481,9 @@ void main() {
       expect('$error', contains('No GoRouter and no Navigator'));
     });
 
-    testWidgets('navigateToDashboardItem ignores items without destination',
-        (tester) async {
+    testWidgets('navigateToDashboardItem ignores items without destination', (
+      tester,
+    ) async {
       await pumpInApp(
         tester,
         createAccessContainer(),

@@ -24,9 +24,9 @@ class ExampleApp extends ConsumerWidget {
       themeMode: ref.watch(themeModeProvider),
       routerConfig: ref.watch(routerProvider),
       // A draggable button above every page opens the API inspector.
-      builder: (context, child) => SymphonyInspectorOverlay(
-        child: child ?? const SizedBox.shrink(),
-      ),
-  );
+      builder:
+          (context, child) =>
+              SymphonyInspectorOverlay(child: child ?? const SizedBox.shrink()),
+    );
   }
 }

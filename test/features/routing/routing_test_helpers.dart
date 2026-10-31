@@ -13,12 +13,11 @@ const AccessContext signedOut = AccessContext.unauthenticated;
 AccessContext signedIn({
   Set<String> roles = const <String>{},
   Set<String> permissions = const <String>{},
-}) =>
-    AccessContext(
-      status: AuthStatus.authenticated,
-      roles: roles,
-      permissions: permissions,
-    );
+}) => AccessContext(
+  status: AuthStatus.authenticated,
+  roles: roles,
+  permissions: permissions,
+);
 
 /// Mutable access snapshot overriding `accessContextProvider` in tests.
 class TestAccessNotifier extends Notifier<AccessContext> {
@@ -59,39 +58,29 @@ class RecordingAuthController extends AuthController {
 /// controller is a [RecordingAuthController].
 ///
 /// The override list is built inline so that the `Override` type (exported
-/// from different libraries by Riverpod 2 and 3) is never named.
+/// by `package:flutter_riverpod/misc.dart`) is never named.
 Widget routingTestScope({
   required Widget child,
   AccessContext initialAccess = AccessContext.unknown,
-}) =>
-    ProviderScope(
-      overrides: [
-        testAccessProvider.overrideWith(
-          () => TestAccessNotifier(initialAccess),
-        ),
-        accessContextProvider.overrideWith(
-          (ref) => ref.watch(testAccessProvider),
-        ),
-        authControllerProvider.overrideWith(RecordingAuthController.new),
-      ],
-      child: child,
-    );
+}) => ProviderScope(
+  overrides: [
+    testAccessProvider.overrideWith(() => TestAccessNotifier(initialAccess)),
+    accessContextProvider.overrideWith((ref) => ref.watch(testAccessProvider)),
+    authControllerProvider.overrideWith(RecordingAuthController.new),
+  ],
+  child: child,
+);
 
 /// A `ProviderContainer` with the same overrides as [routingTestScope].
 ProviderContainer routingTestContainer({
   AccessContext initialAccess = AccessContext.unknown,
-}) =>
-    ProviderContainer(
-      overrides: [
-        testAccessProvider.overrideWith(
-          () => TestAccessNotifier(initialAccess),
-        ),
-        accessContextProvider.overrideWith(
-          (ref) => ref.watch(testAccessProvider),
-        ),
-        authControllerProvider.overrideWith(RecordingAuthController.new),
-      ],
-    );
+}) => ProviderContainer(
+  overrides: [
+    testAccessProvider.overrideWith(() => TestAccessNotifier(initialAccess)),
+    accessContextProvider.overrideWith((ref) => ref.watch(testAccessProvider)),
+    authControllerProvider.overrideWith(RecordingAuthController.new),
+  ],
+);
 
 /// Builder of a test page displaying `page:<name>`.
 GoRouterWidgetBuilder testPage(String name) =>
@@ -171,8 +160,9 @@ Future<RouterHarness> pumpSymphonyRouter(
     routingTestScope(
       initialAccess: initialAccess,
       child: Consumer(
-        builder: (context, ref, child) =>
-            MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+        builder:
+            (context, ref, child) =>
+                MaterialApp.router(routerConfig: ref.watch(routerProvider)),
       ),
     ),
   );

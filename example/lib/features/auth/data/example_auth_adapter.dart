@@ -66,30 +66,32 @@ AuthAdapter createExampleAuthAdapter(Ref ref) {
     apiClient: ref.watch(apiClientProvider),
     endpoints: exampleAuthEndpoints,
     mapping: exampleAuthResponseMapping,
-    loginBody: (credentials) => <String, Object?>{
-      'login': credentials['email'],
-      'secret': credentials['password'],
-      'client': 'symphony-example',
-    },
-    refreshBody: (tokens) => <String, Object?>{
-      'renewal_token': tokens.refreshToken,
-    },
-    logoutBody: (session) => <String, Object?>{
-      'renewal_token': session.tokens.refreshToken,
-    },
-    registerBody: (data) => <String, Object?>{
-      'full_name': data['name'],
-      'email': data['email'],
-      'password': data['password'],
-    },
-    requestPasswordResetBody: (data) => <String, Object?>{
-      'email': data['email'],
-    },
-    confirmPasswordResetBody: (data) => <String, Object?>{
-      'email': data['email'],
-      'code': data['code'],
-      'new_password': data['password'],
-    },
+    loginBody:
+        (credentials) => <String, Object?>{
+          'login': credentials['email'],
+          'secret': credentials['password'],
+          'client': 'symphony-example',
+        },
+    refreshBody:
+        (tokens) => <String, Object?>{'renewal_token': tokens.refreshToken},
+    logoutBody:
+        (session) => <String, Object?>{
+          'renewal_token': session.tokens.refreshToken,
+        },
+    registerBody:
+        (data) => <String, Object?>{
+          'full_name': data['name'],
+          'email': data['email'],
+          'password': data['password'],
+        },
+    requestPasswordResetBody:
+        (data) => <String, Object?>{'email': data['email']},
+    confirmPasswordResetBody:
+        (data) => <String, Object?>{
+          'email': data['email'],
+          'code': data['code'],
+          'new_password': data['password'],
+        },
     sessionValidator: requireVerifiedEmail,
   );
 }

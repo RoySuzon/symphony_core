@@ -42,10 +42,11 @@ void main() {
         ..error('e');
 
       expect(sink.entries.map((e) => e.message), <String>['i', 'w', 'e']);
-      expect(
-        sink.entries.map((e) => e.level),
-        <LogLevel>[LogLevel.info, LogLevel.warning, LogLevel.error],
-      );
+      expect(sink.entries.map((e) => e.level), <LogLevel>[
+        LogLevel.info,
+        LogLevel.warning,
+        LogLevel.error,
+      ]);
       expect(second.entries, hasLength(3));
     });
 
@@ -184,7 +185,9 @@ void main() {
       );
 
       expect(
-          entry.toString(), '[ERROR][HTTP] failed\n  error: timeout\n#0 main');
+        entry.toString(),
+        '[ERROR][HTTP] failed\n  error: timeout\n#0 main',
+      );
     });
 
     test('omits missing parts', () {

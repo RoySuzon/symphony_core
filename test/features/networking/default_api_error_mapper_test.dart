@@ -14,13 +14,12 @@ void main() {
     DioExceptionType type, {
     Object? error,
     String? message,
-  }) =>
-      DioException(
-        requestOptions: requestOptions,
-        type: type,
-        error: error,
-        message: message,
-      );
+  }) => DioException(
+    requestOptions: requestOptions,
+    type: type,
+    error: error,
+    message: message,
+  );
 
   DioException httpError(int statusCode, [Object? data]) =>
       DioException.badResponse(
@@ -162,8 +161,10 @@ void main() {
       );
       expect(messageOf(jsonEncode(<String, Object?>{'message': 'H'})), 'H');
       expect(messageOf('Plain text problem'), 'Plain text problem');
-      expect(messageOf('<html><body>Bad gateway</body></html>'),
-          mapper.clientErrorMessage);
+      expect(
+        messageOf('<html><body>Bad gateway</body></html>'),
+        mapper.clientErrorMessage,
+      );
       expect(messageOf(utf8.encode('{"message":"I"}')), 'I');
     });
 
@@ -190,21 +191,23 @@ void main() {
     });
 
     test('parse field errors from a map', () {
-      final failure = map(
-        httpError(422, <String, Object?>{
-          'message': 'The given data was invalid.',
-          'errors': <String, Object?>{
-            'email': <String>['is invalid', 'is taken'],
-            'name': 'is required',
-            'address': <String, Object?>{
-              'city': <String>['is required'],
-            },
-            'phone': <Object?>[
-              <String, Object?>{'message': 'is too short'},
-            ],
-          },
-        }),
-      ) as ValidationFailure;
+      final failure =
+          map(
+                httpError(422, <String, Object?>{
+                  'message': 'The given data was invalid.',
+                  'errors': <String, Object?>{
+                    'email': <String>['is invalid', 'is taken'],
+                    'name': 'is required',
+                    'address': <String, Object?>{
+                      'city': <String>['is required'],
+                    },
+                    'phone': <Object?>[
+                      <String, Object?>{'message': 'is too short'},
+                    ],
+                  },
+                }),
+              )
+              as ValidationFailure;
 
       expect(failure.message, 'The given data was invalid.');
       expect(failure.fieldErrors, <String, List<String>>{
@@ -217,25 +220,33 @@ void main() {
     });
 
     test('parse field errors from a list', () {
-      final failure = map(
-        httpError(400, <String, Object?>{
-          'errors': <Object?>[
-            <String, Object?>{'field': 'email', 'message': 'is invalid'},
-            <String, Object?>{'param': 'age', 'msg': 'must be positive'},
-            <String, Object?>{
-              'path': <String>['items', '0', 'sku'],
-              'message': 'is unknown',
-            },
-            <String, Object?>{
-              'source': <String, Object?>{
-                'pointer': '/data/attributes/title',
-              },
-              'detail': 'is blank',
-            },
-            'ignored',
-          ],
-        }),
-      ) as ValidationFailure;
+      final failure =
+          map(
+                httpError(400, <String, Object?>{
+                  'errors': <Object?>[
+                    <String, Object?>{
+                      'field': 'email',
+                      'message': 'is invalid',
+                    },
+                    <String, Object?>{
+                      'param': 'age',
+                      'msg': 'must be positive',
+                    },
+                    <String, Object?>{
+                      'path': <String>['items', '0', 'sku'],
+                      'message': 'is unknown',
+                    },
+                    <String, Object?>{
+                      'source': <String, Object?>{
+                        'pointer': '/data/attributes/title',
+                      },
+                      'detail': 'is blank',
+                    },
+                    'ignored',
+                  ],
+                }),
+              )
+              as ValidationFailure;
 
       expect(failure.message, mapper.validationMessage);
       expect(failure.fieldErrors, <String, List<String>>{
@@ -267,16 +278,18 @@ void main() {
         fieldErrorsKey: 'violations',
       );
 
-      final failure = custom.map(
-        httpError(400, <String, Object?>{
-          'reason': 'Rejected',
-          'kind': 'E_RULE',
-          'violations': <String, Object?>{
-            'email': <String>['bad'],
-          },
-        }),
-        StackTrace.current,
-      ) as ValidationFailure;
+      final failure =
+          custom.map(
+                httpError(400, <String, Object?>{
+                  'reason': 'Rejected',
+                  'kind': 'E_RULE',
+                  'violations': <String, Object?>{
+                    'email': <String>['bad'],
+                  },
+                }),
+                StackTrace.current,
+              )
+              as ValidationFailure;
 
       expect(failure.message, 'Rejected');
       expect(failure.code, 'E_RULE');
@@ -326,7 +339,9 @@ void main() {
         expect(() => map(httpError(500, body)), returnsNormally);
       }
       expect(
-          map(httpError(400, '{not json')).message, mapper.validationMessage);
+        map(httpError(400, '{not json')).message,
+        mapper.validationMessage,
+      );
     });
   });
 }

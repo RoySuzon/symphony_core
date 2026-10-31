@@ -179,8 +179,9 @@ void main() {
         context,
         title: 'E-mail',
         confirmLabel: 'Send',
-        validator: (value) =>
-            value != null && value.contains('@') ? null : 'Invalid e-mail',
+        validator:
+            (value) =>
+                value != null && value.contains('@') ? null : 'Invalid e-mail',
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'nope');
@@ -245,8 +246,9 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('close is a no-op once the user navigated back',
-        (tester) async {
+    testWidgets('close is a no-op once the user navigated back', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
       final navigator = Navigator.of(context);
 
@@ -262,8 +264,9 @@ void main() {
       expect(find.byType(Scaffold), findsOneWidget);
     });
 
-    testWidgets('notices when another navigation removes the dialog',
-        (tester) async {
+    testWidgets('notices when another navigation removes the dialog', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
       final navigator = Navigator.of(context);
       var closedCompleted = false;
@@ -290,8 +293,9 @@ void main() {
       expect(find.text('Signed out'), findsOneWidget, reason: 'no extra pop');
     });
 
-    testWidgets('close right after showLoading removes the dialog',
-        (tester) async {
+    testWidgets('close right after showLoading removes the dialog', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
 
       final handle = SymphonyDialogs.showLoading(context, message: 'Saving');
@@ -305,8 +309,9 @@ void main() {
   });
 
   group('SymphonyDialogs.runWithLoading', () {
-    testWidgets('returns the task result and closes the dialog',
-        (tester) async {
+    testWidgets('returns the task result and closes the dialog', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
       final completer = Completer<int>();
 
@@ -325,8 +330,9 @@ void main() {
       expect(find.text('Working'), findsNothing);
     });
 
-    testWidgets('closes the dialog and rethrows when the task fails',
-        (tester) async {
+    testWidgets('closes the dialog and rethrows when the task fails', (
+      tester,
+    ) async {
       final context = await pumpTestContext(tester);
       final completer = Completer<int>();
 

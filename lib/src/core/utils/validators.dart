@@ -33,31 +33,29 @@ abstract final class SymphonyValidators {
   /// Fails when the value is null, empty or only whitespace.
   static FormFieldValidator<String> required({
     String message = 'This field is required.',
-  }) =>
-      (value) => value == null || value.trim().isEmpty ? message : null;
+  }) => (value) => value == null || value.trim().isEmpty ? message : null;
 
   /// Fails when a non-empty value is not a valid e-mail address.
   static FormFieldValidator<String> email({
     String message = 'Enter a valid e-mail address.',
-  }) =>
-      (value) {
-        if (value == null || value.trim().isEmpty) return null;
-        return _emailPattern.hasMatch(value.trim()) ? null : message;
-      };
+  }) => (value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return _emailPattern.hasMatch(value.trim()) ? null : message;
+  };
 
   /// Fails when a non-empty value is not a plausible phone number: 6 to 20
   /// characters made of digits, spaces, parentheses and hyphens (optionally
   /// after a leading `+`), at least 6 of them digits.
   static FormFieldValidator<String> phone({
     String message = 'Enter a valid phone number.',
-  }) =>
-      (value) {
-        if (value == null || value.trim().isEmpty) return null;
-        final text = value.trim();
-        final plausible = _phonePattern.hasMatch(text) &&
-            _digit.allMatches(text).length >= _minPhoneDigits;
-        return plausible ? null : message;
-      };
+  }) => (value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final text = value.trim();
+    final plausible =
+        _phonePattern.hasMatch(text) &&
+        _digit.allMatches(text).length >= _minPhoneDigits;
+    return plausible ? null : message;
+  };
 
   /// Fails when a non-empty value is shorter than [length] characters.
   ///
@@ -88,11 +86,10 @@ abstract final class SymphonyValidators {
   static FormFieldValidator<String> pattern(
     RegExp pattern, {
     String message = 'Invalid format.',
-  }) =>
-      (value) {
-        if (value == null || value.isEmpty) return null;
-        return pattern.hasMatch(value) ? null : message;
-      };
+  }) => (value) {
+    if (value == null || value.isEmpty) return null;
+    return pattern.hasMatch(value) ? null : message;
+  };
 
   /// Fails when a non-empty value is not a finite decimal number.
   ///
@@ -101,30 +98,27 @@ abstract final class SymphonyValidators {
   /// hexadecimal literals are rejected.
   static FormFieldValidator<String> numeric({
     String message = 'Enter a valid number.',
-  }) =>
-      (value) {
-        if (value == null || value.trim().isEmpty) return null;
-        final number = double.tryParse(value.trim());
-        return number == null || !number.isFinite ? message : null;
-      };
+  }) => (value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final number = double.tryParse(value.trim());
+    return number == null || !number.isFinite ? message : null;
+  };
 
   /// Fails when the value differs from the one returned by [other] (for
   /// example a password confirmation).
   static FormFieldValidator<String> match(
     String? Function() other, {
     String message = 'Values do not match.',
-  }) =>
-      (value) => value == other() ? null : message;
+  }) => (value) => value == other() ? null : message;
 
   /// Runs [validators] in order and returns the first error.
   static FormFieldValidator<String> compose(
     List<FormFieldValidator<String>> validators,
-  ) =>
-      (value) {
-        for (final validator in validators) {
-          final error = validator(value);
-          if (error != null) return error;
-        }
-        return null;
-      };
+  ) => (value) {
+    for (final validator in validators) {
+      final error = validator(value);
+      if (error != null) return error;
+    }
+    return null;
+  };
 }

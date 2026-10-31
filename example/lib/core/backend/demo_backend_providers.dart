@@ -9,10 +9,7 @@ import 'demo_backend.dart';
 /// It is derived from `httpClientAdapterProvider` (the single override made
 /// in `main.dart`), so the developer tools of the settings page disappear
 /// automatically once a real backend is used.
-final demoBackendProvider = Provider<DemoBackend?>(
-  (ref) {
-    final adapter = ref.watch(httpClientAdapterProvider);
-    return adapter is DemoBackend ? adapter : null;
-  },
-  name: 'demoBackendProvider',
-);
+final demoBackendProvider = Provider<DemoBackend?>((ref) {
+  final adapter = ref.watch(httpClientAdapterProvider);
+  return adapter is DemoBackend ? adapter : null;
+}, name: 'demoBackendProvider');

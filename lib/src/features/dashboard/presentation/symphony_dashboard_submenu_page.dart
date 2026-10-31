@@ -13,10 +13,8 @@ import 'dashboard_providers.dart';
 
 /// Opens the submenu of the group identified by [groupPath] (ids of nested
 /// groups, top level first). [context] is the context of the tapped tile.
-typedef DashboardSubmenuOpener = void Function(
-  BuildContext context,
-  List<String> groupPath,
-);
+typedef DashboardSubmenuOpener =
+    void Function(BuildContext context, List<String> groupPath);
 
 /// A full-screen page displaying the children of a dashboard group.
 ///
@@ -155,7 +153,8 @@ class _SymphonyDashboardSubmenuPageState
         items: group?.children ?? const <DashboardItem>[],
         onItemTap: _handleTap,
         tileBuilder: widget.tileBuilder,
-        emptyState: widget.emptyState ??
+        emptyState:
+            widget.emptyState ??
             SymphonyEmptyState(
               title: widget.emptyTitle,
               message: widget.emptyMessage,
@@ -237,9 +236,9 @@ class _SymphonyDashboardSubmenuPageState
       emptyMessage: config.emptyMessage,
     );
     unawaited(
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(builder: (_) => page),
-      ),
+      Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute<void>(builder: (_) => page)),
     );
   }
 }

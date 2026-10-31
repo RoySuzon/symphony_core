@@ -11,25 +11,19 @@ final adminRepositoryProvider = Provider<AdminRepository>(
 );
 
 /// Every account (administrators only).
-final managedUsersProvider = FutureProvider<Result<List<ManagedUser>>>(
-  (ref) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<List<ManagedUser>>.failure(UnauthorizedFailure());
-    }
-    return ref.watch(adminRepositoryProvider).fetchUsers();
-  },
-  name: 'managedUsersProvider',
-);
+final managedUsersProvider = FutureProvider<Result<List<ManagedUser>>>((ref) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<List<ManagedUser>>.failure(UnauthorizedFailure());
+  }
+  return ref.watch(adminRepositoryProvider).fetchUsers();
+}, name: 'managedUsersProvider');
 
 /// The audit log (administrators only).
-final auditLogProvider = FutureProvider<Result<List<AuditEntry>>>(
-  (ref) {
-    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
-    if (userId == null) {
-      return const Result<List<AuditEntry>>.failure(UnauthorizedFailure());
-    }
-    return ref.watch(adminRepositoryProvider).fetchAuditLog();
-  },
-  name: 'auditLogProvider',
-);
+final auditLogProvider = FutureProvider<Result<List<AuditEntry>>>((ref) {
+  final userId = ref.watch(currentUserProvider.select((user) => user?.id));
+  if (userId == null) {
+    return const Result<List<AuditEntry>>.failure(UnauthorizedFailure());
+  }
+  return ref.watch(adminRepositoryProvider).fetchAuditLog();
+}, name: 'auditLogProvider');

@@ -9,11 +9,12 @@ Widget _page(BuildContext context, GoRouterState state) => const SizedBox();
 
 String? _appRedirect(BuildContext context, GoRouterState state) => null;
 
-List<String> _propertyNames(Diagnosticable route) => route
-    .toDiagnosticsNode()
-    .getProperties()
-    .map((DiagnosticsNode node) => node.name ?? '')
-    .toList();
+List<String> _propertyNames(Diagnosticable route) =>
+    route
+        .toDiagnosticsNode()
+        .getProperties()
+        .map((DiagnosticsNode node) => node.name ?? '')
+        .toList();
 
 void main() {
   group('GuardedRoute', () {
@@ -60,8 +61,8 @@ void main() {
     test('accepts a page builder', () {
       final route = GuardedRoute(
         path: '/orders',
-        pageBuilder: (context, state) =>
-            const MaterialPage<void>(child: SizedBox()),
+        pageBuilder:
+            (context, state) => const MaterialPage<void>(child: SizedBox()),
       );
 
       expect(route.pageBuilder, isNotNull);
@@ -84,8 +85,10 @@ void main() {
         builder: _page,
       );
 
-      expect(_propertyNames(route),
-          containsAll(<String>['access', 'deniedRedirect']));
+      expect(
+        _propertyNames(route),
+        containsAll(<String>['access', 'deniedRedirect']),
+      );
     });
   });
 

@@ -37,11 +37,13 @@ class SymphonyForgotPasswordForm extends ConsumerStatefulWidget {
     this.identifierAutofillHints = const <String>[AutofillHints.email],
     this.identifierValidator,
     this.initialIdentifier,
-    this.description = 'Enter the e-mail address of your account and we will '
-        'send you instructions to reset your password.',
+    this.description =
+        'Enter the e-mail address of your account and we will '
+            'send you instructions to reset your password.',
     this.submitLabel = 'Send instructions',
-    this.requestSuccessMessage = 'If an account exists for this address, you '
-        'will receive password reset instructions shortly.',
+    this.requestSuccessMessage =
+        'If an account exists for this address, you '
+            'will receive password reset instructions shortly.',
     this.requestCredentialsBuilder,
     this.enableConfirmStep = false,
     this.confirmDescription =
@@ -76,27 +78,32 @@ class SymphonyForgotPasswordForm extends ConsumerStatefulWidget {
   });
 
   /// Key of the identifier input.
-  static const Key identifierInputKey =
-      ValueKey<String>('symphony.recovery.identifier');
+  static const Key identifierInputKey = ValueKey<String>(
+    'symphony.recovery.identifier',
+  );
 
   /// Key of the request button.
-  static const Key requestButtonKey =
-      ValueKey<String>('symphony.recovery.request');
+  static const Key requestButtonKey = ValueKey<String>(
+    'symphony.recovery.request',
+  );
 
   /// Key of the code input (confirmation step).
   static const Key codeInputKey = ValueKey<String>('symphony.recovery.code');
 
   /// Key of the new password input (confirmation step).
-  static const Key newPasswordInputKey =
-      ValueKey<String>('symphony.recovery.newPassword');
+  static const Key newPasswordInputKey = ValueKey<String>(
+    'symphony.recovery.newPassword',
+  );
 
   /// Key of the new password confirmation input (confirmation step).
-  static const Key confirmPasswordInputKey =
-      ValueKey<String>('symphony.recovery.confirmPassword');
+  static const Key confirmPasswordInputKey = ValueKey<String>(
+    'symphony.recovery.confirmPassword',
+  );
 
   /// Key of the confirmation button (confirmation step).
-  static const Key confirmButtonKey =
-      ValueKey<String>('symphony.recovery.confirm');
+  static const Key confirmButtonKey = ValueKey<String>(
+    'symphony.recovery.confirm',
+  );
 
   /// Credentials field receiving the identifier.
   final String identifierField;
@@ -198,7 +205,8 @@ class SymphonyForgotPasswordForm extends ConsumerStatefulWidget {
     String identifier,
     String code,
     String newPassword,
-  )? confirmCredentialsBuilder;
+  )?
+  confirmCredentialsBuilder;
 
   /// Message of the default "required" validators.
   final String requiredFieldMessage;
@@ -292,10 +300,9 @@ class _SymphonyForgotPasswordFormState
     if (_submitting) return;
     if (!resend && !_validate()) return;
     final identifier = resend ? _identifier : _identifierController.text.trim();
-    final credentials = widget.requestCredentialsBuilder?.call(identifier) ??
-        AuthCredentials(<String, Object?>{
-          widget.identifierField: identifier,
-        });
+    final credentials =
+        widget.requestCredentialsBuilder?.call(identifier) ??
+        AuthCredentials(<String, Object?>{widget.identifierField: identifier});
     final onRequestSent = widget.onRequestSent;
     final onFailure = widget.onFailure;
 
@@ -315,9 +322,10 @@ class _SymphonyForgotPasswordFormState
             _identifier = identifier;
             _successMessage = widget.requestSuccessMessage;
             _autovalidateMode = AutovalidateMode.disabled;
-            _step = widget.enableConfirmStep
-                ? _RecoveryStep.confirm
-                : _RecoveryStep.done;
+            _step =
+                widget.enableConfirmStep
+                    ? _RecoveryStep.confirm
+                    : _RecoveryStep.done;
           });
         }
         onRequestSent?.call(identifier);
@@ -333,11 +341,11 @@ class _SymphonyForgotPasswordFormState
     final password = _passwordController.text;
     final credentials =
         widget.confirmCredentialsBuilder?.call(_identifier, code, password) ??
-            AuthCredentials(<String, Object?>{
-              widget.identifierField: _identifier,
-              widget.codeField: code,
-              widget.newPasswordField: password,
-            });
+        AuthCredentials(<String, Object?>{
+          widget.identifierField: _identifier,
+          widget.codeField: code,
+          widget.newPasswordField: password,
+        });
     final onCompleted = widget.onCompleted;
     final onFailure = widget.onFailure;
 
@@ -384,9 +392,9 @@ class _SymphonyForgotPasswordFormState
       visibleFields: switch (_step) {
         _RecoveryStep.request => <String>{widget.identifierField},
         _RecoveryStep.confirm => <String>{
-            widget.codeField,
-            widget.newPasswordField,
-          },
+          widget.codeField,
+          widget.newPasswordField,
+        },
         _RecoveryStep.done => const <String>{},
       },
       messageBuilder: widget.failureMessageBuilder,
@@ -450,7 +458,8 @@ class _SymphonyForgotPasswordFormState
         keyboardType: widget.identifierKeyboardType,
         textInputAction: TextInputAction.done,
         autofillHints: widget.identifierAutofillHints,
-        validator: widget.identifierValidator ??
+        validator:
+            widget.identifierValidator ??
             SymphonyValidators.compose(<FormFieldValidator<String>>[
               SymphonyValidators.required(message: widget.requiredFieldMessage),
               SymphonyValidators.email(message: widget.invalidEmailMessage),
@@ -484,7 +493,8 @@ class _SymphonyForgotPasswordFormState
         keyboardType: widget.codeKeyboardType,
         textInputAction: TextInputAction.next,
         autofillHints: const <String>[AutofillHints.oneTimeCode],
-        validator: widget.codeValidator ??
+        validator:
+            widget.codeValidator ??
             SymphonyValidators.required(message: widget.requiredFieldMessage),
         errorText: _fieldErrors[widget.codeField],
         enabled: !_submitting,
@@ -495,7 +505,8 @@ class _SymphonyForgotPasswordFormState
         key: SymphonyForgotPasswordForm.newPasswordInputKey,
         controller: _passwordController,
         label: widget.newPasswordLabel,
-        validator: widget.newPasswordValidator ??
+        validator:
+            widget.newPasswordValidator ??
             SymphonyValidators.compose(<FormFieldValidator<String>>[
               SymphonyValidators.required(message: widget.requiredFieldMessage),
               SymphonyValidators.minLength(
@@ -507,9 +518,10 @@ class _SymphonyForgotPasswordFormState
         enabled: !_submitting,
         autofillHints: const <String>[AutofillHints.newPassword],
         showStrengthIndicator: true,
-        textInputAction: widget.showConfirmPasswordField
-            ? TextInputAction.next
-            : TextInputAction.done,
+        textInputAction:
+            widget.showConfirmPasswordField
+                ? TextInputAction.next
+                : TextInputAction.done,
         onChanged: (_) => _clearFieldError(widget.newPasswordField),
         onSubmitted: widget.showConfirmPasswordField ? null : (_) => _confirm(),
       ),

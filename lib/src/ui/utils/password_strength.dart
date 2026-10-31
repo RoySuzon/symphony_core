@@ -23,11 +23,13 @@ enum PasswordStrength {
 class PasswordStrengthResult {
   /// Creates a result. [score] must be between 0 and 100.
   const PasswordStrengthResult({required this.strength, required this.score})
-      : assert(score >= 0 && score <= 100, 'score must be within 0..100.');
+    : assert(score >= 0 && score <= 100, 'score must be within 0..100.');
 
   /// The result of an empty password.
-  static const PasswordStrengthResult empty =
-      PasswordStrengthResult(strength: PasswordStrength.weak, score: 0);
+  static const PasswordStrengthResult empty = PasswordStrengthResult(
+    strength: PasswordStrength.weak,
+    score: 0,
+  );
 
   /// The qualitative level derived from [score].
   final PasswordStrength strength;

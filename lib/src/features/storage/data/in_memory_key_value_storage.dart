@@ -5,7 +5,7 @@ import '../domain/key_value_storage.dart';
 class InMemoryKeyValueStorage extends KeyValueStorage {
   /// Creates a storage pre-filled with [initialValues].
   InMemoryKeyValueStorage([Map<String, String>? initialValues])
-      : _values = <String, String>{...?initialValues};
+    : _values = <String, String>{...?initialValues};
 
   final Map<String, String> _values;
 

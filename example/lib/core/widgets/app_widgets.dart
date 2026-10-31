@@ -52,9 +52,10 @@ class AppPage extends StatelessWidget {
       appBar: AppBar(title: Text(title), actions: actions),
       floatingActionButton: floatingActionButton,
       body: SafeArea(
-        child: scrollable
-            ? SingleChildScrollView(padding: padding, child: content)
-            : content,
+        child:
+            scrollable
+                ? SingleChildScrollView(padding: padding, child: content)
+                : content,
       ),
     );
   }
@@ -238,12 +239,7 @@ class UserAvatar extends StatelessWidget {
 /// Small rounded label (roles, permissions, statuses).
 class TagChip extends StatelessWidget {
   /// Creates a tag.
-  const TagChip({
-    super.key,
-    required this.label,
-    this.icon,
-    this.color,
-  });
+  const TagChip({super.key, required this.label, this.icon, this.color});
 
   /// Text.
   final String label;
@@ -276,10 +272,9 @@ class TagChip extends StatelessWidget {
           ],
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(color: foreground),
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: foreground),
           ),
         ],
       ),

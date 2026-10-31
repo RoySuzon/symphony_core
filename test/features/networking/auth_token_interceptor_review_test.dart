@@ -53,11 +53,12 @@ void main() {
     return client;
   }
 
-  test(
-      'a request rejected after the user signed out neither refreshes nor '
+  test('a request rejected after the user signed out neither refreshes nor '
       'resurrects the session', () async {
-    final delegate =
-        FakeTokenDelegate(token: 'old', refreshedToken: 'resurrected');
+    final delegate = FakeTokenDelegate(
+      token: 'old',
+      refreshedToken: 'resurrected',
+    );
     adapter.responder = (options, _) {
       // The user signs out while the request is in flight; the server then
       // rejects the token it was sent with.
@@ -75,38 +76,40 @@ void main() {
     expect(adapter.requests, hasLength(1));
   });
 
-  test('a request rejected while the session is being expired never refreshes',
-      () async {
-    final delegate = _SessionLikeDelegate('old')
-      ..expiryGate = Completer<void>();
-    adapter.responder =
-        (_, __) => jsonBody(<String, Object?>{}, statusCode: 401);
-    final client = buildClient(delegate);
-
-    final first = _failureOf(client.get<void>('/first'));
-    while (delegate.expiredCalls == 0) {
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-    }
-    // The session still holds the rejected token until the expiry completes.
-    final second = _failureOf(client.get<void>('/second'));
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    delegate.expiryGate!.complete();
-    final failures = await Future.wait(<Future<Failure>>[first, second]);
-
-    expect(failures, everyElement(isA<UnauthorizedFailure>()));
-    expect(delegate.refreshCalls, 1);
-    expect(delegate.expiredCalls, 1);
-  });
-
   test(
-      'a request cancelled during the refresh fails at once and is never '
+    'a request rejected while the session is being expired never refreshes',
+    () async {
+      final delegate = _SessionLikeDelegate('old')
+        ..expiryGate = Completer<void>();
+      adapter.responder =
+          (_, _) => jsonBody(<String, Object?>{}, statusCode: 401);
+      final client = buildClient(delegate);
+
+      final first = _failureOf(client.get<void>('/first'));
+      while (delegate.expiredCalls == 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+      }
+      // The session still holds the rejected token until the expiry completes.
+      final second = _failureOf(client.get<void>('/second'));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      delegate.expiryGate!.complete();
+      final failures = await Future.wait(<Future<Failure>>[first, second]);
+
+      expect(failures, everyElement(isA<UnauthorizedFailure>()));
+      expect(delegate.refreshCalls, 1);
+      expect(delegate.expiredCalls, 1);
+    },
+  );
+
+  test('a request cancelled during the refresh fails at once and is never '
       'replayed, while the refresh still serves the others', () async {
     final delegate = FakeTokenDelegate(token: 'old', refreshedToken: 'new')
       ..refreshGate = Completer<void>();
-    adapter.responder = (options, _) =>
-        options.headers['Authorization'] == 'Bearer new'
-            ? jsonBody(<String, Object?>{'path': options.path})
-            : jsonBody(<String, Object?>{}, statusCode: 401);
+    adapter.responder =
+        (options, _) =>
+            options.headers['Authorization'] == 'Bearer new'
+                ? jsonBody(<String, Object?>{'path': options.path})
+                : jsonBody(<String, Object?>{}, statusCode: 401);
     final client = buildClient(delegate);
     final cancelToken = CancelToken();
 
@@ -141,17 +144,19 @@ void main() {
       if (delegate.refreshCalls == 1) {
         // Work started by the refresh (a listener, a timer, a provider
         // rebuild...) that sends a request once the refresh is over.
-        followUp = Future<void>.delayed(const Duration(milliseconds: 20))
-            .then((_) => _failureOrNull(client.get<void>('/later')));
+        followUp = Future<void>.delayed(
+          const Duration(milliseconds: 20),
+        ).then((_) => _failureOrNull(client.get<void>('/later')));
         return 't2';
       }
       return 't3';
     };
     var valid = 'Bearer t2';
-    adapter.responder = (options, _) =>
-        options.headers['Authorization'] == valid
-            ? jsonBody(<String, Object?>{'ok': true})
-            : jsonBody(<String, Object?>{}, statusCode: 401);
+    adapter.responder =
+        (options, _) =>
+            options.headers['Authorization'] == valid
+                ? jsonBody(<String, Object?>{'ok': true})
+                : jsonBody(<String, Object?>{}, statusCode: 401);
     client = buildClient(delegate);
 
     await client.get<void>('/first');

@@ -141,7 +141,9 @@ class _DemoAccountsCardState extends ConsumerState<DemoAccountsCard> {
 
   Future<void> _signIn(DemoAccountInfo account) async {
     setState(() => _signingIn = account.email);
-    final result = await ref.read(authControllerProvider.notifier).login(
+    final result = await ref
+        .read(authControllerProvider.notifier)
+        .login(
           AuthCredentials.emailPassword(
             email: account.email,
             password: demoPassword,
@@ -169,10 +171,7 @@ class _DemoAccountsCardState extends ConsumerState<DemoAccountsCard> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Text(
-                  'Demo accounts',
-                  style: theme.textTheme.titleSmall,
-                ),
+                child: Text('Demo accounts', style: theme.textTheme.titleSmall),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -189,12 +188,13 @@ class _DemoAccountsCardState extends ConsumerState<DemoAccountsCard> {
                   leading: Icon(account.icon),
                   title: Text('${account.title} · ${account.email}'),
                   subtitle: Text(account.description),
-                  trailing: _signingIn == account.email
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.login),
+                  trailing:
+                      _signingIn == account.email
+                          ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Icon(Icons.login),
                   onTap: () => _signIn(account),
                 ),
             ],
@@ -217,9 +217,7 @@ class RegisterPage extends StatelessWidget {
       logo: const AppLogo(size: 56),
       title: 'Create your account',
       subtitle: 'New accounts get the viewer role.',
-      child: SymphonyRegisterForm(
-        onSignIn: () => context.go(AppRoutes.login),
-      ),
+      child: SymphonyRegisterForm(onSignIn: () => context.go(AppRoutes.login)),
     );
   }
 }

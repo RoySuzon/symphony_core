@@ -20,13 +20,15 @@ void main() {
 
     test('supports exhaustive pattern matching', () {
       String describe(Result<int> result) => switch (result) {
-            ResultSuccess<int>(:final value) => 'value $value',
-            ResultFailure<int>(:final failure) => 'failure ${failure.message}',
-          };
+        ResultSuccess<int>(:final value) => 'value $value',
+        ResultFailure<int>(:final failure) => 'failure ${failure.message}',
+      };
 
       expect(describe(success), 'value 2');
       expect(
-          describe(const Result<int>.failure(AuthFailure('no'))), 'failure no');
+        describe(const Result<int>.failure(AuthFailure('no'))),
+        'failure no',
+      );
     });
 
     test('when calls the matching branch', () {
@@ -150,7 +152,7 @@ void main() {
 
       final result = await guardResult<int>(
         () => throw const TimeoutFailure(),
-        mapError: (_, __) {
+        mapError: (_, _) {
           called = true;
           return const UnexpectedFailure();
         },

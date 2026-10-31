@@ -10,8 +10,7 @@ import '../features/storage/domain/key_value_storage.dart';
 import '../features/storage/domain/local_database.dart';
 import 'config/symphony_config.dart';
 import 'di/core_providers.dart';
-// Required on Riverpod 3; redundant (but harmless) on Riverpod 2.
-// ignore: unnecessary_import
+// Riverpod 3 exports Override/ProviderListenable from misc.dart only.
 import 'di/riverpod_compat.dart';
 import 'di/symphony_overrides.dart';
 import 'error/error_reporter.dart';
@@ -56,9 +55,9 @@ class SymphonyCore {
     required ProviderContainer container,
     required SymphonyConfig config,
     required bool? hasAuth,
-  })  : _container = container,
-        _config = config,
-        _hasAuth = hasAuth;
+  }) : _container = container,
+       _config = config,
+       _hasAuth = hasAuth;
 
   static SymphonyCore? _instance;
 
@@ -117,7 +116,7 @@ class SymphonyCore {
   /// reachable through this instance. Riverpod resolves providers that do not
   /// declare `dependencies` — every provider of this package — in the root
   /// container of a hierarchy, and does not let a child container override
-  /// their dependencies (Riverpod 2 asserts it in debug builds). Therefore,
+  /// their dependencies. Therefore,
   /// with a [parent]:
   /// * the configuration, auth adapter, storage, local database and error
   ///   reporter come from the parent hierarchy: [config] must be the
@@ -169,9 +168,10 @@ class SymphonyCore {
     // cannot be created fails this call without losing the working instance.
     final ErrorReporter? reporter;
     try {
-      reporter = core.config.handleGlobalErrors
-          ? core._container.read(errorReporterProvider)
-          : null;
+      reporter =
+          core.config.handleGlobalErrors
+              ? core._container.read(errorReporterProvider)
+              : null;
     } on Object {
       core._disposeNow();
       rethrow;
@@ -342,7 +342,8 @@ class SymphonyCore {
   }
 
   @override
-  String toString() => 'SymphonyCore(app: ${_config.appName}, '
+  String toString() =>
+      'SymphonyCore(app: ${_config.appName}, '
       'environment: ${_config.environment.name}, '
       'auth: ${_hasAuth ?? 'from parent'}, disposed: $_disposed)';
 
@@ -360,7 +361,8 @@ class SymphonyCore {
       return _buildChild(
         parent: parent,
         config: config,
-        configuredHere: authAdapter != null ||
+        configuredHere:
+            authAdapter != null ||
             authAdapterBuilder != null ||
             secureStorage != null ||
             localDatabase != null ||
@@ -414,8 +416,8 @@ class SymphonyCore {
     try {
       parentConfig = parent.read(symphonyConfigProvider);
     } on Object catch (error, stackTrace) {
-      // Riverpod 3 wraps provider errors in a ProviderException, Riverpod 2
-      // rethrows them as they are: the hint does not depend on it.
+      // Riverpod wraps provider errors in a ProviderException: the hint
+      // only embeds its description.
       Error.throwWithStackTrace(
         StateError(
           'The parent container is not configured for symphony_core. Create '

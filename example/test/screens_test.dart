@@ -22,8 +22,7 @@ const Map<String, String> _screens = <String, String>{
 
 void main() {
   for (final size in <Size>[const Size(1280, 2000), const Size(360, 780)]) {
-    testWidgets(
-        'every screen renders without layout errors '
+    testWidgets('every screen renders without layout errors '
         '(${size.width.round()}×${size.height.round()})', (tester) async {
       final app = await pumpExampleApp(tester, size: size);
       await app.pumpUntilFound(find.byType(LoginPage));
@@ -45,8 +44,9 @@ void main() {
     });
   }
 
-  testWidgets('the profile shows roles, permissions and AccessGate results',
-      (tester) async {
+  testWidgets('the profile shows roles, permissions and AccessGate results', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.signInAndOpenDashboard('staff@example.com');
 
@@ -65,8 +65,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('settings switch the environment and the theme at runtime',
-      (tester) async {
+  testWidgets('settings switch the environment and the theme at runtime', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.signInAndOpenDashboard('viewer@example.com');
 
@@ -110,8 +111,9 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('guest pages: register, password recovery and unknown routes',
-      (tester) async {
+  testWidgets('guest pages: register, password recovery and unknown routes', (
+    tester,
+  ) async {
     final app = await pumpExampleApp(tester);
     await app.pumpUntilFound(find.byType(LoginPage));
 
@@ -129,22 +131,26 @@ void main() {
     await app.dispose();
   });
 
-  testWidgets('quick sign-in shows the validator failure for unverified users',
-      (tester) async {
-    final app = await pumpExampleApp(tester);
-    await app.pumpUntilFound(find.byType(LoginPage));
+  testWidgets(
+    'quick sign-in shows the validator failure for unverified users',
+    (tester) async {
+      final app = await pumpExampleApp(tester);
+      await app.pumpUntilFound(find.byType(LoginPage));
 
-    await tester.tap(
-      find.byKey(DemoAccountsCard.tileKey('unverified@example.com')),
-    );
-    await app.pumpUntilFound(
-      find.text('Please verify your e-mail address before signing in.'),
-    );
-    expect(find.byType(LoginPage), findsOneWidget);
+      await tester.tap(
+        find.byKey(DemoAccountsCard.tileKey('unverified@example.com')),
+      );
+      await app.pumpUntilFound(
+        find.text('Please verify your e-mail address before signing in.'),
+      );
+      expect(find.byType(LoginPage), findsOneWidget);
 
-    await tester.tap(find.byKey(DemoAccountsCard.tileKey('admin@example.com')));
-    await app.pumpUntilFound(find.byType(SymphonyDashboard));
+      await tester.tap(
+        find.byKey(DemoAccountsCard.tileKey('admin@example.com')),
+      );
+      await app.pumpUntilFound(find.byType(SymphonyDashboard));
 
-    await app.dispose();
-  });
+      await app.dispose();
+    },
+  );
 }

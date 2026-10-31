@@ -97,17 +97,18 @@ class ApiClient {
     HttpClientAdapter? httpClientAdapter,
     Dio? dio,
     RetryDelayCallback? retryDelayCallback,
-  })  : _config = config,
-        _baseUrl = ValueNotifier<String>(_checkBaseUrl(config.baseUrl)),
-        _logger = logger ??
-            SymphonyLogger(
-              enabled: config.enableLogging,
-              minLevel: config.logLevel,
-              tag: 'HTTP',
-            ),
-        _errorMapper = errorMapper ?? const DefaultApiErrorMapper(),
-        _dio = dio ?? _createDio(config),
-        _ownsAdapter = httpClientAdapter == null {
+  }) : _config = config,
+       _baseUrl = ValueNotifier<String>(_checkBaseUrl(config.baseUrl)),
+       _logger =
+           logger ??
+           SymphonyLogger(
+             enabled: config.enableLogging,
+             minLevel: config.logLevel,
+             tag: 'HTTP',
+           ),
+       _errorMapper = errorMapper ?? const DefaultApiErrorMapper(),
+       _dio = dio ?? _createDio(config),
+       _ownsAdapter = httpClientAdapter == null {
     final options = _dio.options;
     if (dio != null) {
       options
@@ -163,14 +164,14 @@ class ApiClient {
   bool _closed = false;
 
   static Dio _createDio(SymphonyConfig config) => Dio(
-        BaseOptions(
-          connectTimeout: config.connectTimeout,
-          receiveTimeout: config.receiveTimeout,
-          sendTimeout: config.sendTimeout,
-          headers: <String, dynamic>{...config.defaultHeaders},
-          responseType: ResponseType.json,
-        ),
-      );
+    BaseOptions(
+      connectTimeout: config.connectTimeout,
+      receiveTimeout: config.receiveTimeout,
+      sendTimeout: config.sendTimeout,
+      headers: <String, dynamic>{...config.defaultHeaders},
+      responseType: ResponseType.json,
+    ),
+  );
 
   /// The configuration this client was created with.
   SymphonyConfig get config => _config;
@@ -359,15 +360,14 @@ class ApiClient {
     ResponseDecoder<T>? decoder,
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
-  }) =>
-      request<T>(
-        path,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: decoder,
-        cancelToken: cancelToken,
-        onReceiveProgress: onReceiveProgress,
-      );
+  }) => request<T>(
+    path,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: decoder,
+    cancelToken: cancelToken,
+    onReceiveProgress: onReceiveProgress,
+  );
 
   /// Sends a POST request.
   Future<ApiResponse<T>> post<T>(
@@ -379,18 +379,17 @@ class ApiClient {
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
-  }) =>
-      request<T>(
-        path,
-        method: 'POST',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: decoder,
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
+  }) => request<T>(
+    path,
+    method: 'POST',
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: decoder,
+    cancelToken: cancelToken,
+    onSendProgress: onSendProgress,
+    onReceiveProgress: onReceiveProgress,
+  );
 
   /// Sends a PUT request.
   Future<ApiResponse<T>> put<T>(
@@ -402,18 +401,17 @@ class ApiClient {
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
-  }) =>
-      request<T>(
-        path,
-        method: 'PUT',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: decoder,
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
+  }) => request<T>(
+    path,
+    method: 'PUT',
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: decoder,
+    cancelToken: cancelToken,
+    onSendProgress: onSendProgress,
+    onReceiveProgress: onReceiveProgress,
+  );
 
   /// Sends a PATCH request.
   Future<ApiResponse<T>> patch<T>(
@@ -425,18 +423,17 @@ class ApiClient {
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
-  }) =>
-      request<T>(
-        path,
-        method: 'PATCH',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: decoder,
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
+  }) => request<T>(
+    path,
+    method: 'PATCH',
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: decoder,
+    cancelToken: cancelToken,
+    onSendProgress: onSendProgress,
+    onReceiveProgress: onReceiveProgress,
+  );
 
   /// Sends a DELETE request.
   Future<ApiResponse<T>> delete<T>(
@@ -446,16 +443,15 @@ class ApiClient {
     ApiRequestOptions options = const ApiRequestOptions(),
     ResponseDecoder<T>? decoder,
     CancelToken? cancelToken,
-  }) =>
-      request<T>(
-        path,
-        method: 'DELETE',
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: decoder,
-        cancelToken: cancelToken,
-      );
+  }) => request<T>(
+    path,
+    method: 'DELETE',
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: decoder,
+    cancelToken: cancelToken,
+  );
 
   /// Uploads [files] (plus optional form [fields]) as `multipart/form-data`.
   ///
@@ -542,16 +538,15 @@ class ApiClient {
     ApiRequestOptions options = const ApiRequestOptions(),
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
-  }) =>
-      request<Uint8List>(
-        path,
-        queryParameters: queryParameters,
-        options: options,
-        decoder: _asBytes,
-        cancelToken: cancelToken,
-        onReceiveProgress: onReceiveProgress,
-        responseType: ResponseType.bytes,
-      );
+  }) => request<Uint8List>(
+    path,
+    queryParameters: queryParameters,
+    options: options,
+    decoder: _asBytes,
+    cancelToken: cancelToken,
+    onReceiveProgress: onReceiveProgress,
+    responseType: ResponseType.bytes,
+  );
 
   /// Closes the client. Pending requests are cancelled when [force] is true.
   ///
@@ -659,10 +654,7 @@ class _RequestTimeoutsInterceptor extends Interceptor {
   const _RequestTimeoutsInterceptor();
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final connectTimeout = options.extra[connectTimeoutExtraKey];
     if (connectTimeout is Duration) options.connectTimeout = connectTimeout;
     // Browsers cannot enforce a send timeout without a body; Dio warns about

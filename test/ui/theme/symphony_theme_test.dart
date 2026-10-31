@@ -178,9 +178,7 @@ void main() {
     late SymphonyRadius radius;
     await tester.pumpWidget(
       MaterialApp(
-        theme: SymphonyTheme.light(
-          const SymphonyThemeConfig(cornerRadius: 6),
-        ),
+        theme: SymphonyTheme.light(const SymphonyThemeConfig(cornerRadius: 6)),
         home: Builder(
           builder: (context) {
             colors = SymphonyColors.of(context);
