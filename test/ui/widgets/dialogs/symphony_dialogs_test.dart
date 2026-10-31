@@ -261,6 +261,47 @@ void main() {
       // The home route is still displayed.
       expect(find.byType(Scaffold), findsOneWidget);
     });
+
+    testWidgets('notices when another navigation removes the dialog',
+        (tester) async {
+      final context = await pumpTestContext(tester);
+      final navigator = Navigator.of(context);
+      var closedCompleted = false;
+
+      final handle = SymphonyDialogs.showLoading(context, message: 'Saving');
+      unawaited(handle.closed.then((_) => closedCompleted = true));
+      await tester.pump(const Duration(milliseconds: 300));
+      // For example a sign-out flow replacing the whole stack.
+      unawaited(
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute<void>(builder: (_) => const Text('Signed out')),
+          (route) => false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Signed out'), findsOneWidget);
+      expect(find.text('Saving'), findsNothing);
+      expect(handle.isOpen, isFalse);
+      expect(closedCompleted, isTrue);
+
+      handle.close();
+      await tester.pumpAndSettle();
+      expect(find.text('Signed out'), findsOneWidget, reason: 'no extra pop');
+    });
+
+    testWidgets('close right after showLoading removes the dialog',
+        (tester) async {
+      final context = await pumpTestContext(tester);
+
+      final handle = SymphonyDialogs.showLoading(context, message: 'Saving');
+      handle.close();
+      await tester.pumpAndSettle();
+
+      expect(handle.isOpen, isFalse);
+      expect(find.text('Saving'), findsNothing);
+      expect(find.byType(Scaffold), findsOneWidget);
+    });
   });
 
   group('SymphonyDialogs.runWithLoading', () {

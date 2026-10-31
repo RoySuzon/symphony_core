@@ -81,6 +81,53 @@ void main() {
       );
     });
 
+    test('foregroundFor picks the foreground with the higher WCAG contrast',
+        () {
+      const white = Color(0xFFFFFFFF);
+      const black = Color(0xFF000000);
+      double contrast(Color a, Color b) {
+        final la = a.computeLuminance();
+        final lb = b.computeLuminance();
+        final lighter = la > lb ? la : lb;
+        final darker = la > lb ? lb : la;
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      for (final background in const <Color>[
+        Color(0xFF4CAF50), // Material green 500
+        Color(0xFF2196F3), // Material blue 500
+        Color(0xFF00BCD4), // Material cyan 500
+        Color(0xFFFF9800), // Material orange 500
+        Color(0xFFE91E63), // Material pink 500
+        Color(0xFF9C27B0), // Material purple 500
+        Color(0xFF1B5E20),
+        Color(0xFF777777),
+        Color(0xFF000000),
+        Color(0xFFFFFFFF),
+      ]) {
+        final chosen = SymphonyColors.foregroundFor(background);
+        final other = chosen == white ? black : white;
+        expect(
+          contrast(chosen, background),
+          greaterThanOrEqualTo(contrast(other, background)),
+          reason: 'on $background',
+        );
+      }
+    });
+
+    test('fromAccents keeps mid-tone accents readable (WCAG AA)', () {
+      final colors = SymphonyColors.fromAccents(
+        success: const Color(0xFF4CAF50),
+        warning: const Color(0xFFFF9800),
+        info: const Color(0xFF2196F3),
+      );
+
+      // White text on these would only reach about 2.8:1 and 3.1:1.
+      expect(colors.onSuccess, const Color(0xFF000000));
+      expect(colors.onInfo, const Color(0xFF000000));
+      expect(colors.onWarning, const Color(0xFF000000));
+    });
+
     test('copyWith replaces only the given colours', () {
       final copy = SymphonyColors.light.copyWith(
         success: const Color(0xFF111111),

@@ -15,6 +15,10 @@
 abstract final class JsonReader {
   static final RegExp _basicIsoDate = RegExp(r'^\d{8}$');
 
+  // `int.parse` and `num.parse` also accept Dart hexadecimal literals, which
+  // are not JSON numbers (and that `double.parse` rejects).
+  static final RegExp _hexLiteral = RegExp(r'^[+-]?0[xX]');
+
   /// Returns the value found by following [dottedPath] in [json].
   ///
   /// Segments are separated by `.`: a segment selects a key of a map, or an
@@ -77,13 +81,15 @@ abstract final class JsonReader {
   /// Converts [value] to an [int] without losing information.
   ///
   /// Accepts integers, doubles without a fractional part (`3.0`) and strings
-  /// containing such numbers (`' 42 '`, `'42.0'`). Anything else, including
-  /// `3.5` and doubles too large to be exact (beyond 2^53), yields `null`.
+  /// containing such decimal numbers (`' 42 '`, `'42.0'`). Anything else,
+  /// including `3.5`, hexadecimal strings (`'0x1F'`) and doubles too large to
+  /// be exact (beyond 2^53), yields `null`.
   static int? asInt(Object? value) {
     if (value is int) return value;
     if (value is double) return _integralValue(value);
     if (value is String) {
       final text = value.trim();
+      if (_hexLiteral.hasMatch(text)) return null;
       return int.tryParse(text) ?? _integralValue(double.tryParse(text));
     }
     return null;
@@ -172,7 +178,7 @@ abstract final class JsonReader {
     if (text.isEmpty) return null;
     // `YYYYMMDD` is a valid (basic) ISO-8601 date, not an epoch timestamp.
     if (_basicIsoDate.hasMatch(text)) return DateTime.tryParse(text);
-    final numeric = num.tryParse(text);
+    final numeric = _hexLiteral.hasMatch(text) ? null : num.tryParse(text);
     if (numeric != null) return _fromEpoch(numeric, isUtc: isUtc);
     return DateTime.tryParse(text);
   }

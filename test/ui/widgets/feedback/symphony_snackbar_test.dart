@@ -106,6 +106,23 @@ void main() {
       expect(find.text('Second'), findsOneWidget);
     });
 
+    testWidgets('never shows a message superseded while another was hiding',
+        (tester) async {
+      final context = await pumpTestContext(tester);
+
+      SymphonySnackbar.show(context, 'First');
+      await tester.pumpAndSettle();
+      // Rapid feedback (for example a button tapped several times).
+      SymphonySnackbar.show(context, 'Second');
+      SymphonySnackbar.show(context, 'Third');
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('First'), findsNothing);
+      expect(find.text('Second'), findsNothing, reason: 'stale message');
+      expect(find.text('Third'), findsOneWidget);
+    });
+
     testWidgets('runs the action and shows a close icon', (tester) async {
       final context = await pumpTestContext(tester);
       var undone = 0;

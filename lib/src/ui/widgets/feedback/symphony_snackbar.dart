@@ -34,10 +34,14 @@ enum SymphonySnackbarType {
 /// );
 /// ```
 ///
-/// The snack bar currently displayed (if any) is hidden first so feedback is
-/// never queued behind stale messages. Colours come from [SymphonyColors]
-/// and the theme [ColorScheme]. Each method returns the snack bar
-/// controller, whose `closed` future completes when it disappears.
+/// The snack bar currently displayed (if any) is hidden first and the snack
+/// bars still waiting in the queue are discarded
+/// (`ScaffoldMessengerState.clearSnackBars`), so feedback is never queued
+/// behind stale messages. Colours come from [SymphonyColors] and the theme
+/// [ColorScheme]. Each method returns the snack bar controller, whose
+/// `closed` future completes when it disappears (the `closed` future of a
+/// snack bar discarded before it was displayed never completes, as with
+/// `clearSnackBars`).
 ///
 /// Note: on recent Flutter versions a snack bar with an action stays visible
 /// until it is dismissed (framework default), which is why a close icon is
@@ -69,7 +73,10 @@ abstract final class SymphonySnackbar {
         (theme.snackBarTheme.contentTextStyle ?? theme.textTheme.bodyMedium)
             ?.copyWith(color: palette.foreground);
 
-    messenger.hideCurrentSnackBar();
+    // Hides the current snack bar and drops the queued ones: with
+    // hideCurrentSnackBar alone, a message shown while the previous one is
+    // still hiding would wait behind every intermediate (stale) message.
+    messenger.clearSnackBars();
     return messenger.showSnackBar(
       SnackBar(
         content: Row(

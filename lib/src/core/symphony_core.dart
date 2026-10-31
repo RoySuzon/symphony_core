@@ -7,6 +7,7 @@ import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/networking/data/api_client.dart';
 import '../features/networking/presentation/networking_providers.dart';
 import '../features/storage/domain/key_value_storage.dart';
+import '../features/storage/domain/local_database.dart';
 import 'config/symphony_config.dart';
 import 'di/core_providers.dart';
 // Required on Riverpod 3; redundant (but harmless) on Riverpod 2.
@@ -84,7 +85,12 @@ class SymphonyCore {
   /// 1. Initializes the Flutter bindings.
   /// 2. Builds the container from [symphonyOverrides] ([config],
   ///    [authAdapter] or [authAdapterBuilder], [secureStorage],
-  ///    [errorReporter], then the application's [overrides]).
+  ///    [localDatabase], [errorReporter], then the application's
+  ///    [overrides]) and resolves the services needed below (configuration,
+  ///    logger and, when [SymphonyConfig.handleGlobalErrors] is `true`, the
+  ///    error reporter). If anything fails up to here, the new container is
+  ///    disposed, the error is thrown and the previous global instance is
+  ///    kept unchanged.
   /// 3. Disposes the previous global instance, if any: calling [initialize]
   ///    again replaces it (widgets must be rebuilt with the new instance).
   /// 4. Installs the [GlobalErrorHandler] when
@@ -99,6 +105,10 @@ class SymphonyCore {
   /// The `ApiClient` and the other services are created lazily, on first
   /// use.
   ///
+  /// [localDatabase] replaces the default (volatile) `localDatabaseProvider`.
+  /// The application owns that database: open it when needed and close it
+  /// yourself, [dispose] does not close it.
+  ///
   /// ## Parent container (advanced)
   ///
   /// [parent] creates the container as a child of an existing container
@@ -109,11 +119,12 @@ class SymphonyCore {
   /// container of a hierarchy, and does not let a child container override
   /// their dependencies (Riverpod 2 asserts it in debug builds). Therefore,
   /// with a [parent]:
-  /// * the configuration, auth adapter, storage and error reporter come from
-  ///   the parent hierarchy: [config] must be the configuration it provides
-  ///   (the same instance) and [authAdapter], [authAdapterBuilder],
-  ///   [secureStorage] and [errorReporter] must be `null` — an
-  ///   [ArgumentError] is thrown otherwise;
+  /// * the configuration, auth adapter, storage, local database and error
+  ///   reporter come from the parent hierarchy: [config] must be the
+  ///   configuration it provides (the same instance) and [authAdapter],
+  ///   [authAdapterBuilder], [secureStorage], [localDatabase] and
+  ///   [errorReporter] must be `null` — an [ArgumentError] is thrown
+  ///   otherwise;
   /// * only [overrides] are added to the new container: use them for
   ///   providers of the application that nothing in the parent depends on;
   /// * a [StateError] is thrown when the parent hierarchy cannot resolve
@@ -130,6 +141,7 @@ class SymphonyCore {
     List<Override> overrides = const <Override>[],
     bool restoreSession = false,
     ProviderContainer? parent,
+    LocalDatabase? localDatabase,
   }) async {
     WidgetsFlutterBinding.ensureInitialized();
     final previous = _instance;
@@ -148,12 +160,24 @@ class SymphonyCore {
       authAdapter: authAdapter,
       authAdapterBuilder: authAdapterBuilder,
       secureStorage: secureStorage,
+      localDatabase: localDatabase,
       errorReporter: errorReporter,
       overrides: overrides,
       parent: parent,
     );
+    // Resolved before the previous instance is disposed: a reporter that
+    // cannot be created fails this call without losing the working instance.
+    final ErrorReporter? reporter;
+    try {
+      reporter = core.config.handleGlobalErrors
+          ? core._container.read(errorReporterProvider)
+          : null;
+    } on Object {
+      core._disposeNow();
+      rethrow;
+    }
     previous?._disposeNow();
-    if (core.config.handleGlobalErrors) core._installErrorHandlers();
+    if (reporter != null) core._installErrorHandlers(reporter);
     _instance = core;
 
     String? sessionStatus;
@@ -192,17 +216,26 @@ class SymphonyCore {
     List<Override> overrides = const <Override>[],
     ProviderContainer? parent,
     bool installErrorHandlers = false,
+    LocalDatabase? localDatabase,
   }) {
     final core = _build(
       config: config,
       authAdapter: authAdapter,
       authAdapterBuilder: authAdapterBuilder,
       secureStorage: secureStorage,
+      localDatabase: localDatabase,
       errorReporter: errorReporter,
       overrides: overrides,
       parent: parent,
     );
-    if (installErrorHandlers) core._installErrorHandlers();
+    if (installErrorHandlers) {
+      try {
+        core._installErrorHandlers(core._container.read(errorReporterProvider));
+      } on Object {
+        core._disposeNow();
+        rethrow;
+      }
+    }
     return core;
   }
 
@@ -318,6 +351,7 @@ class SymphonyCore {
     required AuthAdapter? authAdapter,
     required AuthAdapter Function(Ref ref)? authAdapterBuilder,
     required KeyValueStorage? secureStorage,
+    required LocalDatabase? localDatabase,
     required ErrorReporter? errorReporter,
     required List<Override> overrides,
     required ProviderContainer? parent,
@@ -329,6 +363,7 @@ class SymphonyCore {
         configuredHere: authAdapter != null ||
             authAdapterBuilder != null ||
             secureStorage != null ||
+            localDatabase != null ||
             errorReporter != null,
         overrides: overrides,
       );
@@ -339,6 +374,7 @@ class SymphonyCore {
         authAdapter: authAdapter,
         authAdapterBuilder: authAdapterBuilder,
         secureStorage: secureStorage,
+        localDatabase: localDatabase,
         errorReporter: errorReporter,
         overrides: overrides,
       ),
@@ -369,8 +405,9 @@ class SymphonyCore {
     if (configuredHere) {
       throw ArgumentError(
         'With a parent container, configure authAdapter, authAdapterBuilder, '
-        'secureStorage and errorReporter in the parent hierarchy (with '
-        'symphonyOverrides(...)) instead of passing them to SymphonyCore.',
+        'secureStorage, localDatabase and errorReporter in the parent '
+        'hierarchy (with symphonyOverrides(...)) instead of passing them to '
+        'SymphonyCore.',
       );
     }
     final SymphonyConfig parentConfig;
@@ -419,9 +456,9 @@ class SymphonyCore {
     }
   }
 
-  void _installErrorHandlers() {
+  void _installErrorHandlers(ErrorReporter reporter) {
     _errorHandlers = GlobalErrorHandler.install(
-      reporter: _container.read(errorReporterProvider),
+      reporter: reporter,
       logger: _container.read(symphonyLoggerProvider),
     );
   }
@@ -443,8 +480,21 @@ class SymphonyCore {
         error: error,
         stackTrace: stackTrace,
       );
+      final ErrorReporter reporter;
+      try {
+        reporter = _container.read(errorReporterProvider);
+      } on Object catch (reporterError) {
+        // A broken errorReporterProvider must not fail initialize().
+        logger.warning(
+          'The error reporter is unavailable; the restoration failure was '
+          'not reported',
+          tag: _tag,
+          error: reporterError,
+        );
+        return 'restoration failed';
+      }
       reportErrorSafely(
-        _container.read(errorReporterProvider),
+        reporter,
         error,
         stackTrace,
         reason: 'SymphonyCore.initialize: session restoration failed',
@@ -478,13 +528,11 @@ class SymphonyCore {
   static String _onOff(bool value) => value ? 'on' : 'off';
 
   /// [url] without credentials: user info and sensitive query parameters are
-  /// masked.
+  /// masked (see [LogRedactor.redactUri]).
   static String _describeUrl(String url, LogRedactor redactor) {
     final uri = Uri.tryParse(url);
     if (uri == null) return '<invalid URL>';
-    final withoutUserInfo =
-        uri.userInfo.isEmpty ? uri : uri.replace(userInfo: redactor.mask);
-    return redactor.redactUri(withoutUserInfo).toString();
+    return redactor.redactUri(uri).toString();
   }
 
   void _ensureNotDisposed() {

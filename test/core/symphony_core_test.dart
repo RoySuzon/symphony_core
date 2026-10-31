@@ -10,9 +10,15 @@ import 'package:symphony_core/src/features/auth/presentation/controllers/auth_co
 import 'package:symphony_core/src/features/auth/presentation/providers/auth_providers.dart';
 import 'package:symphony_core/src/features/networking/presentation/networking_providers.dart';
 import 'package:symphony_core/src/features/storage/data/in_memory_key_value_storage.dart';
+import 'package:symphony_core/src/features/storage/data/in_memory_local_database.dart';
 import 'package:symphony_core/src/features/storage/presentation/storage_providers.dart';
 
 import 'helpers/core_test_helpers.dart';
+
+/// Matches an error whose description contains [text]. Riverpod 3 wraps
+/// provider errors in a `ProviderException`, Riverpod 2 rethrows them as is.
+Matcher _throwsMentioning(String text) =>
+    throwsA(predicate((Object? error) => '$error'.contains(text)));
 
 /// Simulates an authentication module whose restoration fails unexpectedly.
 class _FailingRestoreController extends AuthController {
@@ -127,6 +133,69 @@ void main() {
 
       expect(first.isDisposed, isFalse);
       expect(SymphonyCore.instance, same(first));
+    });
+
+    test(
+        'a re-initialization whose error reporter cannot be created keeps '
+        'the previous instance and releases the new container', () async {
+      final first = await SymphonyCore.initialize(config: testConfig);
+      final onErrorBefore = FlutterError.onError;
+      final platformOnErrorBefore = PlatformDispatcher.instance.onError;
+      var probeDisposed = false;
+      final probe = Provider<int>((ref) {
+        ref.onDispose(() => probeDisposed = true);
+        return 1;
+      });
+
+      await expectLater(
+        SymphonyCore.initialize(
+          config: testConfig.copyWith(handleGlobalErrors: true),
+          overrides: [
+            errorReporterProvider.overrideWith((ref) {
+              ref.watch(probe);
+              throw StateError('no crash reporter');
+            }),
+          ],
+        ),
+        _throwsMentioning('no crash reporter'),
+      );
+
+      expect(first.isDisposed, isFalse);
+      expect(SymphonyCore.instance, same(first));
+      expect(first.read(symphonyConfigProvider), same(testConfig));
+      expect(probeDisposed, isTrue, reason: 'the new container is disposed');
+      expect(identical(FlutterError.onError, onErrorBefore), isTrue);
+      expect(
+        identical(PlatformDispatcher.instance.onError, platformOnErrorBefore),
+        isTrue,
+      );
+    });
+
+    test('a failing session restoration is contained without a reporter',
+        () async {
+      final sink = RecordingLogSink();
+
+      final core = await SymphonyCore.initialize(
+        config: testConfig,
+        authAdapter: FakeAuthAdapter(),
+        secureStorage: InMemoryKeyValueStorage(),
+        restoreSession: true,
+        overrides: [
+          authControllerProvider.overrideWith(_FailingRestoreController.new),
+          errorReporterProvider.overrideWith(
+            (ref) => throw StateError('no crash reporter'),
+          ),
+          symphonyLoggerProvider.overrideWithValue(
+            SymphonyLogger(sinks: <LogSink>[sink]),
+          ),
+        ],
+      );
+
+      expect(SymphonyCore.instance, same(core));
+      expect(
+        sink.entries.where((e) => e.level == LogLevel.warning).first.message,
+        'Session restoration failed',
+      );
     });
 
     test('reset disposes and unregisters the instance', () async {
@@ -466,6 +535,89 @@ void main() {
           config: testConfig,
           authAdapter: FakeAuthAdapter(),
           authAdapterBuilder: (ref) => FakeAuthAdapter(),
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('releases the container when the error handlers cannot be set up', () {
+      final onErrorBefore = FlutterError.onError;
+      var probeDisposed = false;
+      final probe = Provider<int>((ref) {
+        ref.onDispose(() => probeDisposed = true);
+        return 1;
+      });
+
+      expect(
+        () => SymphonyCore.create(
+          config: testConfig,
+          installErrorHandlers: true,
+          overrides: [
+            errorReporterProvider.overrideWith((ref) {
+              ref.watch(probe);
+              throw StateError('no crash reporter');
+            }),
+          ],
+        ),
+        _throwsMentioning('no crash reporter'),
+      );
+
+      expect(probeDisposed, isTrue, reason: 'the container is disposed');
+      expect(identical(FlutterError.onError, onErrorBefore), isTrue);
+    });
+  });
+
+  group('local database', () {
+    test('initialize and create use the given database', () async {
+      final database = InMemoryLocalDatabase();
+      addTearDown(database.close);
+
+      final global = await SymphonyCore.initialize(
+        config: testConfig,
+        localDatabase: database,
+      );
+      final local = SymphonyCore.create(
+        config: testConfig,
+        localDatabase: database,
+      );
+      addTearDown(local.dispose);
+
+      expect(global.read(localDatabaseProvider), same(database));
+      expect(local.read(localDatabaseProvider), same(database));
+    });
+
+    test('the application owns the lifecycle of the database', () async {
+      final database = InMemoryLocalDatabase();
+      addTearDown(database.close);
+      final core = SymphonyCore.create(
+        config: testConfig,
+        localDatabase: database,
+      );
+      await core.read(localDatabaseProvider).open();
+
+      await core.dispose();
+
+      expect(database.isOpen, isTrue, reason: 'not closed by SymphonyCore');
+    });
+
+    test('defaults to the provider of the storage module', () async {
+      final core = SymphonyCore.create(config: testConfig);
+      addTearDown(core.dispose);
+
+      expect(core.read(localDatabaseProvider), isA<InMemoryLocalDatabase>());
+    });
+
+    test('is rejected with a parent container', () {
+      final root = ProviderContainer(
+        overrides: symphonyOverrides(config: testConfig),
+      );
+      addTearDown(root.dispose);
+
+      expect(
+        () => SymphonyCore.create(
+          config: testConfig,
+          parent: root,
+          localDatabase: InMemoryLocalDatabase(),
         ),
         throwsArgumentError,
       );

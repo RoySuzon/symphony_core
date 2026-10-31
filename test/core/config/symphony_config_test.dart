@@ -177,6 +177,27 @@ void main() {
         ),
       );
     });
+
+    test('toString masks the credentials of the base URL', () {
+      const config = SymphonyConfig(
+        baseUrl: 'https://jane:s3cret@api.example.com/v1?api_key=k-123&lang=fr',
+      );
+
+      final text = config.toString();
+
+      expect(text, isNot(contains('s3cret')));
+      expect(text, isNot(contains('jane')));
+      expect(text, isNot(contains('k-123')));
+      expect(text, contains('https://***@api.example.com/v1'));
+      expect(text, contains('api_key=***'));
+      expect(text, contains('lang=fr'));
+    });
+
+    test('toString masks a base URL it cannot parse', () {
+      const config = SymphonyConfig(baseUrl: 'https://[broken:secret@host');
+
+      expect(config.toString(), isNot(contains('secret')));
+    });
   });
 
   group('AppEnvironment', () {

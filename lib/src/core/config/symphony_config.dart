@@ -196,8 +196,17 @@ class SymphonyConfig {
   /// A [LogRedactor] configured with [sensitiveKeys].
   LogRedactor get redactor => LogRedactor(sensitiveKeys: sensitiveKeys);
 
+  /// Describes the configuration without secrets: the user info and the
+  /// sensitive query parameters of [baseUrl] are masked, because this text
+  /// ends up in logs and error messages (crash reports).
   @override
   String toString() => 'SymphonyConfig(appName: $appName, '
-      'environment: ${environment.name}, baseUrl: $baseUrl, '
+      'environment: ${environment.name}, baseUrl: ${_redactedBaseUrl()}, '
       'enableInspector: $enableInspector, enableLogging: $enableLogging)';
+
+  String _redactedBaseUrl() {
+    final uri = Uri.tryParse(baseUrl);
+    if (uri == null) return '<invalid URL>';
+    return redactor.redactUri(uri).toString();
+  }
 }

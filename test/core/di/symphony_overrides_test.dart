@@ -5,6 +5,7 @@ import 'package:symphony_core/src/features/auth/domain/entities/auth_user.dart';
 import 'package:symphony_core/src/features/auth/presentation/providers/auth_providers.dart';
 import 'package:symphony_core/src/features/networking/presentation/networking_providers.dart';
 import 'package:symphony_core/src/features/storage/data/in_memory_key_value_storage.dart';
+import 'package:symphony_core/src/features/storage/data/in_memory_local_database.dart';
 import 'package:symphony_core/src/features/storage/presentation/storage_providers.dart';
 
 import '../helpers/core_test_helpers.dart';
@@ -144,6 +145,42 @@ void main() {
 
     expect(container.read(symphonyConfigProvider), same(appConfig));
     expect(container.read(errorReporterProvider), same(appReporter));
+  });
+
+  test('overrides the local database without taking ownership of it', () async {
+    final database = InMemoryLocalDatabase();
+    addTearDown(database.close);
+    final overrides = symphonyOverrides(
+      config: testConfig,
+      localDatabase: database,
+    );
+    final container = ProviderContainer(overrides: overrides);
+
+    expect(overrides, hasLength(2));
+    expect(container.read(localDatabaseProvider), same(database));
+    await database.open();
+    container.dispose();
+    expect(database.isOpen, isTrue, reason: 'the application closes it');
+  });
+
+  test('an application override of the local database wins', () {
+    final builtIn = InMemoryLocalDatabase();
+    final appDatabase = InMemoryLocalDatabase();
+    addTearDown(builtIn.close);
+    addTearDown(appDatabase.close);
+
+    // Riverpod 3 rejects duplicated overrides in debug builds.
+    final container = track(
+      ProviderContainer(
+        overrides: symphonyOverrides(
+          config: testConfig,
+          localDatabase: builtIn,
+          overrides: [localDatabaseProvider.overrideWithValue(appDatabase)],
+        ),
+      ),
+    );
+
+    expect(container.read(localDatabaseProvider), same(appDatabase));
   });
 
   test('an application override of the token delegate wins', () {

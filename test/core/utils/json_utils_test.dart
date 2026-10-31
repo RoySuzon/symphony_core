@@ -112,6 +112,17 @@ void main() {
       expect(JsonReader.asInt(null), isNull);
       expect(JsonReader.asInt(<Object?>[1]), isNull);
     });
+
+    test('reads strings as decimal numbers only, like asDouble', () {
+      // int.parse accepts Dart hexadecimal literals, double.parse does not.
+      for (final value in <String>['0x1F', '-0x1F', '+0X10', ' 0xff ']) {
+        expect(JsonReader.asInt(value), isNull, reason: value);
+        expect(JsonReader.asDouble(value), isNull, reason: value);
+        expect(JsonReader.asDateTime(value), isNull, reason: value);
+      }
+      expect(JsonReader.asInt('+42'), 42);
+      expect(JsonReader.asInt('0042'), 42);
+    });
   });
 
   group('JsonReader.asDouble', () {

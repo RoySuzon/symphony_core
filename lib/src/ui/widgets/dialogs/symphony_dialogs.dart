@@ -213,18 +213,23 @@ abstract final class SymphonyDialogs {
 /// Controls a loading dialog opened with [SymphonyDialogs.showLoading].
 class SymphonyLoadingDialogHandle {
   SymphonyLoadingDialogHandle._(this._route) {
-    // The route can also be removed by the system back button.
+    // The route can also be popped by the system back button, or removed by
+    // another navigation (`pushAndRemoveUntil`, `removeRoute`, a router
+    // replacing the pages below it). Older Flutter versions do not complete
+    // `popped` when a route is removed, but every version completes
+    // `completed` once the route is disposed.
     unawaited(_route.popped.whenComplete(_markClosed));
+    unawaited(_route.completed.whenComplete(_markClosed));
   }
 
-  final Route<void> _route;
+  final TransitionRoute<void> _route;
   final Completer<void> _closed = Completer<void>();
 
   /// Whether the dialog is still displayed.
   bool get isOpen => !_closed.isCompleted;
 
-  /// Completes once the dialog has been closed (by [close] or by the user
-  /// navigating back).
+  /// Completes once the dialog has been closed (by [close], by the user
+  /// navigating back or by another navigation removing it).
   Future<void> get closed => _closed.future;
 
   /// Closes the dialog. Does nothing if it is already closed.

@@ -49,6 +49,30 @@ void main() {
       }
       expect(SymphonyValidators.email(message: 'Bad')('x'), 'Bad');
     });
+
+    test('rejects misplaced dots', () {
+      for (final value in <String>[
+        '.ada@example.com',
+        'ada.@example.com',
+        'ada..lovelace@example.com',
+        'ada@.example.com',
+        'ada@example..com',
+        'ada@example.com.',
+      ]) {
+        expect(validator(value), 'Enter a valid e-mail address.',
+            reason: value);
+      }
+    });
+
+    test('accepts internationalized addresses', () {
+      for (final value in <String>[
+        'ada.lovelace@sub.domain.example.co.uk',
+        'José.Pérez@correo.example.es',
+        'গৌতম@উদাহরণ.বাংলা',
+      ]) {
+        expect(validator(value), isNull, reason: value);
+      }
+    });
   });
 
   group('SymphonyValidators.phone', () {
@@ -71,6 +95,21 @@ void main() {
         expect(validator(value), 'Enter a valid phone number.', reason: value);
       }
       expect(SymphonyValidators.phone(message: 'Bad')('x'), 'Bad');
+    });
+
+    test('rejects values made of formatting characters only', () {
+      for (final value in <String>[
+        '((((((',
+        '------',
+        '()()()',
+        '+ - ( )',
+        '(1) - -',
+        '12 - 345',
+      ]) {
+        expect(validator(value), 'Enter a valid phone number.', reason: value);
+      }
+      expect(validator('123456'), isNull);
+      expect(validator('+1 (2) 3-4 5 6'), isNull);
     });
   });
 
@@ -99,6 +138,40 @@ void main() {
         SymphonyValidators.maxLength(1, message: 'Too long')('ab'),
         'Too long',
       );
+    });
+
+    test('count user-perceived characters, like TextField.maxLength', () {
+      // One character each, made of several UTF-16 code units (grapheme
+      // cluster rules that are stable across Unicode versions).
+      const emoji = '😀'; // surrogate pair
+      const thumbsUp = '👍🏽'; // emoji + skin tone modifier
+      const flag = '🇧🇩'; // two regional indicators
+      const combining = 'é'; // e + combining acute accent
+      const bengali = 'কি'; // consonant + dependent vowel sign
+
+      for (final character in <String>[
+        emoji,
+        thumbsUp,
+        flag,
+        combining,
+        bengali,
+      ]) {
+        expect(
+          SymphonyValidators.maxLength(1)(character),
+          isNull,
+          reason: '$character (${character.length} code units)',
+        );
+        expect(
+          SymphonyValidators.minLength(2)(character),
+          'Must be at least 2 characters.',
+          reason: character,
+        );
+      }
+      expect(
+        SymphonyValidators.maxLength(2)('$emoji$flag$combining'),
+        'Must be at most 2 characters.',
+      );
+      expect(SymphonyValidators.minLength(2)('$emoji$thumbsUp'), isNull);
     });
   });
 
@@ -130,6 +203,24 @@ void main() {
       expect(validator('abc'), 'Enter a valid number.');
       expect(validator('1,5'), 'Enter a valid number.');
       expect(SymphonyValidators.numeric(message: 'NaN')('x'), 'NaN');
+    });
+
+    test('accepts only finite decimal numbers that double.parse accepts', () {
+      // NaN / Infinity cannot be JSON encoded; hexadecimal literals are
+      // rejected by double.parse.
+      for (final value in <String>[
+        'NaN',
+        '-NaN',
+        'Infinity',
+        '-Infinity',
+        '0x1F',
+      ]) {
+        expect(validator(value), 'Enter a valid number.', reason: value);
+      }
+      for (final value in <String>['+5', '.5', '5.', '-0', '1E-3', '12']) {
+        expect(validator(value), isNull, reason: value);
+        expect(double.tryParse(value.trim()), isNotNull, reason: value);
+      }
     });
   });
 

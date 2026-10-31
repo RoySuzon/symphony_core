@@ -4,6 +4,7 @@ import '../../features/auth/domain/adapters/auth_adapter.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/networking/presentation/networking_providers.dart';
 import '../../features/storage/domain/key_value_storage.dart';
+import '../../features/storage/domain/local_database.dart';
 import '../../features/storage/presentation/storage_providers.dart';
 import '../config/symphony_config.dart';
 import '../error/error_reporter.dart';
@@ -37,8 +38,22 @@ import 'riverpod_compat.dart';
 ///   refreshes the session tokens;
 /// * `secureStorageProvider` ← [secureStorage], when given (for example an
 ///   `InMemoryKeyValueStorage` in tests);
+/// * `localDatabaseProvider` ← [localDatabase], when given;
 /// * `errorReporterProvider` ← [errorReporter], when given;
 /// * the application's own [overrides], last.
+///
+/// [localDatabase] is provided as a value: the application owns it, opens it
+/// if needed and closes it (disposing the container does **not** close it).
+/// To let the container create and close the database, override
+/// `localDatabaseProvider` with `overrideWith` in [overrides] instead:
+///
+/// ```dart
+/// final database = MyHiveDatabase();
+/// await database.open();
+/// final overrides = symphonyOverrides(config: config, localDatabase: database);
+/// // ... later, when the application shuts down:
+/// await database.close();
+/// ```
 ///
 /// [authAdapterBuilder] creates the adapter from the container, for adapters
 /// that depend on other providers (such as the `ApiClient`):
@@ -74,6 +89,7 @@ List<Override> symphonyOverrides({
   KeyValueStorage? secureStorage,
   ErrorReporter? errorReporter,
   List<Override> overrides = const <Override>[],
+  LocalDatabase? localDatabase,
 }) {
   if (authAdapter != null && authAdapterBuilder != null) {
     throw ArgumentError(
@@ -102,6 +118,11 @@ List<Override> symphonyOverrides({
       (
         secureStorageProvider,
         secureStorageProvider.overrideWithValue(secureStorage),
+      ),
+    if (localDatabase != null)
+      (
+        localDatabaseProvider,
+        localDatabaseProvider.overrideWithValue(localDatabase),
       ),
     if (errorReporter != null)
       (

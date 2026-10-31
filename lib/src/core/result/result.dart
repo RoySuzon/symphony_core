@@ -145,10 +145,13 @@ final class ResultFailure<T> extends Result<T> {
 /// Converts arbitrary errors into failures. Used by [guardResult].
 typedef FailureMapper = Failure Function(Object error, StackTrace stackTrace);
 
-/// Runs [body] and captures its outcome as a [Result].
+/// Runs [body] and captures its outcome as a [Result]; the returned future
+/// never completes with an error.
 ///
 /// A thrown [Failure] is returned as-is. Any other error is converted with
-/// [mapError] or wrapped in an [UnexpectedFailure].
+/// [mapError] or wrapped in an [UnexpectedFailure]. When [mapError] itself
+/// throws, a thrown [Failure] is used, and any other error falls back to an
+/// [UnexpectedFailure] wrapping the original error.
 Future<Result<T>> guardResult<T>(
   FutureOr<T> Function() body, {
   FailureMapper? mapError,
@@ -158,8 +161,20 @@ Future<Result<T>> guardResult<T>(
   } on Failure catch (failure) {
     return Result<T>.failure(failure);
   } on Object catch (error, stackTrace) {
-    final failure = mapError?.call(error, stackTrace) ??
-        UnexpectedFailure.fromError(error, stackTrace);
-    return Result<T>.failure(failure);
+    return Result<T>.failure(_mapError(error, stackTrace, mapError));
   }
+}
+
+Failure _mapError(Object error, StackTrace stackTrace, FailureMapper? mapper) {
+  if (mapper != null) {
+    try {
+      return mapper(error, stackTrace);
+    } on Failure catch (failure) {
+      return failure;
+    } on Object {
+      // A broken mapper must not turn a Result-returning call into a
+      // throwing one: fall back to the default mapping of the original error.
+    }
+  }
+  return UnexpectedFailure.fromError(error, stackTrace);
 }

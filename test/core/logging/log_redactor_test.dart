@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:symphony_core/src/core/core.dart';
 
 void main() {
+  _toJsonRedactionTests();
+
   const redactor = LogRedactor();
 
   group('LogRedactor.isSensitive', () {
@@ -129,9 +131,89 @@ void main() {
     test('returns the same instance when nothing is sensitive', () {
       final withoutQuery = Uri.parse('https://api.example.com/v1/items');
       final harmless = Uri.parse('https://api.example.com/v1/items?page=1');
+      final harmlessFragment = Uri.parse('https://example.com/docs#section-2');
 
       expect(identical(redactor.redactUri(withoutQuery), withoutQuery), isTrue);
       expect(identical(redactor.redactUri(harmless), harmless), isTrue);
+      expect(
+        identical(redactor.redactUri(harmlessFragment), harmlessFragment),
+        isTrue,
+      );
+    });
+
+    test('masks user:password@ credentials', () {
+      final uri = Uri.parse('https://jane:s3cret@api.example.com/v1?page=2');
+
+      final redacted = redactor.redactUri(uri);
+
+      expect(redacted.toString(), 'https://***@api.example.com/v1?page=2');
+      expect(redacted.host, 'api.example.com');
+      expect(redacted.port, uri.port);
+    });
+
+    test('masks a user name alone (API keys are often passed that way)', () {
+      final uri = Uri.parse('https://sk_live_abc123@api.example.com:8443/x');
+
+      expect(
+        redactor.redactUri(uri).toString(),
+        'https://***@api.example.com:8443/x',
+      );
+    });
+
+    test('masks user info and sensitive parameters together', () {
+      final uri = Uri.parse('https://a:b@h.example.com/p?token=t&q=1');
+
+      expect(
+        redactor.redactUri(uri).toString(),
+        'https://***@h.example.com/p?token=***&q=1',
+      );
+    });
+
+    test('masks user info even when the query cannot be decoded', () {
+      final uri = Uri.parse('https://jane:s3cret@api.example.com/x?a=%E0%A4%A');
+
+      final redacted = redactor.redactUri(uri);
+
+      expect(redacted.toString(), isNot(contains('s3cret')));
+      expect(redacted.userInfo, '***');
+      expect(redacted.query, '***');
+    });
+
+    test('masks sensitive parameters of a query-like fragment', () {
+      // OAuth implicit-grant redirects carry the tokens in the fragment.
+      final uri = Uri.parse(
+        'https://app.example.com/callback#access_token=abc&state=xyz',
+      );
+
+      final redacted = redactor.redactUri(uri);
+
+      expect(redacted.toString(), isNot(contains('abc')));
+      expect(redacted.fragment, 'access_token=***&state=xyz');
+      expect(redacted.path, '/callback');
+    });
+
+    test('is idempotent', () {
+      final uri = Uri.parse(
+        'https://jane:s3cret@api.example.com/v1?token=t&page=2#id_token=x',
+      );
+
+      final once = redactor.redactUri(uri);
+      final twice = redactor.redactUri(once);
+
+      expect(twice.toString(), once.toString());
+      expect(
+        once.toString(),
+        'https://***@api.example.com/v1?token=***&page=2#id_token=***',
+      );
+    });
+
+    test('uses a custom mask for the user info', () {
+      const custom = LogRedactor(mask: 'hidden');
+
+      expect(
+        custom.redactUri(Uri.parse('https://u:p@h.example.com/')).toString(),
+        'https://hidden@h.example.com/',
+      );
     });
   });
 
@@ -228,5 +310,29 @@ void main() {
       expect(redactor.stringify('abc', maxLength: -1), 'abc');
       expect(redactor.stringify('abc', maxLength: 0), '… [truncated 3 chars]');
     });
+  });
+}
+
+class _LoginModel {
+  _LoginModel(this.email, this.password);
+  final String email;
+  final String password;
+  Map<String, Object?> toJson() =>
+      <String, Object?>{'email': email, 'password': password};
+}
+
+void _toJsonRedactionTests() {
+  test('redact masks sensitive fields of objects exposing toJson()', () {
+    const redactor = LogRedactor();
+    final redacted = redactor.redact(<String, Object?>{
+      'body': _LoginModel('ada@example.com', 'hunter2'),
+    });
+    expect(redacted, <String, Object?>{
+      'body': <String, Object?>{'email': 'ada@example.com', 'password': '***'},
+    });
+    expect(
+      redactor.stringify(_LoginModel('ada@example.com', 'hunter2')),
+      isNot(contains('hunter2')),
+    );
   });
 }

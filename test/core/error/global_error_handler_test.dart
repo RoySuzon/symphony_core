@@ -7,6 +7,23 @@ import 'package:symphony_core/src/core/core.dart';
 
 import '../helpers/core_test_helpers.dart';
 
+/// Returns the future produced by [_result] from every report.
+class _ReturningReporter extends ErrorReporter {
+  _ReturningReporter(this._result);
+
+  final Future<void> Function() _result;
+
+  @override
+  Future<void> report(
+    Object error,
+    StackTrace? stackTrace, {
+    String? reason,
+    bool fatal = false,
+    Map<String, Object?> context = const <String, Object?>{},
+  }) =>
+      _result();
+}
+
 void main() {
   late FlutterExceptionHandler? originalOnError;
   late FlutterExceptionHandler originalPresentError;
@@ -286,6 +303,65 @@ void main() {
       final warning =
           sink.entries.where((e) => e.level == LogLevel.warning).single;
       expect(warning.message, contains('ErrorReporter.report failed'));
+    });
+
+    test(
+        'contains asynchronous errors leaked by the reporter instead of '
+        'reporting them again (no infinite loop)', () async {
+      final sink = RecordingLogSink();
+      reporter.onReport = (error) {
+        // Bounded so that the test terminates even when the loop exists.
+        if (reporter.reports.length < 50) {
+          // A crash reporter whose fire-and-forget upload fails (offline).
+          unawaited(Future<void>.error(StateError('upload failed')));
+        }
+      };
+      install(logger: SymphonyLogger(sinks: <LogSink>[sink]));
+
+      // Like the root zone of an application: uncaught errors of this zone
+      // reach PlatformDispatcher.onError.
+      late Zone appZone;
+      runZonedGuarded(
+        () {
+          appZone = Zone.current;
+          PlatformDispatcher.instance.onError!(
+            StateError('original'),
+            StackTrace.current,
+          );
+        },
+        (error, stackTrace) => appZone.run(
+          () => PlatformDispatcher.instance.onError?.call(error, stackTrace),
+        ),
+      );
+      await flushAsync();
+
+      expect(reporter.reports, hasLength(1));
+      expect(reporter.reports.single.error, isA<StateError>());
+      final warning =
+          sink.entries.where((e) => e.level == LogLevel.warning).single;
+      expect(warning.message, contains('ErrorReporter.report failed'));
+      expect('${warning.error}', contains('upload failed'));
+    });
+
+    test(
+        'logs a failed future returned by the reporter once, whatever zone '
+        'created it', () async {
+      final sink = RecordingLogSink();
+      // A future created outside of the reporting call (for example a shared
+      // upload queue).
+      final failedUpload = Completer<void>();
+      install(
+        errorReporter: _ReturningReporter(() => failedUpload.future),
+        logger: SymphonyLogger(sinks: <LogSink>[sink]),
+      );
+
+      FlutterError.reportError(details());
+      failedUpload.completeError(StateError('queue failed'));
+      await flushAsync();
+
+      final warning =
+          sink.entries.where((e) => e.level == LogLevel.warning).single;
+      expect('${warning.error}', contains('queue failed'));
     });
 
     test('ignores errors raised while reporting (no infinite loop)', () {

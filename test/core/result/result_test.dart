@@ -159,5 +159,28 @@ void main() {
       expect(result.failureOrNull, const TimeoutFailure());
       expect(called, isFalse);
     });
+
+    test('still returns a failure when mapError itself throws', () async {
+      const original = FormatException('bad json');
+
+      final result = await guardResult<int>(
+        () => throw original,
+        mapError: (error, stackTrace) => throw StateError('mapper bug'),
+      );
+
+      final failure = result.failureOrNull;
+      expect(failure, isA<UnexpectedFailure>());
+      expect(failure!.cause, same(original), reason: 'the original error');
+      expect(failure.stackTrace, isNotNull);
+    });
+
+    test('uses a Failure thrown by mapError', () async {
+      final result = await guardResult<int>(
+        () => throw StateError('low level'),
+        mapError: (error, stackTrace) => throw const NetworkFailure(),
+      );
+
+      expect(result.failureOrNull, const NetworkFailure());
+    });
   });
 }

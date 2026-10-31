@@ -93,11 +93,22 @@ class SymphonyColors extends ThemeExtension<SymphonyColors> {
     return theme.extension<SymphonyColors>() ?? fallback(theme.brightness);
   }
 
-  /// Returns white or black, whichever is more readable on [background].
-  static Color foregroundFor(Color background) =>
-      ThemeData.estimateBrightnessForColor(background) == Brightness.dark
-          ? const Color(0xFFFFFFFF)
-          : const Color(0xFF000000);
+  /// Returns white or black, whichever has the higher WCAG 2 contrast ratio
+  /// with [background].
+  ///
+  /// Unlike `ThemeData.estimateBrightnessForColor`, which deliberately
+  /// favours white text, mid-tone colours such as `Color(0xFF4CAF50)` get
+  /// black text (7.6:1) instead of white text (2.8:1, below the 4.5:1 AA
+  /// minimum).
+  static Color foregroundFor(Color background) {
+    final luminance = background.computeLuminance();
+    // Contrast ratio = (lighter + 0.05) / (darker + 0.05).
+    final contrastWithWhite = 1.05 / (luminance + 0.05);
+    final contrastWithBlack = (luminance + 0.05) / 0.05;
+    return contrastWithBlack > contrastWithWhite
+        ? const Color(0xFF000000)
+        : const Color(0xFFFFFFFF);
+  }
 
   @override
   SymphonyColors copyWith({
