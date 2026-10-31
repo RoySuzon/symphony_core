@@ -410,8 +410,7 @@ void main() {
       expect(tokens.refreshToken, 'refresh-1');
     });
 
-    test('honours refreshTokenField, refreshBody and refreshHeaders',
-        () async {
+    test('honours refreshTokenField, refreshBody and refreshHeaders', () async {
       responses['/auth/refresh'] = () => <String, Object?>{'token': 'a2'};
 
       await createAdapter(refreshTokenField: 'refresh').refresh(current);

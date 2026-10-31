@@ -139,7 +139,8 @@ class AuthController extends Notifier<AuthState> {
     }
     if (_disposed || state is AuthUnauthenticated) return;
     _emit(
-      AuthState.unauthenticated(failure: failure ?? const UnauthorizedFailure()),
+      AuthState.unauthenticated(
+          failure: failure ?? const UnauthorizedFailure()),
     );
   }
 
@@ -148,7 +149,9 @@ class AuthController extends Notifier<AuthState> {
   ///
   /// Ignored unless the state is [AuthAuthenticated]. The repository is
   /// updated (and the session persisted) when it does not hold [session]
-  /// yet.
+  /// yet. When [session] carries tokens that a refresh already replaced (it
+  /// was built from a session read before the refresh), the refreshed tokens
+  /// are kept and the state follows them.
   void updateSession(AuthSession session) {
     if (_disposed) return;
     final current = state;
@@ -181,6 +184,14 @@ class AuthController extends Notifier<AuthState> {
       final result = await repository.updateSession(session);
       if (result case ResultFailure<void>(:final failure)) {
         _report(failure, failure.stackTrace, 'Persisting the session failed');
+        return;
+      }
+      // The repository may have kept tokens refreshed in the meantime.
+      final latest = repository.currentSession;
+      if (_disposed || latest == null || identical(latest, session)) return;
+      final current = state;
+      if (current is AuthAuthenticated && identical(current.session, session)) {
+        _emit(AuthState.authenticated(latest));
       }
     } on Object catch (error, stackTrace) {
       _report(error, stackTrace, 'Persisting the session failed');

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../../../core/error/failure.dart';
 import '../../../networking/data/api_client.dart';
+import '../../../networking/data/default_api_error_mapper.dart';
 import '../../../networking/domain/api_request_options.dart';
 import '../../../networking/domain/api_response.dart';
 import '../../domain/adapters/auth_adapter.dart';
@@ -50,7 +51,9 @@ import 'rest_auth_endpoints.dart';
 ///
 /// Failures thrown by the [ApiClient] propagate unchanged, except a `401` on
 /// the sign-in call which becomes an [AuthFailure] using
-/// [invalidCredentialsMessage] (unless the backend supplied its own message).
+/// [invalidCredentialsMessage] (unless the backend supplied its own message;
+/// the generic, possibly localized, "unauthorized" message of a
+/// `DefaultApiErrorMapper` is never used for it).
 class RestAuthAdapter extends AuthAdapter {
   /// Creates the adapter.
   ///
@@ -383,14 +386,13 @@ class RestAuthAdapter extends AuthAdapter {
     final name = authHeaderName ?? apiClient.config.authHeaderName;
     final prefix = (authTokenPrefix ?? apiClient.config.authTokenPrefix).trim();
     return <String, String>{
-      name: prefix.isEmpty
-          ? tokens.accessToken
-          : '$prefix ${tokens.accessToken}',
+      name:
+          prefix.isEmpty ? tokens.accessToken : '$prefix ${tokens.accessToken}',
     };
   }
 
   AuthFailure _invalidCredentials(UnauthorizedFailure failure) {
-    final message = failure.message == const UnauthorizedFailure().message
+    final message = _isGenericUnauthorizedMessage(failure.message)
         ? invalidCredentialsMessage
         : failure.message;
     return AuthFailure(
@@ -400,6 +402,20 @@ class RestAuthAdapter extends AuthAdapter {
       cause: failure,
       stackTrace: failure.stackTrace,
     );
+  }
+
+  /// Whether [message] is the generic "unauthorized" message of the error
+  /// mapper (the backend sent none), including a localized
+  /// `DefaultApiErrorMapper.unauthorizedMessage`.
+  bool _isGenericUnauthorizedMessage(String message) {
+    if (message == const UnauthorizedFailure().message) return true;
+    try {
+      final mapper = apiClient.errorMapper;
+      return mapper is DefaultApiErrorMapper &&
+          message == mapper.unauthorizedMessage;
+    } on Object {
+      return false;
+    }
   }
 
   /// Runs a response parser, converting unexpected errors (bad casts in a

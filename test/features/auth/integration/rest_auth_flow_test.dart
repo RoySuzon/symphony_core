@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:symphony_core/src/core/di/core_providers.dart';
 import 'package:symphony_core/src/core/error/failure.dart';
 import 'package:symphony_core/src/features/auth/auth.dart';
+import 'package:symphony_core/src/features/networking/data/default_api_error_mapper.dart';
 import 'package:symphony_core/src/features/networking/presentation/networking_providers.dart';
 import 'package:symphony_core/src/features/storage/storage.dart';
 
@@ -55,6 +56,7 @@ void main() {
   late Set<String> validAccessTokens;
   late bool refreshAllowed;
   late int refreshCalls;
+  late Object? loginRejection;
   late FakeBackend backend;
 
   ResponseBody route(RequestOptions request) {
@@ -66,7 +68,7 @@ void main() {
         final body = request.data as Map;
         if (body['email'] != 'admin@example.com' ||
             body['password'] != 'secret123') {
-          return jsonResponse(401, <String, Object?>{'message': 'Bad login'});
+          return jsonResponse(401, loginRejection);
         }
         validAccessTokens.add('a1');
         return jsonResponse(200, <String, Object?>{
@@ -99,7 +101,7 @@ void main() {
     return jsonResponse(404, <String, Object?>{'message': 'Not found'});
   }
 
-  ProviderContainer createContainer() {
+  ProviderContainer createContainer({List<Object> overrides = const []}) {
     final container = ProviderContainer(
       overrides: [
         symphonyConfigProvider.overrideWithValue(testConfig),
@@ -118,6 +120,7 @@ void main() {
         authTokenDelegateProvider.overrideWith(
           (ref) => ref.watch(sessionTokenDelegateProvider),
         ),
+        ...overrides.cast(),
       ],
     );
     addTearDown(container.dispose);
@@ -139,6 +142,7 @@ void main() {
     validAccessTokens = <String>{};
     refreshAllowed = true;
     refreshCalls = 0;
+    loginRejection = <String, Object?>{'message': 'Bad login'};
     backend = FakeBackend(route);
   });
 
@@ -171,8 +175,38 @@ void main() {
     expect(refreshCalls, 0);
   });
 
-  test('refreshes an expired token, retries and updates the session',
-      () async {
+  test(
+      'a bare 401 on sign-in reports invalid credentials even with a '
+      'localized error mapper', () async {
+    loginRejection = <String, Object?>{};
+    final container = createContainer(
+      overrides: <Object>[
+        apiErrorMapperProvider.overrideWithValue(
+          const DefaultApiErrorMapper(
+            unauthorizedMessage: 'Sitzung abgelaufen.',
+          ),
+        ),
+      ],
+    );
+
+    final result = await container.read(authControllerProvider.notifier).login(
+          AuthCredentials.emailPassword(
+            email: 'admin@example.com',
+            password: 'nope',
+          ),
+        );
+
+    expect(
+      result.failureOrNull,
+      isA<AuthFailure>().having(
+        (failure) => failure.message,
+        'message',
+        'Invalid credentials. Please try again.',
+      ),
+    );
+  });
+
+  test('refreshes an expired token, retries and updates the session', () async {
     final container = createContainer();
     await signIn(container);
     validAccessTokens.remove('a1');

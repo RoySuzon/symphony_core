@@ -101,7 +101,8 @@ String? authBannerMessage(
 }) {
   if (failure == null) return null;
   final fieldErrors = authFieldErrors(failure);
-  if (fieldErrors.isNotEmpty && fieldErrors.keys.every(visibleFields.contains)) {
+  if (fieldErrors.isNotEmpty &&
+      fieldErrors.keys.every(visibleFields.contains)) {
     return null;
   }
   return messageBuilder?.call(failure) ?? failure.message;

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'json_value_equality.dart';
+
 /// The signed-in user as seen by `symphony_core`.
 ///
 /// Only the fields needed by the package are typed. Everything else returned
@@ -98,6 +100,9 @@ class AuthUser {
     );
   }
 
+  /// Value equality, [data] included (compared deeply), so that a profile
+  /// update changing only project specific fields is seen as a change by
+  /// Riverpod listeners.
   @override
   bool operator ==(Object other) =>
       other is AuthUser &&
@@ -107,7 +112,8 @@ class AuthUser {
       other.username == username &&
       other.avatarUrl == avatarUrl &&
       setEquals(other.roles, roles) &&
-      setEquals(other.permissions, permissions);
+      setEquals(other.permissions, permissions) &&
+      jsonValueEquals(other.data, data);
 
   @override
   int get hashCode => Object.hash(

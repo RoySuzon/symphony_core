@@ -9,8 +9,9 @@ import 'storage_support.dart';
 /// encryption on Android and the platform equivalents on Linux, Windows and
 /// the web.
 ///
-/// This is the default implementation behind `secureStorageProvider`; use it
-/// for tokens and other secrets.
+/// This is the default implementation behind `secureStorageProvider` (which
+/// uses the key prefix `symphonySecureStorageKeyPrefix`); use it for tokens
+/// and other secrets.
 ///
 /// ```dart
 /// const storage = SecureKeyValueStorage(keyPrefix: 'my_app.');
@@ -20,7 +21,8 @@ import 'storage_support.dart';
 /// When [keyPrefix] is set, every key is transparently prefixed, [readAll]
 /// only returns the prefixed entries (with the prefix removed) and [clear]
 /// only removes those entries. Without a prefix the storage manages every
-/// secure storage entry of the application.
+/// secure storage entry of the application: [clear] then deletes the entries
+/// of the whole application, including those written by other code.
 ///
 /// Every platform error (`PlatformException`, `MissingPluginException`,
 /// unsupported platform...) is rethrown as a `StorageFailure` whose

@@ -43,9 +43,8 @@ sealed class AuthState {
   AccessContext get accessContext => switch (status) {
         AuthStatus.unknown => AccessContext.unknown,
         AuthStatus.unauthenticated => AccessContext.unauthenticated,
-        AuthStatus.authenticated =>
-          session?.toAccessContext() ??
-              const AccessContext(status: AuthStatus.authenticated),
+        AuthStatus.authenticated => session?.toAccessContext() ??
+            const AccessContext(status: AuthStatus.authenticated),
       };
 }
 

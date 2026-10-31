@@ -49,8 +49,7 @@ void main() {
     expect(container.read(authControllerProvider).isAuthenticated, isTrue);
   });
 
-  testWidgets('validates the password confirmation and length',
-      (tester) async {
+  testWidgets('validates the password confirmation and length', (tester) async {
     final container = createAuthContainer(
       adapter: InMemoryAuthAdapter(accounts: demoAccounts),
     );

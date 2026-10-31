@@ -264,8 +264,8 @@ class _SymphonyLoginFormState extends ConsumerState<SymphonyLoginForm> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(authControllerProvider.notifier);
-    final showForgotPassword = widget.onForgotPassword != null &&
-        controller.supportsPasswordRecovery;
+    final showForgotPassword =
+        widget.onForgotPassword != null && controller.supportsPasswordRecovery;
     final showRegister =
         widget.onRegister != null && controller.supportsRegistration;
     final banner = authBannerMessage(

@@ -29,7 +29,8 @@ void main() {
     );
   }
 
-  testWidgets('restores the session after the first frame and waits for the '
+  testWidgets(
+      'restores the session after the first frame and waits for the '
       'minimum duration', (tester) async {
     final container = createAuthContainer(adapter: adapter, storage: storage);
     final statesDuringBuild = <AuthState>[];
@@ -85,8 +86,7 @@ void main() {
     expect(completed?.user, adminUser);
   });
 
-  testWidgets('shows the application name, logo and subtitle',
-      (tester) async {
+  testWidgets('shows the application name, logo and subtitle', (tester) async {
     final container = createAuthContainer(adapter: adapter);
     await pumpSplash(
       tester,
@@ -106,8 +106,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('runs onInitialize before restoring the session',
-      (tester) async {
+  testWidgets('runs onInitialize before restoring the session', (tester) async {
     final container = createAuthContainer(adapter: adapter);
     final events = <String>[];
     await pumpSplash(

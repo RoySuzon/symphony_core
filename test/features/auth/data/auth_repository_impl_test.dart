@@ -116,7 +116,8 @@ void main() {
       const UnauthorizedFailure(),
       const AuthFailure('Refresh token revoked'),
     ]) {
-      test('clears the session when the refresh is rejected '
+      test(
+          'clears the session when the refresh is rejected '
           '(${failure.runtimeType})', () async {
         await persistSession(
           keyValueStorage,

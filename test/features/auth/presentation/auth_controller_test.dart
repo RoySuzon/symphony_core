@@ -262,7 +262,8 @@ void main() {
       container.read(authControllerProvider),
       const AuthState.unauthenticated(),
     );
-    expect(container.read(accessContextProvider), AccessContext.unauthenticated);
+    expect(
+        container.read(accessContextProvider), AccessContext.unauthenticated);
     expect(await readPersistedSession(storage), isNull);
     verify(() => adapter.logout(testSession())).called(1);
   });

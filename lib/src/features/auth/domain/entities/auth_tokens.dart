@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'json_value_equality.dart';
+
 /// Credentials returned by the backend after a successful sign-in or refresh.
 @immutable
 class AuthTokens {
@@ -87,13 +89,15 @@ class AuthTokens {
     );
   }
 
+  /// Value equality, [extra] included (compared deeply).
   @override
   bool operator ==(Object other) =>
       other is AuthTokens &&
       other.accessToken == accessToken &&
       other.refreshToken == refreshToken &&
       other.tokenType == tokenType &&
-      other.expiresAt == expiresAt;
+      other.expiresAt == expiresAt &&
+      jsonValueEquals(other.extra, extra);
 
   @override
   int get hashCode =>

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../../core/error/failure.dart';
 import '../../../../core/logging/symphony_logger.dart';
 import '../../../../core/result/result.dart';
@@ -35,12 +37,20 @@ import '../../domain/repositories/auth_repository.dart';
 /// [refreshTokens].
 ///
 /// **Token refresh** ([refreshTokens]) is single-flight: concurrent callers
-/// share one request. The previous refresh token is kept when the backend
-/// does not rotate it.
+/// share one request (a refresh started for a previous session is never
+/// shared with the next one). The previous refresh token is kept when the
+/// backend does not rotate it.
+///
+/// **Sign-in during a restoration**: a sign-in (or registration) never waits
+/// for a restoration in progress. The restoration it overtakes reports the
+/// session the sign-in settled on, never a session that is still being
+/// validated; a sign-in that fails reinstates the previous session, and the
+/// restoration it overtook then goes on.
 ///
 /// Storage writes are serialized and every operation checks that the session
 /// it works on is still current, so a refresh finishing after a sign-out can
-/// never resurrect the session. Errors are returned as [Result] failures;
+/// never resurrect the session, and [updateSession] never reinstates tokens
+/// that a refresh already replaced. Errors are returned as [Result] failures;
 /// storage problems surface as [StorageFailure]. Tokens are never logged.
 class AuthRepositoryImpl extends AuthRepository {
   /// Creates the repository.
@@ -70,12 +80,30 @@ class AuthRepositoryImpl extends AuthRepository {
 
   AuthSession? _session;
 
-  /// Incremented whenever [_session] is replaced by another session (or
-  /// cleared). Pending operations compare it to detect that their session is
-  /// no longer current.
+  /// Identifies the current session: takes a new value (never used before)
+  /// whenever [_session] is replaced by another session or cleared, and
+  /// returns to the previous value when a failed sign-in reinstates the
+  /// previous session. Pending operations compare it to detect that their
+  /// session is no longer current.
   int _epoch = 0;
 
   Future<AuthTokens?>? _refreshing;
+
+  /// [_epoch] of the session [_refreshing] refreshes.
+  int _refreshingEpoch = 0;
+
+  /// Tokens of the current session replaced by refreshes (most recent
+  /// last), so that [updateSession] never reinstates them.
+  final List<AuthTokens> _replacedTokens = <AuthTokens>[];
+
+  static const int _maxReplacedTokens = 8;
+
+  /// Source of [_epoch] values, which are never reused.
+  int _lastEpoch = 0;
+
+  /// Completes once the sign-in (or registration) being activated settled.
+  Future<void>? _activation;
+
   Future<void> _storageQueue = Future<void>.value();
 
   @override
@@ -117,9 +145,15 @@ class AuthRepositoryImpl extends AuthRepository {
 
   @override
   Future<AuthTokens?> refreshTokens() {
-    return _refreshing ??= _refresh().whenComplete(() {
-      _refreshing = null;
+    final pending = _refreshing;
+    if (pending != null && _refreshingEpoch == _epoch) return pending;
+    Future<AuthTokens?>? flight;
+    flight = _refresh().whenComplete(() {
+      if (identical(_refreshing, flight)) _refreshing = null;
     });
+    _refreshing = flight;
+    _refreshingEpoch = _epoch;
+    return flight;
   }
 
   @override
@@ -136,14 +170,23 @@ class AuthRepositoryImpl extends AuthRepository {
     }
   }
 
+  /// Replaces the active session (see [AuthRepository.updateSession]).
+  ///
+  /// Tokens that a refresh already replaced (for example those of a session
+  /// read before the refresh completed) are never reinstated: the current
+  /// tokens are kept and only the user of [session] is applied.
   @override
   Future<Result<void>> updateSession(AuthSession session) =>
       guardResult<void>(() async {
-        if (_session == null) {
+        final active = _session;
+        if (active == null) {
           throw const AuthFailure('There is no active session to update.');
         }
-        _session = session;
-        await _writeSession(session, replace: session.user == null);
+        final next = _isReplaced(session.tokens, active.tokens)
+            ? AuthSession(tokens: active.tokens, user: session.user)
+            : session;
+        _session = next;
+        await _writeSession(next, replace: next.user == null);
       });
 
   @override
@@ -170,17 +213,27 @@ class AuthRepositoryImpl extends AuthRepository {
     final active = _session;
     if (active != null) return _revalidate(active);
 
+    // Every step below checks that no other session (sign-in, sign-out...)
+    // replaced the one being restored. A sign-in still being validated is
+    // waited for: if it fails, it reinstates this restoration's epoch and
+    // the restoration goes on as if nothing happened.
     final startEpoch = _epoch;
     bool superseded() => _epoch != startEpoch;
 
     final storedTokens = await _guardStorage(storage.readTokens);
-    if (superseded()) return _session;
+    if (superseded()) {
+      final settled = await _settledSession();
+      if (superseded()) return settled;
+    }
     if (storedTokens == null) {
       _logger?.debug('No persisted session.');
       return null;
     }
     final storedUser = await _readStoredUser();
-    if (superseded()) return _session;
+    if (superseded()) {
+      final settled = await _settledSession();
+      if (superseded()) return settled;
+    }
 
     var tokens = storedTokens;
     if (tokens.isExpired(leeway: expiryLeeway, now: _clock())) {
@@ -192,14 +245,20 @@ class AuthRepositoryImpl extends AuthRepository {
         tokens = _mergeTokens(tokens, await adapter.refresh(tokens));
         _logger?.debug('Refreshed the expired access token.');
       } on Failure catch (failure) {
-        if (superseded()) return _session;
+        if (superseded()) {
+          final settled = await _settledSession();
+          if (superseded()) return settled;
+        }
         if (_isRejection(failure)) {
           return _discard('The backend rejected the persisted session.');
         }
         if (!_isTransient(failure)) rethrow;
         _logger?.info('Backend unreachable; keeping the persisted session.');
       }
-      if (superseded()) return _session;
+      if (superseded()) {
+        final settled = await _settledSession();
+        if (superseded()) return settled;
+      }
     }
 
     // Activate the session provisionally so that authenticated adapter calls
@@ -215,7 +274,10 @@ class AuthRepositoryImpl extends AuthRepository {
     if (active.tokens.isExpired(leeway: expiryLeeway, now: _clock())) {
       final epoch = _epoch;
       await refreshTokens();
-      if (_epoch != epoch) return _session;
+      if (_epoch != epoch) {
+        final settled = await _settledSession();
+        if (_epoch != epoch) return settled;
+      }
     }
     return _completeRestoration(active.user);
   }
@@ -230,7 +292,10 @@ class AuthRepositoryImpl extends AuthRepository {
     try {
       user = await adapter.fetchCurrentUser(_session!) ?? storedUser;
     } on Object catch (error, stackTrace) {
-      if (replaced()) return _session;
+      if (replaced()) {
+        final settled = await _settledSession();
+        if (replaced()) return settled;
+      }
       if (error is UnauthorizedFailure || error is AuthFailure) {
         return _discard('The backend rejected the persisted session.');
       }
@@ -241,19 +306,27 @@ class AuthRepositoryImpl extends AuthRepository {
       );
       user = storedUser;
     }
-    if (replaced()) return _session;
+    if (replaced()) {
+      final settled = await _settledSession();
+      if (replaced()) return settled;
+    }
 
     try {
       await adapter.validateSession(
         AuthSession(tokens: _session!.tokens, user: user),
       );
     } on Object {
-      if (!replaced()) {
-        await _discard('The session was rejected by the business rules.');
+      if (replaced()) {
+        final settled = await _settledSession();
+        if (replaced()) return settled;
       }
+      await _discard('The session was rejected by the business rules.');
       rethrow;
     }
-    if (replaced()) return _session;
+    if (replaced()) {
+      final settled = await _settledSession();
+      if (replaced()) return settled;
+    }
 
     // The networking layer may have refreshed the tokens in the meantime:
     // always keep the latest ones.
@@ -279,18 +352,37 @@ class AuthRepositoryImpl extends AuthRepository {
 
   /// Validates and persists a brand new session (sign-in, registration) and
   /// makes it current. Restores the previous session on failure.
+  ///
+  /// The new session is current while it is validated (so that the business
+  /// rules can make authenticated calls), but it is not settled: a
+  /// restoration superseded meanwhile waits for the outcome. A failure
+  /// reinstates the previous session together with its epoch, so that the
+  /// operations bound to it (a restoration in progress, a refresh...) go on.
   Future<AuthSession> _activate(AuthSession session) async {
     final previous = _session;
+    final previousEpoch = _epoch;
+    final previousReplaced = List<AuthTokens>.of(_replacedTokens);
     _setSession(session);
     final epoch = _epoch;
+    final settled = Completer<void>();
+    _activation = settled.future;
     try {
       await adapter.validateSession(session);
       if (_epoch != epoch) throw const CancelledFailure();
       await _writeSession(session, replace: true);
       if (_epoch != epoch) throw const CancelledFailure();
     } on Object {
-      if (_epoch == epoch) _setSession(previous);
+      if (_epoch == epoch) {
+        _epoch = previousEpoch;
+        _session = previous;
+        _replacedTokens
+          ..clear()
+          ..addAll(previousReplaced);
+      }
       rethrow;
+    } finally {
+      if (identical(_activation, settled.future)) _activation = null;
+      settled.complete();
     }
     _logger?.info('Signed in.');
     return session;
@@ -320,6 +412,7 @@ class AuthRepositoryImpl extends AuthRepository {
       return null;
     }
     _session = current.copyWith(tokens: tokens);
+    _rememberReplaced(session.tokens);
     try {
       await _serialize(() async {
         if (epoch != _epoch) return;
@@ -337,8 +430,37 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   void _setSession(AuthSession? session) {
-    _epoch++;
+    _epoch = ++_lastEpoch;
     _session = session;
+    _replacedTokens.clear();
+  }
+
+  void _rememberReplaced(AuthTokens tokens) {
+    _replacedTokens
+      ..remove(tokens)
+      ..add(tokens);
+    if (_replacedTokens.length > _maxReplacedTokens) {
+      _replacedTokens.removeAt(0);
+    }
+  }
+
+  /// Whether [candidate] are tokens of the current session that a refresh
+  /// already replaced by [active].
+  bool _isReplaced(AuthTokens candidate, AuthTokens active) =>
+      candidate != active && _replacedTokens.contains(candidate);
+
+  /// The current session once no sign-in (or registration) is being
+  /// activated any more.
+  ///
+  /// A restoration superseded by a sign-in reports this session, never the
+  /// session of a sign-in that is still being validated (and that is
+  /// dropped again when the validation fails).
+  Future<AuthSession?> _settledSession() async {
+    while (true) {
+      final pending = _activation;
+      if (pending == null) return _session;
+      await pending;
+    }
   }
 
   Future<AuthSession?> _discard(String reason) async {

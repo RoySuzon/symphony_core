@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/core_providers.dart';
+import '../../../../core/error/error_reporter.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../ui/widgets/feedback/symphony_error_view.dart';
 import '../../../../ui/widgets/feedback/symphony_loading_indicator.dart';
@@ -33,7 +34,8 @@ typedef SymphonySplashBuilder = Widget Function(
 /// * without them, use [onCompleted] to navigate.
 ///
 /// When [onInitialize] throws, an error view with a retry button is shown
-/// (and the error is forwarded to the configured `ErrorReporter`).
+/// and the error is forwarded to the configured `ErrorReporter` (also when
+/// the screen was removed meanwhile, for example by a router redirect).
 ///
 /// ```dart
 /// SymphonySplashScreen(
@@ -140,6 +142,10 @@ class _SymphonySplashScreenState extends ConsumerState<SymphonySplashScreen> {
     if (_running || !mounted) return;
     _running = true;
     if (_error != null) setState(() => _error = null);
+    // Resolved up front: `ref` is unusable once this screen is disposed, and
+    // a start-up failure must be reported even then (a router redirect can
+    // remove the splash screen before `onInitialize` completes).
+    final reporter = _errorReporter();
 
     final minimum = Completer<void>();
     _minimumTimer?.cancel();
@@ -157,31 +163,41 @@ class _SymphonySplashScreenState extends ConsumerState<SymphonySplashScreen> {
       error = e;
       stackTrace = s;
     }
+    if (error != null) _report(reporter, error, stackTrace);
     if (!mounted) return;
     await minimum.future;
     _running = false;
     if (!mounted) return;
 
     if (error != null) {
-      _report(error, stackTrace);
       setState(() => _error = error);
       return;
     }
     widget.onCompleted?.call(ref.read(authControllerProvider));
   }
 
-  void _report(Object error, StackTrace? stackTrace) {
+  ErrorReporter? _errorReporter() {
     try {
-      final pending = ref.read(errorReporterProvider).report(
-            error,
-            stackTrace,
-            reason: 'Application start-up failed',
-          );
+      return ref.read(errorReporterProvider);
+    } on Object {
+      // Reporting is best effort (the configuration may be missing).
+      return null;
+    }
+  }
+
+  void _report(ErrorReporter? reporter, Object error, StackTrace? stackTrace) {
+    if (reporter == null) return;
+    try {
+      final pending = reporter.report(
+        error,
+        stackTrace,
+        reason: 'Application start-up failed',
+      );
       if (pending is Future<void>) {
         unawaited(pending.then<void>((_) {}, onError: (Object error) {}));
       }
     } on Object {
-      // Reporting is best effort (the configuration may be missing).
+      // Reporters must never throw; ignore misbehaving ones.
     }
   }
 

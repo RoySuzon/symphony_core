@@ -248,8 +248,8 @@ void main() {
       );
 
       expect(recovering.resetCodeFor('admin@example.com'), isNull);
-      final session = await recovering
-          .login(credentials('admin@example.com', 'changed99'));
+      final session =
+          await recovering.login(credentials('admin@example.com', 'changed99'));
       expect(session.user, adminUser);
       await expectLater(
         recovering.login(credentials('admin@example.com', 'secret123')),

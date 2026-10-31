@@ -26,8 +26,7 @@ void main() {
     expect(find.byType(SymphonyLoginForm), findsOneWidget);
   });
 
-  testWidgets('accepts a custom form, logo, header and footer',
-      (tester) async {
+  testWidgets('accepts a custom form, logo, header and footer', (tester) async {
     await pumpScreen(
       tester,
       const SymphonyLoginScreen(

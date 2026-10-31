@@ -149,8 +149,7 @@ void main() {
       expect(find.text('Create one'), findsNothing);
     });
 
-    testWidgets('supports username sign-in with custom texts',
-        (tester) async {
+    testWidgets('supports username sign-in with custom texts', (tester) async {
       final container = createAuthContainer(
         adapter: InMemoryAuthAdapter(
           identifierField: 'username',

@@ -223,7 +223,8 @@ class InMemoryAuthAdapter extends AuthAdapter {
   String? get lastResetCode => _lastResetCode;
 
   /// The pending password reset code of [identifier], if any.
-  String? resetCodeFor(String identifier) => _resetCodes[_normalize(identifier)];
+  String? resetCodeFor(String identifier) =>
+      _resetCodes[_normalize(identifier)];
 
   /// Adds (or replaces) an account.
   void addAccount(InMemoryAccount account) {
@@ -349,8 +350,8 @@ class InMemoryAuthAdapter extends AuthAdapter {
     // Unknown identifiers succeed silently, like real backends do, so the
     // endpoint cannot be used to discover accounts.
     if (account == null) return;
-    final code = List<String>.generate(6, (_) => '${_random.nextInt(10)}')
-        .join();
+    final code =
+        List<String>.generate(6, (_) => '${_random.nextInt(10)}').join();
     _resetCodes[_normalize(identifier)] = code;
     _lastResetCode = code;
     onResetCodeIssued?.call(account.identifier, code);
@@ -419,7 +420,8 @@ class InMemoryAuthAdapter extends AuthAdapter {
     return AuthTokens(
       accessToken: _encode('access', account.identifier, expiresAt),
       refreshToken: refreshEnabled
-          ? _encode('refresh', account.identifier, now.add(refreshTokenLifetime))
+          ? _encode(
+              'refresh', account.identifier, now.add(refreshTokenLifetime))
           : null,
       tokenType: 'Bearer',
       expiresAt: expiresAt,

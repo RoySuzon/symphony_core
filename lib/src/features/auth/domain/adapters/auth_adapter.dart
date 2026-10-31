@@ -35,8 +35,7 @@ abstract class AuthAdapter {
 
   /// Loads the profile of the session owner (used during session
   /// restoration). Defaults to the user stored in the session.
-  Future<AuthUser?> fetchCurrentUser(AuthSession session) async =>
-      session.user;
+  Future<AuthUser?> fetchCurrentUser(AuthSession session) async => session.user;
 
   /// Business rule hook executed after login and session restoration.
   ///

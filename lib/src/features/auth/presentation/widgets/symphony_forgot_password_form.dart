@@ -292,11 +292,10 @@ class _SymphonyForgotPasswordFormState
     if (_submitting) return;
     if (!resend && !_validate()) return;
     final identifier = resend ? _identifier : _identifierController.text.trim();
-    final credentials =
-        widget.requestCredentialsBuilder?.call(identifier) ??
-            AuthCredentials(<String, Object?>{
-              widget.identifierField: identifier,
-            });
+    final credentials = widget.requestCredentialsBuilder?.call(identifier) ??
+        AuthCredentials(<String, Object?>{
+          widget.identifierField: identifier,
+        });
     final onRequestSent = widget.onRequestSent;
     final onFailure = widget.onFailure;
 

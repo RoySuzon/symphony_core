@@ -50,7 +50,11 @@ void main() {
         container.read(secureStorageProvider),
         isA<SecureKeyValueStorage>()
             .having((storage) => storage.storage, 'storage', same(plugin))
-            .having((storage) => storage.keyPrefix, 'keyPrefix', isEmpty),
+            .having(
+              (storage) => storage.keyPrefix,
+              'keyPrefix',
+              symphonySecureStorageKeyPrefix,
+            ),
       );
     });
 
@@ -60,9 +64,36 @@ void main() {
 
       await storage.write('api_key', 'secret');
 
-      expect(backend, <String, String>{'api_key': 'secret'});
+      expect(backend, <String, String>{'symphony.api_key': 'secret'});
       expect(await storage.read('api_key'), 'secret');
-      verify(() => plugin.write(key: 'api_key', value: 'secret')).called(1);
+      verify(() => plugin.write(key: 'symphony.api_key', value: 'secret'))
+          .called(1);
+    });
+
+    test('clear() keeps the secure storage entries of the host application',
+        () async {
+      final backend = backWithMap(plugin, <String, String>{
+        'host.pin': '1234',
+        'other_sdk.token': 'sdk-secret',
+      });
+      final storage = createContainer().read(secureStorageProvider);
+      await storage.write('api_key', 'secret');
+
+      await storage.clear();
+
+      expect(backend, <String, String>{
+        'host.pin': '1234',
+        'other_sdk.token': 'sdk-secret',
+      });
+      verifyNever(() => plugin.deleteAll());
+    });
+
+    test('readAll() only exposes the entries written through it', () async {
+      backWithMap(plugin, <String, String>{'host.pin': '1234'});
+      final storage = createContainer().read(secureStorageProvider);
+      await storage.write('api_key', 'secret');
+
+      expect(await storage.readAll(), <String, String>{'api_key': 'secret'});
     });
 
     test('can be overridden, for example in tests', () async {
@@ -101,8 +132,8 @@ void main() {
       expect(
         backend.keys,
         unorderedEquals(<String>[
-          'symphony.session.tokens',
-          'symphony.session.user',
+          'symphony.symphony.session.tokens',
+          'symphony.symphony.session.user',
         ]),
       );
       expect(await session.readTokens(), tokens);

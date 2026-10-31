@@ -27,8 +27,20 @@ final flutterSecureStorageProvider = Provider<FlutterSecureStorage>(
   name: 'flutterSecureStorageProvider',
 );
 
+/// Prefix of every key that the default [secureStorageProvider] writes to the
+/// platform secure storage (`'symphony.'`).
+///
+/// It scopes the package's entries, so that `clear()` and `readAll()` on the
+/// default storage never touch the secure storage entries written by the
+/// application itself or by other plugins.
+const String symphonySecureStorageKeyPrefix = 'symphony.';
+
 /// Secure key/value storage used for tokens and other secrets: a
 /// `SecureKeyValueStorage` wrapping [flutterSecureStorageProvider].
+///
+/// Its keys are stored under [symphonySecureStorageKeyPrefix] (the key
+/// `api_key` is stored as `symphony.api_key`), so `clear()` only removes the
+/// entries written through this storage and `readAll()` only returns them.
 ///
 /// Override it to plug another backend, or with `InMemoryKeyValueStorage()`
 /// in tests:
@@ -44,6 +56,7 @@ final flutterSecureStorageProvider = Provider<FlutterSecureStorage>(
 final secureStorageProvider = Provider<KeyValueStorage>(
   (ref) => SecureKeyValueStorage(
     storage: ref.watch(flutterSecureStorageProvider),
+    keyPrefix: symphonySecureStorageKeyPrefix,
   ),
   name: 'secureStorageProvider',
 );

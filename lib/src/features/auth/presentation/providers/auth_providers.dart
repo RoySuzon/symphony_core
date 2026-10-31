@@ -74,9 +74,8 @@ final sessionTokenDelegateProvider = Provider<AuthTokenDelegate>(
     repository: () => ref.read(authRepositoryProvider),
     onSessionRefreshed: (session) =>
         ref.read(authControllerProvider.notifier).updateSession(session),
-    onExpired: (failure) => ref
-        .read(authControllerProvider.notifier)
-        .handleSessionExpired(failure),
+    onExpired: (failure) =>
+        ref.read(authControllerProvider.notifier).handleSessionExpired(failure),
     logger: ref.watch(symphonyLoggerProvider).withTag('Auth'),
   ),
   name: 'sessionTokenDelegateProvider',
