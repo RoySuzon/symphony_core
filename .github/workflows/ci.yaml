@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flutter: ["3.10.6", "stable"]
+        flutter: ["3.29.3", "stable"]
         deps: [downgrade, upgrade]
     steps:
       - uses: actions/checkout@v4
